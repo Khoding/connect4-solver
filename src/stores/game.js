@@ -481,13 +481,16 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function undo() {
-    if (hashStack.value.length > 0) {
+    if (hashStack.value.length === 0) return;
+    const steps = autoEnabled.value ? 2 : 1;
+    for (let i = 0; i < steps; i++) {
+      if (hashStack.value.length === 0) break;
       const prev = hashStack.value.pop();
       hash.value = prev.hash;
       extraMoves.value = prev.extra;
-      saveState();
-      syncUrl();
     }
+    saveState();
+    syncUrl();
   }
 
   function resetBoard() {
