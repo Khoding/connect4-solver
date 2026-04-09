@@ -12,6 +12,10 @@ export default defineConfig({
     vueDevTools(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,ico}'],
+        navigateFallback: 'index.html',
+      },
       manifest: {
         name: 'Connect 4 – Weak Solution Explorer',
         short_name: 'Connect 4 Solver',

@@ -22,11 +22,39 @@
         <li><strong class="symbol">-</strong> — Play on it, if available.</li>
       </ol>
     </div>
+
+    <div class="info-card openings">
+      <h3>Opening book</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Sequence(s)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="entry in openings" :key="entry.name">
+            <td>{{ entry.name }}</td>
+            <td class="mono">{{ entry.sequences.join(', ') || '(empty)' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <div style="margin-top: 1.5rem; text-align: center">
       <RouterLink to="/" class="back-btn">Back to Solver</RouterLink>
     </div>
   </div>
 </template>
+
+<script setup>
+import {prefixList} from '@/stores/game.js';
+
+const openings = prefixList.map(entry => {
+  const [name, sequences] = Object.entries(entry)[0];
+  return {name: String(name), sequences};
+});
+</script>
 
 <style scoped>
 .rules-container {
@@ -51,6 +79,37 @@
   & .symbol {
     color: var(--color-win);
     font-family: var(--font-mono);
+  }
+}
+
+.openings {
+  margin-block-start: 1.5rem;
+
+  & table {
+    inline-size: 100%;
+    margin-block-start: 0.5rem;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  & th,
+  & td {
+    padding: 6px 10px;
+    border-block-end: 1px solid var(--color-border);
+    text-align: start;
+  }
+
+  & th {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  & td {
+    color: var(--color-text-dim);
+  }
+
+  & tr:last-child td {
+    border-block-end: none;
   }
 }
 

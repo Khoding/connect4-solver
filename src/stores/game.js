@@ -35,6 +35,8 @@ const prefixList = [
   {'Very Beginning': ['']},
 ];
 
+export {prefixList};
+
 const PRIORITY_LABELS = {
   win: 'Winning move!',
   block: "Blocking opponent's win",
