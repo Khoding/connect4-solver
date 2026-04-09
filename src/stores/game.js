@@ -114,14 +114,14 @@ export const useGameStore = defineStore('game', () => {
   /* ── WASM solver watcher ─────────────────────────────── */
 
   watch(
-    [repstr, viewCursor, moveHistory, winLine, loading],
-    async ([pos, cursor, history, win, isLoading]) => {
+    [repstr, winLine, loading],
+    async ([pos, win, isLoading]) => {
       suggestion.value = null;
       solverScores.value = null;
       solverError.value = null;
       solverLoading.value = false;
 
-      if (isLoading || win || cursor < history.length) return;
+      if (isLoading || win) return;
       if (pos.length === 0) return; // no need to solve the empty board
 
       solverLoading.value = true;
