@@ -170,9 +170,6 @@ function isWinningCell(row, col) {
 }
 
 .cell {
-  display: grid;
-  position: relative;
-  place-items: center;
   inline-size: var(--cell-size);
   block-size: var(--cell-size);
   border-radius: 50%;

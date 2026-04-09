@@ -24,7 +24,7 @@
   --color-win: oklch(0.85 0.2 85);
 
   --board-gap: 6px;
-  --cell-size: clamp(40px, 8vw, 64px);
+  --cell-size: clamp(40px, 8vw, 104px);
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -59,7 +59,6 @@ a {
 /* ── Shared card / utility ──────────────────────────────── */
 
 #app {
-  max-inline-size: 75rem;
   margin-inline: auto;
   padding: 1.5rem;
 }
