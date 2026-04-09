@@ -11,6 +11,16 @@
               game.suggestion?.col === c &&
               game.boardArr[game.ROWS - 1][c - 1] === 0 &&
               !game.winLine,
+            'suggested-red':
+              game.suggestion?.col === c &&
+              game.boardArr[game.ROWS - 1][c - 1] === 0 &&
+              !game.winLine &&
+              game.currentPlayer === 1,
+            'suggested-yellow':
+              game.suggestion?.col === c &&
+              game.boardArr[game.ROWS - 1][c - 1] === 0 &&
+              !game.winLine &&
+              game.currentPlayer === 2,
           }"
           :disabled="game.boardArr[game.ROWS - 1][c - 1] !== 0 || !!game.winLine"
           @click="game.makeMove(c)"
@@ -171,9 +181,17 @@ function isWinningCell(row, col) {
   }
 
   &.suggested {
-    background-color: oklch(0.7 0.15 140);
-    color: var(--color-bg);
     animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  &.suggested-red {
+    background-color: var(--color-red);
+    color: white;
+  }
+
+  &.suggested-yellow {
+    background-color: var(--color-yellow);
+    color: var(--color-bg);
   }
 }
 

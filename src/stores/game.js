@@ -280,32 +280,30 @@ function querySteadyState(bArr, ss, currentPlayer) {
     }
   }
 
-  // 3–8. Priority-based (Red only)
-  if (currentPlayer === 1) {
-    const priorities = ['urgent', 'miai', 'claimeven', 'claimodd', 'plus', 'equal', 'minus'];
-    for (const priority of priorities) {
-      const validMoves = [];
-      for (let x = 0; x < COLS; x++) {
-        let y = getColumnTop(x);
-        if (y === -1) continue;
-        y = 5 - y;
-        const ch = ss[y][x];
-        if (decodePriority(ch) === priority) {
-          if (priority === 'miai') {
-            validMoves.push(x);
-            if (validMoves.length > 1) break;
-          } else if (priority === 'claimeven') {
-            if (y % 2 === 0) return {col: x + 1, reason: 'claimeven'};
-          } else if (priority === 'claimodd') {
-            if (y % 2 === 1) return {col: x + 1, reason: 'claimodd'};
-          } else {
-            return {col: x + 1, reason: priority};
-          }
+  // 3–8. Priority-based steady-state rules
+  const priorities = ['urgent', 'miai', 'claimeven', 'claimodd', 'plus', 'equal', 'minus'];
+  for (const priority of priorities) {
+    const validMoves = [];
+    for (let x = 0; x < COLS; x++) {
+      let y = getColumnTop(x);
+      if (y === -1) continue;
+      y = 5 - y;
+      const ch = ss[y][x];
+      if (decodePriority(ch) === priority) {
+        if (priority === 'miai') {
+          validMoves.push(x);
+          if (validMoves.length > 1) break;
+        } else if (priority === 'claimeven') {
+          if (y % 2 === 0) return {col: x + 1, reason: 'claimeven'};
+        } else if (priority === 'claimodd') {
+          if (y % 2 === 1) return {col: x + 1, reason: 'claimodd'};
+        } else {
+          return {col: x + 1, reason: priority};
         }
       }
-      if (priority === 'miai' && validMoves.length === 1) {
-        return {col: validMoves[0] + 1, reason: 'miai'};
-      }
+    }
+    if (priority === 'miai' && validMoves.length === 1) {
+      return {col: validMoves[0] + 1, reason: 'miai'};
     }
   }
 
