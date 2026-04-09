@@ -174,6 +174,78 @@ function decodePriority(c) {
   }
 }
 
+function heuristicFallback(board, machinePlayer) {
+  const opponent = machinePlayer === 1 ? 2 : 1;
+  const b = board.map(row => [...row]);
+
+  function getTop(x) {
+    for (let y = 0; y < ROWS; y++) {
+      if (b[y][x] === 0) return y;
+    }
+    return -1;
+  }
+
+  // 1. Win immediately
+  for (let x = 0; x < COLS; x++) {
+    const y = getTop(x);
+    if (y === -1) continue;
+    b[y][x] = machinePlayer;
+    const won = checkFourInARow(b, x, y, machinePlayer);
+    b[y][x] = 0;
+    if (won) return x + 1;
+  }
+
+  // 2. Block opponent's win
+  for (let x = 0; x < COLS; x++) {
+    const y = getTop(x);
+    if (y === -1) continue;
+    b[y][x] = opponent;
+    const won = checkFourInARow(b, x, y, opponent);
+    b[y][x] = 0;
+    if (won) return x + 1;
+  }
+
+  // 3. Score by own-line extension + center preference
+  const dirs = [
+    {dx: 1, dy: 0},
+    {dx: 0, dy: 1},
+    {dx: 1, dy: 1},
+    {dx: 1, dy: -1},
+  ];
+  let bestCol = -1;
+  let bestScore = -Infinity;
+  for (let x = 0; x < COLS; x++) {
+    const y = getTop(x);
+    if (y === -1) continue;
+    b[y][x] = machinePlayer;
+    let score = 0;
+    for (const {dx, dy} of dirs) {
+      let fwd = 0;
+      let bwd = 0;
+      for (let s = 1; s < 4; s++) {
+        const nx = x + dx * s;
+        const ny = y + dy * s;
+        if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS || b[ny][nx] !== machinePlayer) break;
+        fwd++;
+      }
+      for (let s = 1; s < 4; s++) {
+        const nx = x - dx * s;
+        const ny = y - dy * s;
+        if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS || b[ny][nx] !== machinePlayer) break;
+        bwd++;
+      }
+      score += (fwd + bwd) ** 2;
+    }
+    b[y][x] = 0;
+    score += (3 - Math.abs(x - 3)) * 0.5;
+    if (score > bestScore) {
+      bestScore = score;
+      bestCol = x;
+    }
+  }
+  return bestCol + 1;
+}
+
 function querySteadyState(bArr, ss, currentPlayer) {
   currentPlayer = currentPlayer || 1;
   const opponent = currentPlayer === 1 ? 2 : 1;
@@ -399,8 +471,15 @@ export const useGameStore = defineStore('game', () => {
     const node = nodes.value[hash.value];
     if (node?.data?.ss) {
       const result = querySteadyState(boardArr.value, node.data.ss, currentPlayer.value);
-      if (result.col > 0) makeMove(result.col);
+      if (result.col > 0) {
+        makeMove(result.col);
+        return;
+      }
     }
+
+    // Fallback: heuristic move (win > block > extend own lines > center)
+    const col = heuristicFallback(boardArr.value, currentPlayer.value);
+    if (col > 0) makeMove(col);
   }
 
   function undo() {
