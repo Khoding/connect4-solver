@@ -1,24 +1,7 @@
 <template>
   <aside class="info-panel">
     <div class="info-card">
-      <h3>I play as</h3>
-      <div class="role-picker">
-        <button
-          class="order-btn"
-          :class="{active: game.userIsFirst}"
-          @click="game.setUserIsFirst(true)"
-        >
-          1st player
-        </button>
-        <button
-          class="order-btn"
-          :class="{active: !game.userIsFirst}"
-          @click="game.setUserIsFirst(false)"
-        >
-          2nd player
-        </button>
-      </div>
-      <h3 style="margin-block-start: 0.6rem">Colors</h3>
+      <h3>Colors</h3>
       <div class="color-inputs">
         <label class="color-label">
           <input type="color" :value="game.color1" @input="game.setColor1($event.target.value)" />
@@ -29,6 +12,16 @@
           2nd player
         </label>
       </div>
+      <div v-if="presets.length" class="presets">
+        <div v-for="(preset, i) in presets" :key="i" class="preset-item">
+          <button class="preset-swatch" :title="preset.name" @click="applyPreset(preset)">
+            <span class="swatch-dot" :style="{backgroundColor: preset.color1}" />
+            <span class="swatch-dot" :style="{backgroundColor: preset.color2}" />
+          </button>
+          <button class="preset-remove" title="Remove preset" @click="removePreset(i)">×</button>
+        </div>
+      </div>
+      <button class="save-preset-btn" @click="savePreset">+ Save preset</button>
     </div>
 
     <div class="info-card">
@@ -144,12 +137,53 @@
 </template>
 
 <script setup>
+import {ref} from 'vue';
 import {useGameStore} from '@/stores/game';
 
 const game = useGameStore();
 
+/* ── Color presets ─────────────────────────────────────── */
+
+const PRESETS_KEY = 'c4_color_presets';
+
+function loadPresets() {
+  try {
+    const raw = localStorage.getItem(PRESETS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistPresets() {
+  try {
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(presets.value));
+  } catch {
+    /* storage full or unavailable */
+  }
+}
+
+const presets = ref(loadPresets());
+
+function savePreset() {
+  const name = `Preset ${presets.value.length + 1}`;
+  presets.value.push({name, color1: game.color1, color2: game.color2});
+  persistPresets();
+}
+
+function applyPreset(preset) {
+  game.setColor1(preset.color1);
+  game.setColor2(preset.color2);
+}
+
+function removePreset(index) {
+  presets.value.splice(index, 1);
+  persistPresets();
+}
+
+/* ── Score helpers ─────────────────────────────────────── */
+
 function scoreClass(score) {
-  if (score === -1000) return 'score-full';
   if (score > 0) return 'score-win';
   if (score === 0) return 'score-draw';
   return 'score-loss';
@@ -178,15 +212,6 @@ function formatEval(score) {
   flex-direction: column;
   max-inline-size: 380px;
   gap: 1rem;
-}
-
-.role-picker {
-  display: flex;
-  gap: 0.5rem;
-
-  @container info-panel (max-width: 300px) {
-    flex-direction: column;
-  }
 }
 
 .color-inputs {
@@ -249,24 +274,77 @@ function formatEval(score) {
   }
 }
 
-.order-btn {
-  flex: 1;
-  padding: 8px 12px;
-  border: 2px solid transparent;
-  border-radius: var(--radius-sm);
-  background-color: var(--color-surface-alt);
-  color: var(--color-text-dim);
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  opacity: 0.6;
-  transition: all 0.15s;
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  margin-block-start: 0.5rem;
+  gap: 0.4rem;
+}
 
-  &.active {
+.preset-item {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.preset-swatch {
+  display: flex;
+  padding: 4px 6px;
+  gap: 3px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  background-color: var(--color-surface);
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:hover {
     border-color: var(--color-accent);
-    background-color: var(--color-surface-alt);
+  }
+}
+
+.preset-remove {
+  padding: 4px 5px;
+  border: 2px solid var(--color-border);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-inline-start: none;
+  background-color: var(--color-surface);
+  color: var(--color-text-dim);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+
+  &:hover {
+    border-color: oklch(0.6 0.22 25);
+    color: oklch(0.75 0.15 25);
+  }
+}
+
+.swatch-dot {
+  display: block;
+  inline-size: 16px;
+  block-size: 16px;
+  border-radius: 50%;
+}
+
+.save-preset-btn {
+  margin-block-start: 0.5rem;
+  padding: 6px 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  color: var(--color-text-dim);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+
+  &:hover {
+    border-color: var(--color-accent);
     color: var(--color-text);
-    opacity: 1;
   }
 }
 
