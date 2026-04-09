@@ -78,6 +78,22 @@
       <p class="dim">+ = win, 0 = draw, − = loss (higher is better)</p>
     </div>
 
+    <div class="info-card">
+      <h3>Running totals</h3>
+      <div class="eval-row">
+        <span class="eval-label" :style="{color: game.color1}">1st player</span>
+        <span class="eval-score" :class="evalClass(game.runningTotals.first)">
+          {{ formatTotal(game.runningTotals.first) }}
+        </span>
+      </div>
+      <div class="eval-row">
+        <span class="eval-label" :style="{color: game.color2}">2nd player</span>
+        <span class="eval-score" :class="evalClass(game.runningTotals.second)">
+          {{ formatTotal(game.runningTotals.second) }}
+        </span>
+      </div>
+    </div>
+
     <div class="controls">
       <button title="Step back" :disabled="!game.canStepBack" @click="game.stepBack()">
         ◀ Back
@@ -199,6 +215,11 @@ function formatEval(score) {
   if (score > 0) return `+${score} (wins)`;
   if (score === 0) return '0 (draw)';
   return `${score} (loses)`;
+}
+
+function formatTotal(score) {
+  if (score > 0) return `+${score}`;
+  return `${score}`;
 }
 </script>
 

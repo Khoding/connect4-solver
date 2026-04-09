@@ -79,6 +79,7 @@ export const useGameStore = defineStore('game', () => {
   const autoEnabled = ref(false);
   const loading = ref(true);
   const moveHistory = ref([]); // array of column numbers (1-7)
+  const moveScores = ref([]); // solver score for each move at the time it was played (parallel to moveHistory)
   const viewCursor = ref(0); // how many moves are currently displayed (0 = start)
   const resetPending = ref(false); // true when waiting for confirm
 
@@ -187,6 +188,21 @@ export const useGameStore = defineStore('game', () => {
     };
   });
 
+  /** Running totals: each player accumulates the solver score of the column they picked */
+  const runningTotals = computed(() => {
+    let first = 0;
+    let second = 0;
+    const limit = viewCursor.value;
+    for (let i = 0; i < limit; i++) {
+      const s = moveScores.value[i];
+      if (s == null) continue;
+      if (i % 2 === 0)
+        first += s; // move 0, 2, 4… = 1st player
+      else second += s; // move 1, 3, 5… = 2nd player
+    }
+    return {first, second};
+  });
+
   /* ── Display color mapping ──────────────────────────── */
 
   /** Map internal player (1=first mover, 2=second) to a display color hex string */
@@ -206,7 +222,13 @@ export const useGameStore = defineStore('game', () => {
     // If reviewing history, truncate future moves
     if (viewCursor.value < moveHistory.value.length) {
       moveHistory.value = moveHistory.value.slice(0, viewCursor.value);
+      moveScores.value = moveScores.value.slice(0, viewCursor.value);
     }
+
+    // Record the solver score for the chosen column (from current player's perspective)
+    const colIndex = column - 1;
+    const scoreForMove = solverScores.value ? solverScores.value[colIndex] : null;
+    moveScores.value.push(scoreForMove !== -1000 ? scoreForMove : null);
 
     moveHistory.value.push(column);
     viewCursor.value = moveHistory.value.length;
@@ -253,6 +275,7 @@ export const useGameStore = defineStore('game', () => {
       return;
     }
     moveHistory.value = [];
+    moveScores.value = [];
     viewCursor.value = 0;
     resetPending.value = false;
     saveState();
@@ -337,6 +360,7 @@ export const useGameStore = defineStore('game', () => {
     initialized = true;
 
     moveHistory.value = [];
+    moveScores.value = [];
     viewCursor.value = 0;
 
     // Check URL for position, then fall back to saved state
@@ -410,6 +434,7 @@ export const useGameStore = defineStore('game', () => {
     canStepForward,
     totalMoves,
     positionEval,
+    runningTotals,
     // Helpers
     displayColorOf,
     // Actions
