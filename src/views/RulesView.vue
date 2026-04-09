@@ -23,7 +23,7 @@
       </ol>
     </div>
 
-    <div class="info-card openings">
+    <div id="openings" class="info-card openings">
       <h3>Opening book</h3>
       <table>
         <thead>

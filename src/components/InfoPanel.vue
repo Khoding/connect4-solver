@@ -55,6 +55,7 @@
     <div class="info-card">
       <h3>Opening</h3>
       <p>{{ game.openingName }}</p>
+      <RouterLink to="/rules#openings">Openings</RouterLink>
     </div>
 
     <div class="info-card">
