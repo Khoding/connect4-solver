@@ -1,0 +1,22 @@
+# Global Copilot Rules
+- Default strictly to Vanilla CSS, referencing the modern Baseline.
+- I'll most likely always use LightningCSS.
+- Don't hesitate to use @supports.
+- Do not use Tailwind or Beer CSS unless explicitly requested.
+- Ensure all web layouts are responsive and mobile-friendly.
+- Exclusively use the metric system for any measurements or spatial data.
+- In Nuxt and Vue, files, the order is _always_ template, script, style.
+- CSS should always use variables / custom properties for colors, fonts, and spacing.
+- CSS should be organized in the most logical way, which means everything that isn't global should be in the scoped styles of a component / page. Global styles should be in the global CSS file, and don't hesitate to create files like "reset.css" or "typography.css", etc. if it makes sense to do so.
+- We should always use logical properties in CSS, and avoid using physical properties like "left", "right", "margin-left", etc. unless there is a specific reason to do so.
+- Paddings should use pixels, while margins should use rems, but not always. If there is a specific reason to use a different unit, feel free to do so.
+- The main layout should make sense in terms of spacings. For example, adding a new page means the spacing with the content shouldn't be a pain, the spacing should be handled on static stuff like the main layout, and not on the page itself. This way, we can easily add new pages without having to worry about spacing issues.
+- We mostly use longhand (like background-color) instead of shorthand (like background) in our CSS, but if there is a specific reason to use shorthand, feel free to do so.
+- Don't hesitate to use [class*='icon'] and variants of such selectors when it reduces CSS.
+- Use CSS nesting.
+- Don't hesitate to use container queries, but don't overdo it. They can become performance heavy.
+- For media and container size queries, do mobile first, meaning that the default styles should be for mobile, and then use min-width for larger screens. This way, we can ensure that the mobile experience is always good, and we can add enhancements for larger screens without having to worry about breaking the mobile layout.
+- You don't always need media and container queries for size adjustments. Sometimes, using flexible layouts with flexbox or grid can be enough to make things look good on different screen sizes without needing specific breakpoints.
+- Font size should be handled with clamp, and not with media queries. This way, we can ensure that the font size is always responsive and looks good on different screen sizes without having to worry about specific breakpoints.
+- We are OKLCH users.
+- "Active" and "hover" states (or the likes), shouldn't make the text bold, because as of now, there's no way to handle it with an animation. When a state changes, only change stuff that can be animated.
