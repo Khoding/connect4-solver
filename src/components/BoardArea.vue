@@ -8,14 +8,12 @@
           class="col-btn"
           :class="{
             suggested:
-              game.bestSuggestion?.col === c &&
+              game.suggestion?.col === c &&
               game.boardArr[game.ROWS - 1][c - 1] === 0 &&
               !game.winLine,
           }"
           :style="
-            game.bestSuggestion?.col === c &&
-            game.boardArr[game.ROWS - 1][c - 1] === 0 &&
-            !game.winLine
+            game.suggestion?.col === c && game.boardArr[game.ROWS - 1][c - 1] === 0 && !game.winLine
               ? {
                   backgroundColor: game.displayColorOf(game.internalCurrentPlayer),
                   color: 'var(--color-bg)',
@@ -42,43 +40,15 @@
             :style="cellStyle(game.ROWS - vr, c - 1)"
             :class="{winning: isWinningCell(game.ROWS - vr, c - 1)}"
             @click="game.makeMove(c)"
-          >
-            <span
-              v-if="showSsMarker(game.ROWS - vr, c - 1)"
-              class="ss-marker"
-              :class="ssMarkerClass(game.ROWS - vr, c - 1)"
-            >
-              {{ ssMarkerText(getSsCode(game.ROWS - vr, c - 1)) }}
-            </span>
-          </div>
+          ></div>
         </template>
       </div>
     </div>
-
-    <div class="board-footer">
-      {{
-        game.inSteadyState && !game.winLine
-          ? 'Steady-state active — markers on the board show priorities.'
-          : ''
-      }}
-    </div>
-
-    <button class="mobile-only rules-btn-mobile" title="Show Rules" @click="$emit('open-rules')">
-      📜 How to read the steady-state
-    </button>
-
-    <details class="info-card rules desktop-only" open>
-      <summary>
-        <h3>How to read the steady-state</h3>
-      </summary>
-      <SteadyStateRules />
-    </details>
   </div>
 </template>
 
 <script setup>
 import {useGameStore} from '@/stores/game';
-import SteadyStateRules from '@/components/SteadyStateRules.vue';
 
 const game = useGameStore();
 
@@ -91,29 +61,6 @@ function cellStyle(row, col) {
     boxShadow: `0 0 12px ${color}40`,
     '--glow': color,
   };
-}
-
-function ssMarkerText(code) {
-  const ch = String.fromCharCode(code);
-  return ch === ' ' ? '·' : ch;
-}
-
-function ssMarkerClass(row, col) {
-  const isPlayable = row === 0 || game.boardArr[row - 1][col] !== 0;
-  return isPlayable ? 'active-marker' : 'floating';
-}
-
-function showSsMarker(row, col) {
-  if (!game.inSteadyState || !game.ssData) return false;
-  if (game.boardArr[row][col] !== 0) return false;
-  const ssRow = 5 - row;
-  const code = game.ssData[ssRow][col];
-  const ch = String.fromCharCode(code);
-  return ch !== '1' && ch !== '2';
-}
-
-function getSsCode(row, col) {
-  return game.ssData[5 - row][col];
 }
 
 function isWinningCell(row, col) {
@@ -248,89 +195,6 @@ function isWinningCell(row, col) {
     box-shadow:
       0 0 24px var(--glow),
       0 0 40px var(--glow);
-  }
-}
-
-.ss-marker {
-  position: absolute;
-  color: var(--color-text);
-  font-weight: 700;
-  font-size: clamp(0.7rem, 1.5vw, 1rem);
-  font-family: var(--font-mono);
-  text-shadow: 0 1px 3px oklch(0 0 0 / 0.7);
-  opacity: 0.85;
-  pointer-events: none;
-
-  &.floating {
-    opacity: 0.35;
-  }
-
-  &.active-marker {
-    color: var(--color-win);
-    text-shadow: 0 0 6px var(--color-win);
-    opacity: 1;
-  }
-}
-
-.board-footer {
-  min-block-size: 1.5em;
-  margin-block-start: 0.5rem;
-  color: var(--color-text-dim);
-  font-size: 0.85rem;
-  text-align: center;
-}
-
-.rules-btn-mobile {
-  width: 100%;
-  margin-block-start: 1rem;
-  padding: 8px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.15s;
-
-  &:hover {
-    background-color: var(--color-surface-alt);
-  }
-}
-
-.rules {
-  width: 100%;
-  max-inline-size: 500px;
-  margin-block-start: 1.5rem;
-  interpolate-size: allow-keywords;
-
-  &::details-content {
-    block-size: 0;
-    overflow: hidden;
-    transition:
-      block-size 0.35s ease,
-      content-visibility 0.35s ease;
-    transition-behavior: allow-discrete;
-  }
-
-  &[open]::details-content {
-    block-size: auto;
-  }
-
-  & summary {
-    list-style: none;
-    cursor: pointer;
-
-    &::-webkit-details-marker {
-      display: none;
-    }
-
-    & h3::before {
-      content: '▸ ';
-    }
-  }
-
-  &[open] summary h3::before {
-    content: '▾ ';
   }
 }
 

@@ -18,9 +18,6 @@
           2nd player
         </button>
       </div>
-      <p v-if="!game.userIsFirst" class="dim" style="margin-block-start: 0.4rem">
-        Opening book helps 1st player only. Solver API provides suggestions for all positions.
-      </p>
       <h3 style="margin-block-start: 0.6rem">Colors</h3>
       <div class="color-inputs">
         <label class="color-label">
@@ -43,18 +40,22 @@
         {{ game.statusTitle }}
       </h2>
       <p>{{ game.statusText }}</p>
-      <p
-        v-if="game.ssBroken && game.inSteadyState && !game.apiSuggestion"
-        class="deviation-warning"
-      >
-        ⚠ First player deviated — querying solver for fallback.
-      </p>
     </div>
 
-    <div class="info-card">
-      <h3>Opening</h3>
-      <p>{{ game.openingName }}</p>
-      <RouterLink to="/rules#openings">Openings</RouterLink>
+    <div v-if="game.positionEval" class="info-card eval-card">
+      <h3>Position evaluation</h3>
+      <div class="eval-row">
+        <span class="eval-label" :style="{color: game.color1}">1st player</span>
+        <span class="eval-score" :class="evalClass(game.positionEval.first)">
+          {{ formatEval(game.positionEval.first) }}
+        </span>
+      </div>
+      <div class="eval-row">
+        <span class="eval-label" :style="{color: game.color2}">2nd player</span>
+        <span class="eval-score" :class="evalClass(game.positionEval.second)">
+          {{ formatEval(game.positionEval.second) }}
+        </span>
+      </div>
     </div>
 
     <div class="info-card">
@@ -64,50 +65,24 @@
 
     <div class="info-card">
       <h3>Suggested move</h3>
-      <p v-if="game.apiLoading">Querying solver…</p>
-      <p v-else-if="game.bestSuggestion && game.bestSuggestion.col > 0">
-        Column {{ game.bestSuggestion.col }}
-        <span v-if="game.bestSuggestion.source === 'solver'" class="source-badge">solver</span>
-      </p>
+      <p v-if="game.solverLoading">Querying solver…</p>
+      <p v-else-if="game.suggestion && game.suggestion.col > 0">Column {{ game.suggestion.col }}</p>
       <p v-else-if="game.winLine">Game over</p>
       <p v-else>—</p>
       <p v-if="game.suggestionLabel" class="dim">{{ game.suggestionLabel }}</p>
-      <p v-if="game.apiError" class="dim" style="color: oklch(0.7 0.18 25)">
-        Solver error: {{ game.apiError }}
+      <p v-if="game.solverError" class="dim" style="color: oklch(0.7 0.18 25)">
+        Solver error: {{ game.solverError }}
       </p>
     </div>
 
-    <div v-if="game.apiScores" class="info-card">
+    <div v-if="game.solverScores" class="info-card">
       <h3>Column scores</h3>
       <div class="score-row">
-        <div v-for="(s, i) in game.apiScores" :key="i" class="score-cell" :class="scoreClass(s)">
-          {{ s === 100 ? '—' : s > 0 ? `+${s}` : s }}
+        <div v-for="(s, i) in game.solverScores" :key="i" class="score-cell" :class="scoreClass(s)">
+          {{ s === -1000 ? '—' : s > 0 ? `+${s}` : s }}
         </div>
       </div>
       <p class="dim">+ = win, 0 = draw, − = loss (higher is better)</p>
-    </div>
-
-    <div class="info-card steady-state">
-      <h3>Steady-state diagram</h3>
-      <div v-if="game.ssData" class="ss-grid">
-        <template v-for="vr in game.ROWS" :key="vr">
-          <div
-            v-for="c in game.COLS"
-            :key="`${vr}-${c}`"
-            class="ss-cell"
-            :class="{occupied: ssCellOccupied(vr - 1, c - 1)}"
-          >
-            {{ ssCellContent(vr - 1, c - 1) }}
-          </div>
-        </template>
-      </div>
-      <p class="dim">
-        {{
-          game.inSteadyState
-            ? 'Active: follow the priorities to pick your move.'
-            : 'In the opening tree — no steady state yet.'
-        }}
-      </p>
     </div>
 
     <div class="controls">
@@ -145,13 +120,25 @@
 
     <p class="move-counter dim">Move {{ game.viewCursor }} / {{ game.totalMoves }}</p>
 
+    <div class="info-card">
+      <h3>Solver</h3>
+      <p class="dim">
+        <template v-if="!game.solverStatus.moduleReady">Loading WASM module…</template>
+        <template v-else-if="game.solverStatus.bookLoading">Loading opening book…</template>
+        <template v-else-if="game.solverStatus.bookError">
+          Book error: {{ game.solverStatus.bookError }}
+        </template>
+        <template v-else-if="game.solverStatus.bookLoaded">Ready (with opening book)</template>
+        <template v-else>Ready (no opening book)</template>
+      </p>
+    </div>
+
     <p class="credit">
-      Data &amp; research by
-      <a href="https://2swap.github.io/WeakC4/" target="_blank" rel="noopener">2swap</a>.
-      <a href="https://2swap.github.io/WeakC4/explanation/" target="_blank" rel="noopener"
-        >Full explanation</a
-      >.
-      <a href="https://youtu.be/KaljD3Q3ct0" target="_blank" rel="noopener">Video explanation</a>.
+      Solver by
+      <a href="http://connect4.gamesolver.org" target="_blank" rel="noopener">Pascal Pons</a>.
+      Inspired by
+      <a href="https://2swap.github.io/WeakC4/" target="_blank" rel="noopener">2swap's WeakC4</a>.
+      Made for personal use.
     </p>
   </aside>
 </template>
@@ -161,27 +148,23 @@ import {useGameStore} from '@/stores/game';
 
 const game = useGameStore();
 
-function ssCellContent(vr, c) {
-  if (!game.ssData) return '';
-  const code = game.ssData[vr][c];
-  const ch = String.fromCharCode(code);
-  const ir = 5 - vr;
-  if (game.boardArr[ir]?.[c] !== 0) {
-    return game.boardArr[ir][c] === 1 ? 'P1' : 'P2';
-  }
-  return ch === ' ' ? '·' : ch;
-}
-
-function ssCellOccupied(vr, c) {
-  const ir = 5 - vr;
-  return game.boardArr[ir]?.[c] !== 0;
-}
-
 function scoreClass(score) {
-  if (score === 100) return 'score-full';
+  if (score === -1000) return 'score-full';
   if (score > 0) return 'score-win';
   if (score === 0) return 'score-draw';
   return 'score-loss';
+}
+
+function evalClass(score) {
+  if (score > 0) return 'eval-win';
+  if (score === 0) return 'eval-draw';
+  return 'eval-loss';
+}
+
+function formatEval(score) {
+  if (score > 0) return `+${score} (wins)`;
+  if (score === 0) return '0 (draw)';
+  return `${score} (loses)`;
 }
 </script>
 
@@ -195,35 +178,6 @@ function scoreClass(score) {
   flex-direction: column;
   max-inline-size: 380px;
   gap: 1rem;
-}
-
-.ss-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-  font-size: 0.8rem;
-  font-family: var(--font-mono);
-  text-align: center;
-}
-
-.ss-cell {
-  min-inline-size: 30px;
-  min-block-size: 1.6em;
-  padding: 3px;
-  border-radius: 3px;
-  background-color: var(--color-surface-alt);
-  line-height: 1.6em;
-
-  &.occupied {
-    color: var(--color-text-dim);
-    opacity: 0.5;
-  }
-
-  &.active-priority {
-    background-color: oklch(0.4 0.15 140);
-    color: white;
-    font-weight: 700;
-  }
 }
 
 .role-picker {
@@ -257,25 +211,6 @@ function scoreClass(score) {
     background-color: transparent;
     cursor: pointer;
   }
-}
-
-.deviation-warning {
-  margin-block-start: 0.35rem;
-  color: oklch(0.75 0.18 60);
-  font-size: 0.85rem;
-}
-
-.source-badge {
-  display: inline-block;
-  margin-inline-start: 0.4rem;
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
-  background-color: oklch(0.35 0.12 260);
-  color: oklch(0.85 0.08 260);
-  font-weight: 600;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  vertical-align: middle;
 }
 
 .score-row {
@@ -388,6 +323,36 @@ function scoreClass(score) {
   color: var(--color-text-dim);
   font-size: 0.8rem;
   text-align: center;
+}
+
+.eval-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.eval-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.eval-score {
+  font-weight: 600;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+
+  &.eval-win {
+    color: oklch(0.75 0.15 145);
+  }
+
+  &.eval-draw {
+    color: var(--color-text-dim);
+  }
+
+  &.eval-loss {
+    color: oklch(0.75 0.15 25);
+  }
 }
 
 .move-counter {

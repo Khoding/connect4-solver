@@ -1,43 +1,52 @@
 <template>
   <div class="rules-container">
-    <div class="info-card rules" open>
-      <h3>How to read the steady-state</h3>
-      <SteadyStateRules :show-link="false" />
+    <div class="info-card">
+      <h3>How it works</h3>
+      <p>
+        Connect 4 is a <strong>solved game</strong>. With perfect play, the first player can always
+        force a win. This app uses a perfect solver to analyze every position and suggest the
+        optimal move.
+      </p>
+      <p>
+        The solver runs entirely in your browser via WebAssembly — no server required. It uses
+        alpha-beta pruning with a transposition table and a 32 MB opening book for instant responses
+        in early-game positions.
+      </p>
     </div>
 
-    <div id="openings" class="info-card openings">
-      <h3>Opening book</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Sequence(s)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="entry in openings" :key="entry.name">
-            <td>{{ entry.name }}</td>
-            <td class="mono">{{ entry.sequences.join(', ') || '(empty)' }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="info-card">
+      <h3>Reading the scores</h3>
+      <p>Each column gets a score relative to the current player:</p>
+      <ul>
+        <li>
+          <strong>Positive (+N)</strong> — Playing here leads to a forced win. Higher = faster win.
+        </li>
+        <li><strong>Zero (0)</strong> — This move leads to a draw with perfect play.</li>
+        <li><strong>Negative (−N)</strong> — Playing here leads to a loss. Lower = faster loss.</li>
+        <li><strong>— (dash)</strong> — Column is full.</li>
+      </ul>
     </div>
 
-    <div style="margin-top: 1.5rem; text-align: center">
+    <div class="info-card">
+      <h3>Credits</h3>
+      <p>
+        Solver engine by
+        <a href="http://connect4.gamesolver.org" target="_blank" rel="noopener">Pascal Pons</a>
+        (AGPL-3.0). Compiled to WebAssembly for local use.
+      </p>
+      <p>
+        Inspired by
+        <a href="https://2swap.github.io/WeakC4/" target="_blank" rel="noopener">2swap's WeakC4</a>
+        weak solution explorer.
+      </p>
+      <p>Made for personal use.</p>
+    </div>
+
+    <div style="margin-block-start: 1.5rem; text-align: center">
       <RouterLink to="/" class="back-btn">Back to Solver</RouterLink>
     </div>
   </div>
 </template>
-
-<script setup>
-import {prefixList} from '@/stores/game.js';
-import SteadyStateRules from '@/components/SteadyStateRules.vue';
-
-const openings = prefixList.map(entry => {
-  const [name, sequences] = Object.entries(entry)[0];
-  return {name: String(name), sequences};
-});
-</script>
 
 <style scoped>
 .rules-container {
@@ -46,34 +55,32 @@ const openings = prefixList.map(entry => {
   padding: 2rem;
 }
 
-.openings {
-  margin-block-start: 1.5rem;
+.info-card {
+  & + .info-card {
+    margin-block-start: 1.5rem;
+  }
 
-  & table {
-    inline-size: 100%;
+  & p {
     margin-block-start: 0.5rem;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-  }
-
-  & th,
-  & td {
-    padding: 6px 10px;
-    border-block-end: 1px solid var(--color-border);
-    text-align: start;
-  }
-
-  & th {
-    color: var(--color-text);
-    font-weight: 600;
-  }
-
-  & td {
     color: var(--color-text-dim);
+    font-size: 0.9rem;
+    line-height: 1.6;
   }
 
-  & tr:last-child td {
-    border-block-end: none;
+  & ul {
+    margin-block-start: 0.5rem;
+    padding-inline-start: 1.2rem;
+    color: var(--color-text-dim);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  & li {
+    margin-block-end: 0.3rem;
+  }
+
+  & a {
+    color: var(--color-accent);
   }
 }
 

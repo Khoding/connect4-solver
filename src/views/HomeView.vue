@@ -1,28 +1,25 @@
 <template>
   <header class="header">
-    <h1>Connect 4 <span class="subtitle">Weak Solution Explorer</span></h1>
+    <h1>Connect 4 <span class="subtitle">Solver</span></h1>
     <p class="tagline">Pick your color and turn order, then follow the solver's suggestions.</p>
   </header>
 
   <main class="main">
-    <BoardArea @open-rules="rulesOpen = true" />
+    <BoardArea />
     <InfoPanel />
   </main>
 
   <LoadingOverlay />
-  <SideMenu :open="rulesOpen" @close="rulesOpen = false" />
 </template>
 
 <script setup>
-import {onMounted, onUnmounted, ref} from 'vue';
+import {onMounted, onUnmounted} from 'vue';
 import {useGameStore} from '@/stores/game';
 import BoardArea from '@/components/BoardArea.vue';
 import InfoPanel from '@/components/InfoPanel.vue';
-import SideMenu from '@/components/SideMenu.vue';
 import LoadingOverlay from '@/components/LoadingOverlay.vue';
 
 const game = useGameStore();
-const rulesOpen = ref(false);
 
 onMounted(() => {
   game.init();

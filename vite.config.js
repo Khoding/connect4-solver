@@ -13,17 +13,17 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,ico}'],
+        globPatterns: ['**/*.{js,css,html,svg,ico,wasm}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
       },
       manifest: {
-        name: 'Connect 4 – Weak Solution Explorer',
+        name: 'Connect 4 Solver',
         short_name: 'Connect 4 Solver',
-        description:
-          'Explore the weak solution of Connect 4 with opening books and steady-state diagrams.',
+        description: 'A perfect Connect 4 solver running locally in your browser via WebAssembly.',
         start_url: '.',
         display: 'standalone',
         background_color: '#1a1a2e',
