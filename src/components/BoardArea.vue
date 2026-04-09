@@ -8,20 +8,20 @@
           class="col-btn"
           :class="{
             suggested:
-              game.suggestion?.col === c &&
+              game.bestSuggestion?.col === c &&
               game.boardArr[game.ROWS - 1][c - 1] === 0 &&
               !game.winLine,
-            'suggested-red':
-              game.suggestion?.col === c &&
-              game.boardArr[game.ROWS - 1][c - 1] === 0 &&
-              !game.winLine &&
-              game.currentPlayer === 1,
-            'suggested-yellow':
-              game.suggestion?.col === c &&
-              game.boardArr[game.ROWS - 1][c - 1] === 0 &&
-              !game.winLine &&
-              game.currentPlayer === 2,
           }"
+          :style="
+            game.bestSuggestion?.col === c &&
+            game.boardArr[game.ROWS - 1][c - 1] === 0 &&
+            !game.winLine
+              ? {
+                  backgroundColor: game.displayColorOf(game.internalCurrentPlayer),
+                  color: 'var(--color-bg)',
+                }
+              : {}
+          "
           :disabled="game.boardArr[game.ROWS - 1][c - 1] !== 0 || !!game.winLine"
           @click="game.makeMove(c)"
         >
@@ -39,7 +39,7 @@
             v-for="c in game.COLS"
             :key="`${vr}-${c}`"
             class="cell"
-            :data-player="game.boardArr[game.ROWS - vr][c - 1]"
+            :style="cellStyle(game.ROWS - vr, c - 1)"
             :class="{winning: isWinningCell(game.ROWS - vr, c - 1)}"
             @click="game.makeMove(c)"
           >
@@ -55,7 +55,13 @@
       </div>
     </div>
 
-    <div class="board-footer">{{ game.boardFooterText }}</div>
+    <div class="board-footer">
+      {{
+        game.inSteadyState && !game.winLine
+          ? 'Steady-state active — markers on the board show priorities.'
+          : ''
+      }}
+    </div>
 
     <button class="mobile-only rules-btn-mobile" title="Show Rules" @click="$emit('open-rules')">
       📜 How to read the steady-state
@@ -75,6 +81,17 @@ import {useGameStore} from '@/stores/game';
 import SteadyStateRules from '@/components/SteadyStateRules.vue';
 
 const game = useGameStore();
+
+function cellStyle(row, col) {
+  const p = game.boardArr[row][col];
+  if (p === 0) return {};
+  const color = game.displayColorOf(p);
+  return {
+    backgroundColor: color,
+    boxShadow: `0 0 12px ${color}40`,
+    '--glow': color,
+  };
+}
 
 function ssMarkerText(code) {
   const ch = String.fromCharCode(code);
@@ -183,16 +200,6 @@ function isWinningCell(row, col) {
   &.suggested {
     animation: pulse 1.2s ease-in-out infinite;
   }
-
-  &.suggested-red {
-    background-color: var(--color-red);
-    color: white;
-  }
-
-  &.suggested-yellow {
-    background-color: var(--color-yellow);
-    color: var(--color-bg);
-  }
 }
 
 @keyframes pulse {
@@ -228,26 +235,8 @@ function isWinningCell(row, col) {
     background-color 0.2s,
     box-shadow 0.2s;
 
-  &[data-player='1'] {
-    background-color: var(--color-red);
-    box-shadow: 0 0 12px var(--color-red-glow);
-  }
-
-  &[data-player='2'] {
-    background-color: var(--color-yellow);
-    box-shadow: 0 0 12px var(--color-yellow-glow);
-  }
-
   &.winning {
     animation: win-glow 0.6s ease-in-out infinite alternate;
-  }
-
-  &.winning[data-player='1'] {
-    --glow: var(--color-red);
-  }
-
-  &.winning[data-player='2'] {
-    --glow: var(--color-yellow);
   }
 }
 

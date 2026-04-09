@@ -36,7 +36,8 @@ onUnmounted(() => {
 function onKeydown(e) {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   const key = e.key.toLowerCase();
-  if (key === 'u') game.undo();
+  if (key === 'arrowleft' || key === 'u') game.stepBack();
+  if (key === 'arrowright') game.stepForward();
   if (key === 'r') game.resetBoard();
   if (key >= '1' && key <= '7') game.makeMove(parseInt(key));
 }

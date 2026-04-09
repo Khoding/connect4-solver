@@ -1,4 +1,4 @@
-import {ref, shallowRef, computed} from 'vue';
+import {ref, shallowRef, computed, watch} from 'vue';
 import {defineStore} from 'pinia';
 
 const ROWS = 6;
@@ -51,22 +51,18 @@ const PRIORITY_LABELS = {
 
 /* ── Pure helpers ───────────────────────────────────────── */
 
-function constructBoardArr(moveString, firstPlayer) {
+function constructBoardArr(moveString) {
   const b = Array.from({length: ROWS}, () => new Array(COLS).fill(0));
   for (let i = 0; i < moveString.length; i++) {
     const x = moveString.charCodeAt(i) - 49; // '1' = 49
     for (let y = 0; y < ROWS; y++) {
       if (b[y][x] === 0) {
-        b[y][x] = playerAtTurn(i, firstPlayer);
+        b[y][x] = (i % 2) + 1; // 1=first mover, 2=second mover (matches dataset)
         break;
       }
     }
   }
   return b;
-}
-
-function playerAtTurn(turnIndex, firstPlayer) {
-  return turnIndex % 2 === 0 ? firstPlayer : firstPlayer === 1 ? 2 : 1;
 }
 
 function hashABoard(boardToHash, nodes) {
@@ -246,9 +242,9 @@ function heuristicFallback(board, machinePlayer) {
   return bestCol + 1;
 }
 
-function querySteadyState(bArr, ss, currentPlayer) {
-  currentPlayer = currentPlayer || 1;
-  const opponent = currentPlayer === 1 ? 2 : 1;
+function querySteadyState(bArr, ss) {
+  const currentPlayer = 1; // SS diagrams are always for the first mover
+  const opponent = 2;
 
   function getColumnTop(x) {
     for (let y = 0; y < ROWS; y++) {
@@ -310,17 +306,60 @@ function querySteadyState(bArr, ss, currentPlayer) {
   return {col: -4, reason: null};
 }
 
+/* ── Strong solver API (connect4.gamesolver.org) ───────── */
+
+const solverCache = new Map();
+
+async function queryStrongSolver(moveString) {
+  if (solverCache.has(moveString)) {
+    return solverCache.get(moveString);
+  }
+  const url = `https://connect4.gamesolver.org/solve?pos=${encodeURIComponent(moveString)}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Solver returned ${response.status}`);
+  const data = await response.json();
+  solverCache.set(moveString, data.score);
+  return data.score;
+}
+
+function interpretScores(scores) {
+  let bestCol = -1;
+  let bestScore = -Infinity;
+  for (let i = 0; i < 7; i++) {
+    if (scores[i] === 100) continue; // column full
+    if (scores[i] > bestScore) {
+      bestScore = scores[i];
+      bestCol = i + 1;
+    }
+  }
+  if (bestCol === -1) return null;
+
+  let reason;
+  if (bestScore > 0) reason = 'Winning move (solver)';
+  else if (bestScore === 0) reason = 'Drawing move (solver)';
+  else reason = 'Best defense (solver)';
+
+  return {col: bestCol, reason, score: bestScore, scores, source: 'solver'};
+}
+
 /* ── Store ──────────────────────────────────────────────── */
 
 export const useGameStore = defineStore('game', () => {
   const nodes = shallowRef({});
-  const hash = ref(0);
-  const hashStack = ref([]);
-  const extraMoves = ref('');
-  const userColor = ref(2); // 1 = Red, 2 = Yellow
-  const firstPlayer = ref(1); // who goes first
+  const userIsFirst = ref(true); // does the human play as the first mover?
+  const color1 = ref('#e03030'); // display color for the first player
+  const color2 = ref('#e8d020'); // display color for the second player
   const autoEnabled = ref(false);
   const loading = ref(true);
+  const moveHistory = ref([]); // array of column numbers (1-7)
+  const viewCursor = ref(0); // how many moves are currently displayed (0 = start)
+  const resetPending = ref(false); // true when waiting for confirm
+
+  // Solver API state
+  const apiSuggestion = ref(null);
+  const apiScores = ref(null);
+  const apiLoading = ref(false);
+  const apiError = ref(null);
 
   let autoInterval = null;
   let initialized = false;
@@ -328,24 +367,134 @@ export const useGameStore = defineStore('game', () => {
 
   /* ── Derived ────────────────────────────────────────── */
 
-  const repstr = computed(() => {
-    const node = nodes.value[hash.value];
-    return node ? node.rep + extraMoves.value : extraMoves.value;
+  /** The move string up to the current cursor position */
+  const repstr = computed(() => moveHistory.value.slice(0, viewCursor.value).join(''));
+
+  /** Recompute hash + extraMoves by replaying moves up to cursor */
+  const hashState = computed(() => {
+    let h = rootNodeHash;
+    let extra = '';
+    const n = nodes.value;
+    for (let i = 0; i < viewCursor.value; i++) {
+      const moveStr = moveHistory.value.slice(0, i + 1).join('');
+      const board = constructBoardArr(moveStr);
+      const newHash = hashABoard(board, n);
+      if (newHash !== -1) {
+        h = newHash;
+        extra = '';
+      } else {
+        extra += moveHistory.value[i];
+      }
+    }
+    return {hash: h, extra};
   });
 
-  const boardArr = computed(() => constructBoardArr(repstr.value, firstPlayer.value));
+  const hash = computed(() => hashState.value.hash);
+  const extraMoves = computed(() => hashState.value.extra);
+
+  const boardArr = computed(() => constructBoardArr(repstr.value));
 
   const winLine = computed(() => checkForWin(boardArr.value));
 
   const turnLength = computed(() => repstr.value.length);
 
-  const currentPlayer = computed(() => playerAtTurn(turnLength.value, firstPlayer.value));
+  /** Internal player number whose turn it is: 1 = first mover, 2 = second mover */
+  const internalCurrentPlayer = computed(() => (turnLength.value % 2 === 0 ? 1 : 2));
 
-  const isUserTurn = computed(() => currentPlayer.value === userColor.value);
+  const isUserTurn = computed(() => (internalCurrentPlayer.value === 1) === userIsFirst.value);
+
+  /** Display label for whose turn it is */
+  const currentPlayerLabel = computed(() => (isUserTurn.value ? 'You' : 'Opponent'));
 
   const inSteadyState = computed(() => {
     const node = nodes.value[hash.value];
     return extraMoves.value !== '' || (node && !node.neighbors);
+  });
+
+  /** Detect if the first mover deviated from solution at any point up to cursor */
+  const ssBroken = computed(() => {
+    const n = nodes.value;
+    let h = rootNodeHash;
+    let extra = '';
+    let enteredSS = false;
+    for (let i = 0; i < viewCursor.value; i++) {
+      const isP1Turn = i % 2 === 0;
+      const node = n[h];
+      enteredSS = enteredSS || extra !== '' || (node && !node.neighbors);
+
+      // Only check first-mover turns in steady state
+      if (isP1Turn && enteredSS && node?.data?.ss) {
+        const board = constructBoardArr(moveHistory.value.slice(0, i).join(''));
+        const expected = querySteadyState(board, node.data.ss);
+        if (expected.col > 0 && expected.col !== moveHistory.value[i]) {
+          return true;
+        }
+      }
+
+      // Advance hash state
+      const moveStr = moveHistory.value.slice(0, i + 1).join('');
+      const board = constructBoardArr(moveStr);
+      const newHash = hashABoard(board, n);
+      if (newHash !== -1) {
+        h = newHash;
+        extra = '';
+      } else {
+        extra += moveHistory.value[i];
+      }
+    }
+    return false;
+  });
+
+  /** Detect if the first mover (opponent when user is 2nd) deviated */
+  const opponentDeviated = computed(() => {
+    if (userIsFirst.value) return false; // only relevant when user is 2nd player
+    const n = nodes.value;
+    let h = rootNodeHash;
+    let extra = '';
+    for (let i = 0; i < viewCursor.value; i++) {
+      const isP1Turn = i % 2 === 0;
+      const node = n[h];
+      const inSS = extra !== '' || (node && !node.neighbors);
+
+      if (isP1Turn) {
+        // Check opening tree
+        if (!inSS && node?.neighbors) {
+          // Find expected move
+          for (const nbHash of node.neighbors) {
+            const nb = n[nbHash];
+            if (nb && nb.rep.length > node.rep.length) {
+              const oldBoard = constructBoardArr(node.rep);
+              const newBoard = constructBoardArr(nb.rep);
+              for (let c = 0; c < COLS; c++) {
+                for (let r = 0; r < ROWS; r++) {
+                  if (oldBoard[r][c] !== newBoard[r][c]) {
+                    if (moveHistory.value[i] !== c + 1) return i + 1; // move number where deviation happened
+                  }
+                }
+              }
+            }
+          }
+        }
+        // Check steady state
+        if (inSS && node?.data?.ss) {
+          const board = constructBoardArr(moveHistory.value.slice(0, i).join(''));
+          const expected = querySteadyState(board, node.data.ss);
+          if (expected.col > 0 && expected.col !== moveHistory.value[i]) return i + 1;
+        }
+      }
+
+      // Advance hash state
+      const moveStr = moveHistory.value.slice(0, i + 1).join('');
+      const board = constructBoardArr(moveStr);
+      const newHash = hashABoard(board, n);
+      if (newHash !== -1) {
+        h = newHash;
+        extra = '';
+      } else {
+        extra += moveHistory.value[i];
+      }
+    }
+    return false;
   });
 
   const openingName = computed(() => {
@@ -360,15 +509,20 @@ export const useGameStore = defineStore('game', () => {
 
   const suggestion = computed(() => {
     if (winLine.value) return null;
+    if (turnLength.value % 2 !== 0) return null; // solution data is only for the first mover
+    if (ssBroken.value && inSteadyState.value) return null; // SS invalid after deviation
     const node = nodes.value[hash.value];
+
+    // Only show when viewing the latest move (not reviewing history)
+    if (viewCursor.value < moveHistory.value.length) return null;
 
     // 1. Opening tree suggestion
     if (!inSteadyState.value && node?.neighbors) {
       for (const nbHash of node.neighbors) {
         const nb = nodes.value[nbHash];
         if (nb && nb.rep.length > node.rep.length) {
-          const oldBoard = constructBoardArr(node.rep, firstPlayer.value);
-          const newBoard = constructBoardArr(nb.rep, firstPlayer.value);
+          const oldBoard = constructBoardArr(node.rep);
+          const newBoard = constructBoardArr(nb.rep);
           for (let c = 0; c < COLS; c++) {
             for (let r = 0; r < ROWS; r++) {
               if (oldBoard[r][c] !== newBoard[r][c]) {
@@ -382,41 +536,107 @@ export const useGameStore = defineStore('game', () => {
 
     // 2. Steady-state fallback
     if (node?.data?.ss) {
-      const result = querySteadyState(boardArr.value, node.data.ss, currentPlayer.value);
+      const result = querySteadyState(boardArr.value, node.data.ss);
       if (result.col !== -4) return result;
     }
 
     return null;
   });
 
+  /* ── Solver API watcher ─────────────────────────────── */
+
+  const bestSuggestion = computed(() => {
+    if (suggestion.value?.col > 0) {
+      return {...suggestion.value, source: 'weak'};
+    }
+    if (apiSuggestion.value?.col > 0) {
+      return apiSuggestion.value;
+    }
+    return null;
+  });
+
+  watch(
+    [repstr, suggestion, viewCursor, moveHistory, winLine, loading],
+    async ([pos, weakSug, cursor, history, win, isLoading]) => {
+      apiSuggestion.value = null;
+      apiScores.value = null;
+      apiError.value = null;
+      apiLoading.value = false;
+
+      if (isLoading || win || cursor < history.length) return;
+      if (weakSug?.col > 0) return;
+      if (pos === '' && turnLength.value === 0) return; // nothing to query at start
+
+      apiLoading.value = true;
+      const queryPos = pos;
+      try {
+        const scores = await queryStrongSolver(queryPos);
+        if (repstr.value !== queryPos) return; // stale
+        apiScores.value = scores;
+        apiSuggestion.value = interpretScores(scores);
+      } catch (e) {
+        if (repstr.value === queryPos) apiError.value = e.message;
+      } finally {
+        if (repstr.value === queryPos) apiLoading.value = false;
+      }
+    },
+    {immediate: true},
+  );
+
   const suggestionLabel = computed(() => {
-    if (!suggestion.value || suggestion.value.col <= 0) return '';
-    return PRIORITY_LABELS[suggestion.value.reason] || suggestion.value.reason;
+    const sug = bestSuggestion.value;
+    if (!sug || sug.col <= 0) return '';
+    return PRIORITY_LABELS[sug.reason] || sug.reason;
   });
 
   const statusTitle = computed(() => {
     if (winLine.value) {
-      const winner = boardArr.value[winLine.value[0][0]][winLine.value[0][1]];
-      return winner === 1 ? 'Red wins!' : 'Yellow wins!';
+      const winnerInternal = boardArr.value[winLine.value[0][0]][winLine.value[0][1]];
+      const isFirstMoverWin = winnerInternal === 1;
+      if (isFirstMoverWin === userIsFirst.value) return 'You win!';
+      return 'Opponent wins!';
     }
-    return `${currentPlayer.value === 1 ? 'Red' : 'Yellow'} to move`;
+    return isUserTurn.value ? 'Your turn' : "Opponent's turn";
   });
 
   const statusText = computed(() => {
-    if (winLine.value) return 'Press Reset or R to start over.';
-    if (isUserTurn.value) {
-      return inSteadyState.value
-        ? 'Your turn — check the suggested move.'
-        : 'Your turn — follow the opening or play freely.';
+    if (winLine.value) return 'Press Reset to start over.';
+    if (viewCursor.value < moveHistory.value.length)
+      return 'Reviewing history — use ▶ to step forward.';
+    if (ssBroken.value && inSteadyState.value && isUserTurn.value && !apiSuggestion.value) {
+      return 'You deviated from the solution — querying solver…';
     }
-    return "Opponent's turn — place their move.";
+    if (opponentDeviated.value) {
+      return `Opponent deviated at move ${opponentDeviated.value} — they left optimal play!`;
+    }
+    if (isUserTurn.value) {
+      if (apiLoading.value) return 'Querying solver…';
+      if (bestSuggestion.value?.col > 0) {
+        if (bestSuggestion.value.source === 'solver') {
+          return 'Solver suggests a move.';
+        }
+        return inSteadyState.value
+          ? 'Check the suggested move.'
+          : 'Follow the opening or play freely.';
+      }
+      if (apiError.value) return 'Solver unavailable — play freely.';
+      return 'Play freely.';
+    }
+    return 'Place their move.';
   });
 
-  const boardFooterText = computed(() => {
-    return inSteadyState.value && !winLine.value
-      ? 'Steady-state active — markers on the board show priorities.'
-      : 'Steady-state inactive — follow the opening tree or play freely.';
-  });
+  const isReviewingHistory = computed(() => viewCursor.value < moveHistory.value.length);
+  const canStepBack = computed(() => viewCursor.value > 0);
+  const canStepForward = computed(() => viewCursor.value < moveHistory.value.length);
+  const totalMoves = computed(() => moveHistory.value.length);
+
+  /* ── Display color mapping ──────────────────────────── */
+
+  /** Map internal player (1=first mover, 2=second) to a display color hex string */
+  function displayColorOf(internalPlayer) {
+    if (internalPlayer === 0) return 'transparent';
+    return internalPlayer === 1 ? color1.value : color2.value;
+  }
 
   /* ── Actions ────────────────────────────────────────── */
 
@@ -426,88 +646,117 @@ export const useGameStore = defineStore('game', () => {
     if (x < 0 || x >= COLS) return;
     if (boardArr.value[ROWS - 1][x] !== 0) return;
 
-    hashStack.value.push({hash: hash.value, extra: extraMoves.value});
-
-    const moveStr = repstr.value + column;
-    const newBoard = constructBoardArr(moveStr, firstPlayer.value);
-    const newHash = hashABoard(newBoard, nodes.value);
-
-    if (newHash !== -1) {
-      hash.value = newHash;
-      extraMoves.value = '';
-    } else {
-      extraMoves.value += column;
+    // If reviewing history, truncate future moves
+    if (viewCursor.value < moveHistory.value.length) {
+      moveHistory.value = moveHistory.value.slice(0, viewCursor.value);
     }
+
+    moveHistory.value.push(column);
+    viewCursor.value = moveHistory.value.length;
+    resetPending.value = false;
 
     saveState();
     syncUrl();
   }
 
   function makeAutoMove() {
-    if (currentPlayer.value === userColor.value) return;
+    if (isUserTurn.value) return;
     if (winLine.value) return;
 
-    const thisHash = hashABoard(boardArr.value, nodes.value);
-    if (nodes.value[thisHash]?.neighbors) {
-      for (const nbHash of nodes.value[thisHash].neighbors) {
-        const nb = nodes.value[nbHash];
-        if (nb && nb.rep.length > nodes.value[thisHash].rep.length) {
-          const oldBoard = constructBoardArr(nodes.value[thisHash].rep, firstPlayer.value);
-          const newBoard = constructBoardArr(nb.rep, firstPlayer.value);
-          for (let c = 0; c < COLS; c++) {
-            for (let r = 0; r < ROWS; r++) {
-              if (oldBoard[r][c] !== newBoard[r][c]) {
-                makeMove(c + 1);
-                return;
+    const isFirstMoverTurn = turnLength.value % 2 === 0;
+
+    // First mover follows the solution (opening tree + steady state)
+    if (isFirstMoverTurn) {
+      const thisHash = hashABoard(boardArr.value, nodes.value);
+      if (nodes.value[thisHash]?.neighbors) {
+        for (const nbHash of nodes.value[thisHash].neighbors) {
+          const nb = nodes.value[nbHash];
+          if (nb && nb.rep.length > nodes.value[thisHash].rep.length) {
+            const oldBoard = constructBoardArr(nodes.value[thisHash].rep);
+            const newBoard = constructBoardArr(nb.rep);
+            for (let c = 0; c < COLS; c++) {
+              for (let r = 0; r < ROWS; r++) {
+                if (oldBoard[r][c] !== newBoard[r][c]) {
+                  makeMove(c + 1);
+                  return;
+                }
               }
             }
           }
         }
       }
-    }
 
-    const node = nodes.value[hash.value];
-    if (node?.data?.ss) {
-      const result = querySteadyState(boardArr.value, node.data.ss, currentPlayer.value);
-      if (result.col > 0) {
-        makeMove(result.col);
-        return;
+      const node = nodes.value[hash.value];
+      if (node?.data?.ss) {
+        const result = querySteadyState(boardArr.value, node.data.ss);
+        if (result.col > 0) {
+          makeMove(result.col);
+          return;
+        }
       }
     }
 
-    // Fallback: heuristic move (win > block > extend own lines > center)
-    const col = heuristicFallback(boardArr.value, currentPlayer.value);
+    // Solver API fallback
+    if (apiSuggestion.value?.col > 0) {
+      makeMove(apiSuggestion.value.col);
+      return;
+    }
+
+    // Heuristic fallback for second mover or when solution has no move
+    const internalPlayer = isFirstMoverTurn ? 1 : 2;
+    const col = heuristicFallback(boardArr.value, internalPlayer);
     if (col > 0) makeMove(col);
   }
 
-  function undo() {
-    if (hashStack.value.length === 0) return;
-    const steps = autoEnabled.value ? 2 : 1;
-    for (let i = 0; i < steps; i++) {
-      if (hashStack.value.length === 0) break;
-      const prev = hashStack.value.pop();
-      hash.value = prev.hash;
-      extraMoves.value = prev.extra;
+  function stepBack() {
+    if (viewCursor.value > 0) {
+      const steps = autoEnabled.value ? 2 : 1;
+      viewCursor.value = Math.max(0, viewCursor.value - steps);
+      syncUrl();
     }
-    saveState();
+  }
+
+  function stepForward() {
+    if (viewCursor.value < moveHistory.value.length) {
+      const steps = autoEnabled.value ? 2 : 1;
+      viewCursor.value = Math.min(moveHistory.value.length, viewCursor.value + steps);
+      syncUrl();
+    }
+  }
+
+  function goToLatest() {
+    viewCursor.value = moveHistory.value.length;
     syncUrl();
   }
 
   function resetBoard() {
-    hash.value = rootNodeHash;
-    hashStack.value = [];
-    extraMoves.value = '';
+    if (!resetPending.value) {
+      resetPending.value = true;
+      return;
+    }
+    moveHistory.value = [];
+    viewCursor.value = 0;
+    resetPending.value = false;
     saveState();
     syncUrl();
   }
 
-  function setUserColor(color) {
-    userColor.value = color;
+  function cancelReset() {
+    resetPending.value = false;
+  }
+
+  function setUserIsFirst(val) {
+    userIsFirst.value = val;
     saveState();
   }
 
-  function setFirstPlayer(fp) {
-    firstPlayer.value = fp;
+  function setColor1(hex) {
+    color1.value = hex;
+    saveState();
+  }
+
+  function setColor2(hex) {
+    color2.value = hex;
     saveState();
   }
 
@@ -515,7 +764,7 @@ export const useGameStore = defineStore('game', () => {
     autoEnabled.value = !autoEnabled.value;
     if (autoEnabled.value) {
       autoInterval = setInterval(() => {
-        if (currentPlayer.value !== userColor.value && !winLine.value) {
+        if (!isUserTurn.value && !winLine.value) {
           makeAutoMove();
         }
       }, 400);
@@ -532,9 +781,10 @@ export const useGameStore = defineStore('game', () => {
       localStorage.setItem(
         'c4_state',
         JSON.stringify({
-          moves: repstr.value,
-          userColor: userColor.value,
-          firstPlayer: firstPlayer.value,
+          moves: moveHistory.value.join(''),
+          userIsFirst: userIsFirst.value,
+          color1: color1.value,
+          color2: color2.value,
         }),
       );
     } catch {
@@ -570,7 +820,7 @@ export const useGameStore = defineStore('game', () => {
       const seqList = dict[pref];
       for (const half of seqList) {
         for (const prefix of [half, invertAround4(half)]) {
-          const h = hashABoard(constructBoardArr(prefix, firstPlayer.value), nodesObj);
+          const h = hashABoard(constructBoardArr(prefix), nodesObj);
           if (h === -1) continue;
           const stack = [h];
           while (stack.length > 0) {
@@ -616,9 +866,8 @@ export const useGameStore = defineStore('game', () => {
     // Assign to reactive state once, all at once
     nodes.value = built;
     rootNodeHash = dataset.root_node_hash;
-    hash.value = rootNodeHash;
-    hashStack.value = [];
-    extraMoves.value = '';
+    moveHistory.value = [];
+    viewCursor.value = 0;
 
     // Check URL for position, then fall back to saved state
     const urlParams = new URLSearchParams(window.location.search);
@@ -628,8 +877,9 @@ export const useGameStore = defineStore('game', () => {
     const restoreMoves = urlPos || saved?.moves || '';
 
     if (saved) {
-      if (saved.firstPlayer === 1 || saved.firstPlayer === 2) firstPlayer.value = saved.firstPlayer;
-      if (saved.userColor === 1 || saved.userColor === 2) userColor.value = saved.userColor;
+      if (typeof saved.userIsFirst === 'boolean') userIsFirst.value = saved.userIsFirst;
+      if (saved.color1) color1.value = saved.color1;
+      if (saved.color2) color2.value = saved.color2;
     }
 
     // Replay moves
@@ -637,22 +887,14 @@ export const useGameStore = defineStore('game', () => {
       for (let i = 0; i < restoreMoves.length; i++) {
         const col = parseInt(restoreMoves[i]);
         if (col >= 1 && col <= 7) {
-          const currentBoard = constructBoardArr(repstr.value, firstPlayer.value);
+          const currentBoard = constructBoardArr(moveHistory.value.join(''));
           const x = col - 1;
           if (currentBoard[ROWS - 1][x] === 0 && !checkForWin(currentBoard)) {
-            hashStack.value.push({hash: hash.value, extra: extraMoves.value});
-            const moveStr = repstr.value + col;
-            const newBoard = constructBoardArr(moveStr, firstPlayer.value);
-            const newHash = hashABoard(newBoard, nodes.value);
-            if (newHash !== -1) {
-              hash.value = newHash;
-              extraMoves.value = '';
-            } else {
-              extraMoves.value += col;
-            }
+            moveHistory.value.push(col);
           }
         }
       }
+      viewCursor.value = moveHistory.value.length;
     }
 
     syncUrl();
@@ -666,31 +908,53 @@ export const useGameStore = defineStore('game', () => {
     // State
     nodes,
     hash,
-    userColor,
-    firstPlayer,
+    userIsFirst,
+    color1,
+    color2,
     autoEnabled,
     loading,
+    ssBroken,
+    moveHistory,
+    viewCursor,
+    resetPending,
+    // Solver API
+    apiSuggestion,
+    apiScores,
+    apiLoading,
+    apiError,
     // Computed
     repstr,
     boardArr,
     winLine,
-    currentPlayer,
+    internalCurrentPlayer,
+    currentPlayerLabel,
     isUserTurn,
     inSteadyState,
     openingName,
     ssData,
     suggestion,
+    bestSuggestion,
     suggestionLabel,
     statusTitle,
     statusText,
-    boardFooterText,
+    isReviewingHistory,
+    canStepBack,
+    canStepForward,
+    totalMoves,
+    opponentDeviated,
+    // Helpers
+    displayColorOf,
     // Actions
     init,
     makeMove,
-    undo,
+    stepBack,
+    stepForward,
+    goToLatest,
     resetBoard,
-    setUserColor,
-    setFirstPlayer,
+    cancelReset,
+    setUserIsFirst,
+    setColor1,
+    setColor2,
     toggleAuto,
   };
 });
