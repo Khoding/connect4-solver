@@ -2,25 +2,7 @@
   <div class="rules-container">
     <div class="info-card rules" open>
       <h3>How to read the steady-state</h3>
-      <ol>
-        <li><strong>Win</strong> — Make a winning move, if available.</li>
-        <li><strong>Block</strong> — Block an opponent winning move, if available.</li>
-        <li><strong class="symbol">!</strong> <em>(urgent)</em> — Play on it, if available.</li>
-        <li>
-          <strong class="symbol">@</strong> <em>(miai)</em> — Play on it, only if exactly one is
-          available.
-        </li>
-        <li>
-          <strong class="symbol">|</strong> <em>(claimodd)</em> — Play on it only if on an
-          <strong>odd row</strong> (1, 3, 5 from bottom).<br />
-          <strong class="symbol">·</strong> <em>(claimeven)</em> — Play on it only if on an
-          <strong>even row</strong> (2, 4, 6 from bottom). Shown as <code>·</code> (dot) in the
-          diagram.
-        </li>
-        <li><strong class="symbol">+</strong> — Play on it, if available.</li>
-        <li><strong class="symbol">=</strong> — Play on it, if available.</li>
-        <li><strong class="symbol">-</strong> — Play on it, if available.</li>
-      </ol>
+      <SteadyStateRules :show-link="false" />
     </div>
 
     <div id="openings" class="info-card openings">
@@ -49,6 +31,7 @@
 
 <script setup>
 import {prefixList} from '@/stores/game.js';
+import SteadyStateRules from '@/components/SteadyStateRules.vue';
 
 const openings = prefixList.map(entry => {
   const [name, sequences] = Object.entries(entry)[0];
@@ -61,25 +44,6 @@ const openings = prefixList.map(entry => {
   max-width: 600px;
   margin: 0 auto;
   padding: 2rem;
-}
-
-.rules {
-  & ol {
-    margin-block-start: 0.5rem;
-    padding-inline-start: 1.2rem;
-    color: var(--color-text-dim);
-    font-size: 0.85rem;
-    line-height: 1.6;
-  }
-
-  & ol li {
-    margin-block-end: 0.35rem;
-  }
-
-  & .symbol {
-    color: var(--color-win);
-    font-family: var(--font-mono);
-  }
 }
 
 .openings {

@@ -5,26 +5,7 @@
       <h2>How to read the steady-state</h2>
       <button class="close-btn" @click="emit('close')">&times;</button>
     </div>
-    <ol class="rules-list">
-      <li><strong>Win</strong> — Make a winning move, if available.</li>
-      <li><strong>Block</strong> — Block an opponent winning move, if available.</li>
-      <li><strong class="symbol">!</strong> <em>(urgent)</em> — Play on it, if available.</li>
-      <li>
-        <strong class="symbol">@</strong> <em>(miai)</em> — Play on it, only if exactly one is
-        available.
-      </li>
-      <li>
-        <strong class="symbol">|</strong> <em>(claimodd)</em> — Play on it only if on an
-        <strong>odd row</strong> (1, 3, 5 from bottom).<br />
-        <strong class="symbol">·</strong> <em>(claimeven)</em> — Play on it only if on an
-        <strong>even row</strong> (2, 4, 6 from bottom). Shown as <code>·</code> (dot) in the
-        diagram.
-      </li>
-      <li><strong class="symbol">+</strong> — Play on it, if available.</li>
-      <li><strong class="symbol">=</strong> — Play on it, if available.</li>
-      <li><strong class="symbol">-</strong> — Play on it, if available.</li>
-    </ol>
-    <RouterLink to="/rules">Rules page</RouterLink>
+    <SteadyStateRules />
   </div>
 </template>
 
@@ -34,6 +15,7 @@ defineProps({
 });
 
 const emit = defineEmits(['close']);
+import SteadyStateRules from '@/components/SteadyStateRules.vue';
 </script>
 
 <style scoped>
@@ -93,21 +75,5 @@ const emit = defineEmits(['close']);
   font-size: 2rem;
   line-height: 1;
   cursor: pointer;
-}
-
-.rules-list {
-  padding-left: 1.2rem;
-  color: var(--color-text-dim);
-  font-size: 0.9rem;
-  line-height: 1.6;
-
-  & li {
-    margin-bottom: 0.8rem;
-  }
-
-  & .symbol {
-    color: var(--color-win);
-    font-family: var(--font-mono);
-  }
 }
 </style>
