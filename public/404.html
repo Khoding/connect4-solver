@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting...</title>
+</head>
+
+<body>
+  <script>
+    let baseUrl = '/';
+    // Store the current URL in localStorage
+    localStorage.setItem('redirectUrl', window.location.pathname.replace(baseUrl, ''));
+
+    // Redirect to the base URL
+    window.location.href = baseUrl;
+  </script>
+</body>
+
+</html>
