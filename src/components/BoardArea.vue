@@ -44,6 +44,10 @@
         </template>
       </div>
     </div>
+    <div class="player-indicators">
+      <span :style="{color: game.color1}">P1</span>
+      <span :style="{color: game.color2}">P2</span>
+    </div>
   </div>
 </template>
 
@@ -119,6 +123,14 @@ function isWinningCell(row, col) {
   gap: var(--board-gap);
   border-radius: var(--radius-lg);
   background-color: oklch(0.3 0.1 250);
+}
+
+.player-indicators {
+  display: flex;
+  justify-content: center;
+  margin-block-start: 0.5rem;
+  gap: 1rem;
+  font-size: small;
 }
 
 .col-btn {

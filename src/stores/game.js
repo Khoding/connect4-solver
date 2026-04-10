@@ -110,7 +110,7 @@ export const useGameStore = defineStore('game', () => {
   const isUserTurn = computed(() => (internalCurrentPlayer.value === 1) === userIsFirst.value);
 
   /** Display label for whose turn it is */
-  const currentPlayerLabel = computed(() => (isUserTurn.value ? 'You' : 'Opponent'));
+  const currentPlayerLabel = computed(() => (isUserTurn.value ? '1st player' : '2nd player'));
 
   /* ── WASM solver watcher ─────────────────────────────── */
 
@@ -151,11 +151,9 @@ export const useGameStore = defineStore('game', () => {
   const statusTitle = computed(() => {
     if (winLine.value) {
       const winnerInternal = boardArr.value[winLine.value[0][0]][winLine.value[0][1]];
-      const isFirstMoverWin = winnerInternal === 1;
-      if (isFirstMoverWin === userIsFirst.value) return 'You win!';
-      return 'Opponent wins!';
+      return winnerInternal === 1 ? '1st player wins!' : '2nd player wins!';
     }
-    return isUserTurn.value ? 'Your turn' : "Opponent's turn";
+    return isUserTurn.value ? "1st player's turn" : "2nd player's turn";
   });
 
   const statusText = computed(() => {
@@ -298,6 +296,13 @@ export const useGameStore = defineStore('game', () => {
 
   function setColor2(hex) {
     color2.value = hex;
+    saveState();
+  }
+
+  function swapColors() {
+    const tmp = color1.value;
+    color1.value = color2.value;
+    color2.value = tmp;
     saveState();
   }
 
@@ -448,6 +453,7 @@ export const useGameStore = defineStore('game', () => {
     setUserIsFirst,
     setColor1,
     setColor2,
+    swapColors,
     toggleAuto,
   };
 });
