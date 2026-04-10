@@ -121,7 +121,7 @@ function isWinningCell(row, col) {
   grid-column: 2;
   padding: var(--board-gap);
   gap: var(--board-gap);
-  border-radius: var(--radius-lg);
+  border-radius: calc(var(--board-gap) + var(--cell-size) / 2);
   background-color: oklch(0.3 0.1 250);
 }
 
