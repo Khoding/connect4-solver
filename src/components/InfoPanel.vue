@@ -16,7 +16,7 @@
       </button>
     </div>
 
-    <div v-if="game.solverScores" class="info-card">
+    <div class="info-card" :style="!game.solverScores && {opacity: 0.35, pointerEvents: 'none'}">
       <h3>Column scores</h3>
       <div class="score-row">
         <div v-for="(s, i) in game.solverScores" :key="i" class="score-cell" :class="scoreClass(s)">
@@ -43,24 +43,27 @@
       <p>{{ game.statusText }}</p>
     </div>
 
-    <div v-if="game.positionEval" class="info-card eval-card">
+    <div
+      class="info-card eval-card"
+      :style="!game.positionEval && {opacity: 0.35, pointerEvents: 'none'}"
+    >
       <h3>Position evaluation</h3>
       <div class="eval-row">
         <span class="eval-label" :style="{color: game.color1}">1st player</span>
-        <span class="eval-score" :class="evalClass(game.positionEval.first)">
-          {{ formatEval(game.positionEval.first) }}
+        <span class="eval-score" :class="evalClass(game.positionEval?.first)">
+          {{ formatEval(game.positionEval?.first) }}
         </span>
-        <span class="eval-score" :class="evalClass(game.runningTotals.first)">
-          {{ formatTotal(game.runningTotals.first) }}
+        <span class="eval-score" :class="evalClass(game.runningTotals?.first)">
+          {{ formatTotal(game.runningTotals?.first) }}
         </span>
       </div>
       <div class="eval-row">
         <span class="eval-label" :style="{color: game.color2}">2nd player</span>
-        <span class="eval-score" :class="evalClass(game.positionEval.second)">
-          {{ formatEval(game.positionEval.second) }}
+        <span class="eval-score" :class="evalClass(game.positionEval?.second)">
+          {{ formatEval(game.positionEval?.second) }}
         </span>
-        <span class="eval-score" :class="evalClass(game.runningTotals.second)">
-          {{ formatTotal(game.runningTotals.second) }}
+        <span class="eval-score" :class="evalClass(game.runningTotals?.second)">
+          {{ formatTotal(game.runningTotals?.second) }}
         </span>
       </div>
     </div>
@@ -201,18 +204,21 @@ function scoreClass(score) {
 }
 
 function evalClass(score) {
+  score = score ?? 0;
   if (score > 0) return 'eval-win';
   if (score === 0) return 'eval-draw';
   return 'eval-loss';
 }
 
 function formatEval(score) {
+  score = score ?? 0;
   if (score > 0) return `+${score} (wins)`;
   if (score === 0) return '0 (draw)';
   return `${score} (loses)`;
 }
 
 function formatTotal(score) {
+  score = score ?? 0;
   if (score > 0) return `+${score}`;
   return `${score}`;
 }
