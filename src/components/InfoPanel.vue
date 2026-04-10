@@ -123,12 +123,24 @@
       <div class="color-inputs">
         <label class="color-label">
           <input type="color" :value="game.color1" @input="game.setColor1($event.target.value)" />
-          1st player
+          <input
+            type="text"
+            class="color-hex"
+            :value="game.color1"
+            maxlength="7"
+            @change="updateColor1($event.target.value)"
+          />
         </label>
         <button class="swap-btn" title="Swap colors" @click="game.swapColors()">⇄</button>
         <label class="color-label">
           <input type="color" :value="game.color2" @input="game.setColor2($event.target.value)" />
-          2nd player
+          <input
+            type="text"
+            class="color-hex"
+            :value="game.color2"
+            maxlength="7"
+            @change="updateColor2($event.target.value)"
+          />
         </label>
       </div>
       <div v-if="presets.length" class="presets">
@@ -201,6 +213,25 @@ function applyPreset(preset) {
 function removePreset(index) {
   presets.value.splice(index, 1);
   persistPresets();
+}
+
+/* ── Color hex input helpers ───────────────────────────── */
+
+const HEX_RE = /^#?([0-9a-f]{6})$/i;
+
+function normalizeHex(value) {
+  const match = value.trim().match(HEX_RE);
+  return match ? `#${match[1]}` : null;
+}
+
+function updateColor1(value) {
+  const hex = normalizeHex(value);
+  if (hex) game.setColor1(hex);
+}
+
+function updateColor2(value) {
+  const hex = normalizeHex(value);
+  if (hex) game.setColor2(hex);
 }
 
 /* ── Score helpers ─────────────────────────────────────── */
@@ -286,6 +317,18 @@ function formatTotal(score) {
     background-color: transparent;
     cursor: pointer;
   }
+}
+
+.color-hex {
+  inline-size: 5.5em;
+  padding: 4px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
 }
 
 .score-row {
