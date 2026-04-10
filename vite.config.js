@@ -19,6 +19,22 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
+        runtimeCaching: [
+          {
+            urlPattern: /\/wasm\/7x6\.book$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'opening-book',
+              expiration: {
+                maxEntries: 1,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
       },
       manifest: {
         name: 'Connect 4 Solver',

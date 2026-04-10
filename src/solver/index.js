@@ -14,6 +14,7 @@ let wasmModule = null;
 let bookLoaded = false;
 let bookLoading = false;
 let bookError = null;
+let bookLoadPromise = null;
 
 /**
  * Initialize the WASM module. Called once, cached thereafter.
@@ -45,41 +46,49 @@ async function initModule() {
 /**
  * Fetch the opening book and mount it in the WASM virtual filesystem.
  * The book is cached in IndexedDB so it's only downloaded once.
+ * Multiple concurrent callers share the same loading promise.
  */
 async function loadOpeningBook() {
-  if (bookLoaded || bookLoading) return;
-  bookLoading = true;
-  bookError = null;
+  if (bookLoaded) return;
+  if (bookLoadPromise) return bookLoadPromise;
 
-  try {
-    const mod = await initModule();
+  bookLoadPromise = (async () => {
+    bookLoading = true;
+    bookError = null;
 
-    // Try loading from IndexedDB cache first
-    let bookData = await getCachedBook();
+    try {
+      const mod = await initModule();
 
-    if (!bookData) {
-      // Fetch from server
-      const response = await fetch('/wasm/7x6.book');
-      if (!response.ok) throw new Error(`Failed to fetch opening book: ${response.status}`);
-      bookData = new Uint8Array(await response.arrayBuffer());
+      // Try loading from IndexedDB cache first
+      let bookData = await getCachedBook();
 
-      // Cache in IndexedDB for future loads
-      await cacheBook(bookData);
+      if (!bookData) {
+        // Fetch from server (service worker will cache via CacheFirst)
+        const response = await fetch('/wasm/7x6.book');
+        if (!response.ok) throw new Error(`Failed to fetch opening book: ${response.status}`);
+        bookData = new Uint8Array(await response.arrayBuffer());
+
+        // Cache in IndexedDB as fallback for non-SW environments
+        await cacheBook(bookData);
+      }
+
+      // Write to Emscripten virtual filesystem
+      mod.FS.writeFile('/7x6.book', bookData);
+
+      // Tell the solver to load it
+      mod.ccall('load_book', 'number', ['string'], ['/7x6.book']);
+
+      bookLoaded = true;
+    } catch (e) {
+      bookError = e.message;
+      bookLoadPromise = null; // allow retry on failure
+      console.error('Failed to load opening book:', e);
+    } finally {
+      bookLoading = false;
     }
+  })();
 
-    // Write to Emscripten virtual filesystem
-    mod.FS.writeFile('/7x6.book', bookData);
-
-    // Tell the solver to load it
-    mod.ccall('load_book', 'number', ['string'], ['/7x6.book']);
-
-    bookLoaded = true;
-  } catch (e) {
-    bookError = e.message;
-    console.error('Failed to load opening book:', e);
-  } finally {
-    bookLoading = false;
-  }
+  return bookLoadPromise;
 }
 
 // IndexedDB helpers for caching the opening book

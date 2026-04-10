@@ -70,10 +70,7 @@
 
     <div class="info-card">
       <h3>Suggested move</h3>
-      <p v-if="game.solverLoading">Querying solver…</p>
-      <p v-else-if="game.suggestion && game.suggestion.col > 0">Column {{ game.suggestion.col }}</p>
-      <p v-else-if="game.winLine">Game over</p>
-      <p v-else>—</p>
+      <p>{{ game.suggestionText }}</p>
       <p v-if="game.suggestionLabel" class="dim">{{ game.suggestionLabel }}</p>
       <p v-if="game.solverError" class="dim" style="color: oklch(0.7 0.18 25)">
         Solver error: {{ game.solverError }}
@@ -93,12 +90,31 @@
         <button class="confirm-btn" @click="game.resetBoard()">Confirm reset</button>
         <button @click="game.cancelReset()">Cancel</button>
       </template>
+    </div>
+
+    <div class="controls">
       <button
         title="Auto-play player 2's moves"
         :class="{active: game.autoEnabled}"
         @click="game.toggleAuto()"
       >
         {{ game.autoEnabled ? '⏸ Auto P2' : '▶ Auto P2' }}
+      </button>
+      <button
+        title="Replay the game from the start"
+        :disabled="!game.gameHasWin && !game.replayActive"
+        :class="{active: game.replayActive}"
+        @click="game.replayActive ? game.stopReplay() : game.startReplay()"
+      >
+        {{ game.replayActive ? '⏹ Stop' : '⟳ Replay' }}
+      </button>
+      <button
+        v-if="!game.replayActive"
+        title="Continue replay from current position"
+        :disabled="!game.isReviewingHistory || !game.gameHasWin"
+        @click="game.continueReplay()"
+      >
+        ▶ Continue
       </button>
     </div>
 
@@ -129,15 +145,7 @@
 
     <div class="info-card">
       <h3>Solver</h3>
-      <p class="dim">
-        <template v-if="!game.solverStatus.moduleReady">Loading WASM module…</template>
-        <template v-else-if="game.solverStatus.bookLoading">Loading opening book…</template>
-        <template v-else-if="game.solverStatus.bookError">
-          Book error: {{ game.solverStatus.bookError }}
-        </template>
-        <template v-else-if="game.solverStatus.bookLoaded">Ready (with opening book)</template>
-        <template v-else>Ready (no opening book)</template>
-      </p>
+      <p class="dim">{{ game.solverStatusText }}</p>
     </div>
 
     <p class="credit">
@@ -419,6 +427,10 @@ function formatTotal(score) {
       border-color: var(--color-accent);
       background-color: var(--color-accent);
       color: var(--color-bg);
+
+      &:hover {
+        background-color: color-mix(in oklch, var(--color-accent), black 15%);
+      }
     }
 
     &.confirm-btn {

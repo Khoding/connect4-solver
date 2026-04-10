@@ -77,6 +77,7 @@ export const useGameStore = defineStore('game', () => {
   const color1 = ref('#e03030'); // display color for the first player
   const color2 = ref('#e8d020'); // display color for the second player
   const autoEnabled = ref(false);
+  const replayActive = ref(false);
   const loading = ref(true);
   const moveHistory = ref([]); // array of column numbers (1-7)
   const moveScores = ref([]); // solver score for each move at the time it was played (parallel to moveHistory)
@@ -91,6 +92,7 @@ export const useGameStore = defineStore('game', () => {
   const solverStatus = ref(wasmSolver.getStatus());
 
   let autoInterval = null;
+  let replayInterval = null;
   let initialized = false;
 
   /* ── Derived ────────────────────────────────────────── */
@@ -126,6 +128,7 @@ export const useGameStore = defineStore('game', () => {
       if (pos.length === 0) return; // no need to solve the empty board
 
       solverLoading.value = true;
+      solverStatus.value = wasmSolver.getStatus();
       const queryPos = pos;
       try {
         const scores = await wasmSolver.analyze(queryPos);
@@ -142,10 +145,29 @@ export const useGameStore = defineStore('game', () => {
     {immediate: true},
   );
 
+  const suggestionText = computed(() => {
+    if (solverLoading.value) {
+      if (!solverStatus.value?.bookLoaded) return 'Loading opening book…';
+      return 'Querying solver…';
+    }
+    if (suggestion.value?.col > 0) return `Column ${suggestion.value.col}`;
+    if (winLine.value) return 'Game over';
+    return '—';
+  });
+
   const suggestionLabel = computed(() => {
     const sug = suggestion.value;
     if (!sug || sug.col <= 0) return '';
     return sug.reason;
+  });
+
+  const solverStatusText = computed(() => {
+    const s = solverStatus.value;
+    if (!s?.moduleReady) return 'Loading WASM module…';
+    if (s.bookLoading) return 'Loading opening book…';
+    if (s.bookError) return `Book error: ${s.bookError}`;
+    if (s.bookLoaded) return 'Ready (with opening book)';
+    return 'Ready (no opening book)';
   });
 
   const statusTitle = computed(() => {
@@ -161,7 +183,10 @@ export const useGameStore = defineStore('game', () => {
     if (viewCursor.value < moveHistory.value.length)
       return 'Reviewing history — use ▶ to step forward.';
     if (isUserTurn.value) {
-      if (solverLoading.value) return 'Querying solver…';
+      if (solverLoading.value) {
+        if (!solverStatus.value?.bookLoaded) return 'Loading opening book…';
+        return 'Querying solver…';
+      }
       if (suggestion.value?.col > 0) return 'Solver suggests a move.';
       if (solverError.value) return 'Solver unavailable — play freely.';
       return 'Play freely.';
@@ -173,6 +198,11 @@ export const useGameStore = defineStore('game', () => {
   const canStepBack = computed(() => viewCursor.value > 0);
   const canStepForward = computed(() => viewCursor.value < moveHistory.value.length);
   const totalMoves = computed(() => moveHistory.value.length);
+
+  /** Whether the full move history (regardless of viewCursor) contains a win */
+  const gameHasWin = computed(
+    () => checkForWin(constructBoardArr(moveHistory.value.join(''))) !== null,
+  );
 
   /** Position evaluation for both players (score relative to each) */
   const positionEval = computed(() => {
@@ -306,6 +336,39 @@ export const useGameStore = defineStore('game', () => {
     saveState();
   }
 
+  function startReplay() {
+    if (replayActive.value) return;
+    stopReplay();
+    replayActive.value = true;
+    viewCursor.value = 0;
+    replayInterval = setInterval(() => {
+      if (viewCursor.value < moveHistory.value.length) {
+        viewCursor.value++;
+      } else {
+        stopReplay();
+      }
+    }, 500);
+  }
+
+  function continueReplay() {
+    if (replayActive.value) return;
+    if (viewCursor.value >= moveHistory.value.length) return;
+    replayActive.value = true;
+    replayInterval = setInterval(() => {
+      if (viewCursor.value < moveHistory.value.length) {
+        viewCursor.value++;
+      } else {
+        stopReplay();
+      }
+    }, 500);
+  }
+
+  function stopReplay() {
+    replayActive.value = false;
+    clearInterval(replayInterval);
+    replayInterval = null;
+  }
+
   function toggleAuto() {
     autoEnabled.value = !autoEnabled.value;
     if (autoEnabled.value) {
@@ -414,6 +477,7 @@ export const useGameStore = defineStore('game', () => {
     color1,
     color2,
     autoEnabled,
+    replayActive,
     loading,
     moveHistory,
     viewCursor,
@@ -431,13 +495,16 @@ export const useGameStore = defineStore('game', () => {
     internalCurrentPlayer,
     currentPlayerLabel,
     isUserTurn,
+    suggestionText,
     suggestionLabel,
+    solverStatusText,
     statusTitle,
     statusText,
     isReviewingHistory,
     canStepBack,
     canStepForward,
     totalMoves,
+    gameHasWin,
     positionEval,
     runningTotals,
     // Helpers
@@ -455,5 +522,8 @@ export const useGameStore = defineStore('game', () => {
     setColor2,
     swapColors,
     toggleAuto,
+    startReplay,
+    continueReplay,
+    stopReplay,
   };
 });
