@@ -8,12 +8,14 @@
           class="col-btn"
           :class="{
             suggested:
-              game.suggestion?.col === c &&
+              game.suggestion?.bestCols?.includes(c) &&
               game.boardArr[game.ROWS - 1][c - 1] === 0 &&
               !game.winLine,
           }"
           :style="
-            game.suggestion?.col === c && game.boardArr[game.ROWS - 1][c - 1] === 0 && !game.winLine
+            game.suggestion?.bestCols?.includes(c) &&
+            game.boardArr[game.ROWS - 1][c - 1] === 0 &&
+            !game.winLine
               ? {
                   backgroundColor: game.displayColorOf(game.internalCurrentPlayer),
                   color: 'var(--color-bg)',

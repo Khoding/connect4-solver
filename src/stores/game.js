@@ -70,7 +70,7 @@ function interpretScores(scores) {
   else if (bestScore === 0) reason = 'Drawing move (solver)';
   else reason = 'Best defense (solver)';
 
-  return {col: bestCol, reason, score: bestScore, scores, source: 'solver'};
+  return {col: bestCol, bestCols, reason, score: bestScore, scores, source: 'solver'};
 }
 
 /* ── Store ──────────────────────────────────────────────── */
@@ -153,6 +153,8 @@ export const useGameStore = defineStore('game', () => {
       if (!solverStatus.value?.bookLoaded) return 'Loading opening book…';
       return 'Querying solver…';
     }
+    if (suggestion.value?.bestCols?.length > 1)
+      return `Columns ${suggestion.value.bestCols.join(', ')}`;
     if (suggestion.value?.col > 0) return `Column ${suggestion.value.col}`;
     if (winLine.value) return 'Game over';
     return '—';
