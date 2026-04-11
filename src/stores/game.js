@@ -270,6 +270,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function makeAutoMove() {
+    if (replayActive.value) return;
     if (isUserTurn.value) return;
     if (winLine.value) return;
 
