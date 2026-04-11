@@ -19,7 +19,12 @@
     <div class="info-card" :style="!game.solverScores && {opacity: 0.35, pointerEvents: 'none'}">
       <h3>Column scores</h3>
       <div class="score-row">
-        <div v-for="(s, i) in game.solverScores" :key="i" class="score-cell" :class="scoreClass(s)">
+        <div
+          v-for="(s, i) in game.solverScores ?? Array(7).fill(-1000)"
+          :key="i"
+          class="score-cell"
+          :class="scoreClass(s)"
+        >
           {{ s === -1000 ? '—' : s > 0 ? `+${s}` : s }}
         </div>
       </div>
@@ -71,7 +76,9 @@
     <div class="info-card">
       <h3>Suggested move</h3>
       <p>{{ game.suggestionText }}</p>
-      <p v-if="game.suggestionLabel" class="dim">{{ game.suggestionLabel }}</p>
+      <p class="dim" :style="{visibility: game.suggestionLabel ? 'visible' : 'hidden'}">
+        {{ game.suggestionLabel || '&nbsp;' }}
+      </p>
       <p v-if="game.solverError" class="dim" style="color: oklch(0.7 0.18 25)">
         Solver error: {{ game.solverError }}
       </p>

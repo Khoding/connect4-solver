@@ -51,16 +51,19 @@ function checkForWin(board) {
 import * as wasmSolver from '@/solver/index.js';
 
 function interpretScores(scores) {
-  let bestCol = -1;
+  let bestCols = [];
   let bestScore = -Infinity;
   for (let i = 0; i < 7; i++) {
     if (scores[i] === -1000) continue; // column not playable
     if (scores[i] > bestScore) {
       bestScore = scores[i];
-      bestCol = i + 1;
+      bestCols = [i + 1];
+    } else if (scores[i] === bestScore) {
+      bestCols.push(i + 1);
     }
   }
-  if (bestCol === -1) return null;
+  if (bestCols.length === 0) return null;
+  const bestCol = bestCols[Math.floor(Math.random() * bestCols.length)];
 
   let reason;
   if (bestScore > 0) reason = 'Winning move (solver)';
