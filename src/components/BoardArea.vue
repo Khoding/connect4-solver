@@ -40,7 +40,10 @@
             :key="`${vr}-${c}`"
             class="cell"
             :style="cellStyle(game.ROWS - vr, c - 1)"
-            :class="{winning: isWinningCell(game.ROWS - vr, c - 1)}"
+            :class="{
+              winning: isWinningCell(game.ROWS - vr, c - 1),
+              'last-move': isLastMove(game.ROWS - vr, c - 1),
+            }"
             @click="game.makeMove(c)"
           ></div>
         </template>
@@ -71,6 +74,18 @@ function cellStyle(row, col) {
 
 function isWinningCell(row, col) {
   return game.winLine?.some(([wy, wx]) => wy === row && wx === col) ?? false;
+}
+
+function isLastMove(row, col) {
+  const pos = game.repstr;
+  if (!pos.length) return false;
+  const lastCol = pos.charCodeAt(pos.length - 1) - 49;
+  if (col !== lastCol) return false;
+  // find the topmost filled row in that column
+  for (let y = game.ROWS - 1; y >= 0; y--) {
+    if (game.boardArr[y][lastCol] !== 0) return y === row;
+  }
+  return false;
 }
 </script>
 
@@ -195,6 +210,24 @@ function isWinningCell(row, col) {
 
   &.winning {
     animation: win-glow 0.6s ease-in-out infinite alternate;
+  }
+
+  &.last-move {
+    position: relative;
+
+    &::after {
+      position: absolute;
+      inline-size: 25%;
+      block-size: 25%;
+      inset: 50%;
+      translate: -50% -50%;
+      border-radius: 50%;
+      /* Flips by 0.5 depending on lightness, but clamped to avoid pure black or pure white */
+      background-color: oklch(
+        from var(--glow) max(0.2, min(0.9, l + clamp(-0.5, (0.5 - l) * 10000, 0.5))) c h
+      );
+      content: '';
+    }
   }
 }
 
