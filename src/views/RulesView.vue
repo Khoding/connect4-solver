@@ -1,6 +1,19 @@
 <template>
   <div class="rules-container">
     <div class="info-card">
+      <h3>Recognized Openings</h3>
+      <div class="openings-list">
+        <ul class="openings-columns">
+          <li v-for="(opening, i) in gameStore.prefixList" :key="i">
+            <strong>{{ Object.keys(opening)[0] }}</strong
+            >:
+            <span class="mono">{{ Object.values(opening)[0].join(', ') || '(Empty)' }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="info-card">
       <h3>How it works</h3>
       <p>
         Connect 4 is a <strong>solved game</strong>. With perfect play, the first player can always
@@ -40,19 +53,6 @@
         weak solution explorer.
       </p>
       <p>Made for personal use.</p>
-    </div>
-
-    <div class="info-card">
-      <h3>Recognized Openings</h3>
-      <div class="openings-list">
-        <ul class="openings-columns">
-          <li v-for="(opening, i) in gameStore.prefixList" :key="i">
-            <strong>{{ Object.keys(opening)[0] }}</strong
-            >:
-            <span class="mono">{{ Object.values(opening)[0].join(', ') || '(Empty)' }}</span>
-          </li>
-        </ul>
-      </div>
     </div>
 
     <div style="margin-block-start: 1.5rem; text-align: center">
