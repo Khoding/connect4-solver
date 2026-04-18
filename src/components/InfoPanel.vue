@@ -131,12 +131,22 @@
 
     <div class="controls">
       <button
-        title="Auto-play player 2's moves"
-        :class="{active: game.autoEnabled}"
-        @click="game.toggleAuto()"
+        title="Auto-play player 1's moves"
+        :class="{active: game.autoP1}"
+        @click="game.toggleAutoP1()"
       >
-        {{ game.autoEnabled ? '⏸ Auto P2' : '▶ Auto P2' }}
+        {{ game.autoP1 ? '⏸ Auto P1' : '▶ Auto P1' }}
       </button>
+      <button
+        title="Auto-play player 2's moves"
+        :class="{active: game.autoP2}"
+        @click="game.toggleAutoP2()"
+      >
+        {{ game.autoP2 ? '⏸ Auto P2' : '▶ Auto P2' }}
+      </button>
+    </div>
+
+    <div class="controls">
       <button
         title="Replay the game from the start"
         :disabled="!game.gameHasWin && !game.replayActive"

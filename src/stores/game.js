@@ -79,7 +79,8 @@ export const useGameStore = defineStore('game', () => {
   const userIsFirst = ref(true); // does the human play as the first mover?
   const color1 = ref('#e03030'); // display color for the first player
   const color2 = ref('#e8d020'); // display color for the second player
-  const autoEnabled = ref(false);
+  const autoP1 = ref(false);
+  const autoP2 = ref(false);
   const replayActive = ref(false);
   const loading = ref(true);
   const moveHistory = ref([]); // array of column numbers (1-7)
@@ -323,7 +324,6 @@ export const useGameStore = defineStore('game', () => {
 
   function makeAutoMove() {
     if (replayActive.value) return;
-    if (isUserTurn.value) return;
     if (winLine.value) return;
 
     // Use solver suggestion
@@ -334,7 +334,7 @@ export const useGameStore = defineStore('game', () => {
 
   function stepBack() {
     if (viewCursor.value > 0) {
-      const steps = autoEnabled.value ? 2 : 1;
+      const steps = autoP1.value && autoP2.value ? 1 : autoP1.value || autoP2.value ? 2 : 1;
       viewCursor.value = Math.max(0, viewCursor.value - steps);
       syncUrl();
     }
@@ -342,7 +342,7 @@ export const useGameStore = defineStore('game', () => {
 
   function stepForward() {
     if (viewCursor.value < moveHistory.value.length) {
-      const steps = autoEnabled.value ? 2 : 1;
+      const steps = autoP1.value && autoP2.value ? 1 : autoP1.value || autoP2.value ? 2 : 1;
       viewCursor.value = Math.min(moveHistory.value.length, viewCursor.value + steps);
       syncUrl();
     }
@@ -404,7 +404,7 @@ export const useGameStore = defineStore('game', () => {
       } else {
         stopReplay();
       }
-    }, 500);
+    }, 750);
   }
 
   function continueReplay() {
@@ -417,7 +417,7 @@ export const useGameStore = defineStore('game', () => {
       } else {
         stopReplay();
       }
-    }, 500);
+    }, 750);
   }
 
   function stopReplay() {
@@ -426,18 +426,33 @@ export const useGameStore = defineStore('game', () => {
     replayInterval = null;
   }
 
-  function toggleAuto() {
-    autoEnabled.value = !autoEnabled.value;
-    if (autoEnabled.value) {
-      autoInterval = setInterval(() => {
-        if (!isUserTurn.value && !winLine.value) {
-          makeAutoMove();
-        }
-      }, 400);
+  function updateAutoInterval() {
+    if (autoP1.value || autoP2.value) {
+      if (!autoInterval) {
+        autoInterval = setInterval(() => {
+          if (winLine.value) return;
+          // P1 is internalCurrentPlayer === 1
+          if (internalCurrentPlayer.value === 1 && autoP1.value) {
+            makeAutoMove();
+          } else if (internalCurrentPlayer.value === 2 && autoP2.value) {
+            makeAutoMove();
+          }
+        }, 750);
+      }
     } else {
       clearInterval(autoInterval);
       autoInterval = null;
     }
+  }
+
+  function toggleAutoP1() {
+    autoP1.value = !autoP1.value;
+    updateAutoInterval();
+  }
+
+  function toggleAutoP2() {
+    autoP2.value = !autoP2.value;
+    updateAutoInterval();
   }
 
   /* ── Persistence ────────────────────────────────────── */
@@ -538,7 +553,8 @@ export const useGameStore = defineStore('game', () => {
     userIsFirst,
     color1,
     color2,
-    autoEnabled,
+    autoP1,
+    autoP2,
     replayActive,
     loading,
     moveHistory,
@@ -586,7 +602,8 @@ export const useGameStore = defineStore('game', () => {
     setColor1,
     setColor2,
     swapColors,
-    toggleAuto,
+    toggleAutoP1,
+    toggleAutoP2,
     startReplay,
     continueReplay,
     stopReplay,
