@@ -84,6 +84,7 @@ export const useGameStore = defineStore('game', () => {
   const loading = ref(true);
   const moveHistory = ref([]); // array of column numbers (1-7)
   const moveScores = ref([]); // solver score for each move at the time it was played (parallel to moveHistory)
+  const moveOptimality = ref([]); // true if optimal, false if suboptimal, null if unknown (parallel to moveHistory)
   const viewCursor = ref(0); // how many moves are currently displayed (0 = start)
   const resetPending = ref(false); // true when waiting for confirm
 
@@ -296,12 +297,21 @@ export const useGameStore = defineStore('game', () => {
     if (viewCursor.value < moveHistory.value.length) {
       moveHistory.value = moveHistory.value.slice(0, viewCursor.value);
       moveScores.value = moveScores.value.slice(0, viewCursor.value);
+      moveOptimality.value = moveOptimality.value.slice(0, viewCursor.value);
     }
 
     // Record the solver score for the chosen column (from current player's perspective)
     const colIndex = column - 1;
     const scoreForMove = solverScores.value ? solverScores.value[colIndex] : null;
+    const bestScore = suggestion.value ? suggestion.value.score : null;
+
+    let isOptimal = null;
+    if (scoreForMove != null && bestScore != null && scoreForMove !== -1000) {
+      isOptimal = scoreForMove === bestScore;
+    }
+
     moveScores.value.push(scoreForMove !== -1000 ? scoreForMove : null);
+    moveOptimality.value.push(isOptimal);
 
     moveHistory.value.push(column);
     viewCursor.value = moveHistory.value.length;
@@ -350,6 +360,7 @@ export const useGameStore = defineStore('game', () => {
     }
     moveHistory.value = [];
     moveScores.value = [];
+    moveOptimality.value = [];
     viewCursor.value = 0;
     resetPending.value = false;
     saveState();
@@ -437,6 +448,7 @@ export const useGameStore = defineStore('game', () => {
         'c4_state',
         JSON.stringify({
           moves: moveHistory.value.join(''),
+          optimality: moveOptimality.value.map(v => (v === true ? 1 : v === false ? 0 : null)),
           userIsFirst: userIsFirst.value,
           color1: color1.value,
           color2: color2.value,
@@ -475,6 +487,7 @@ export const useGameStore = defineStore('game', () => {
 
     moveHistory.value = [];
     moveScores.value = [];
+    moveOptimality.value = [];
     viewCursor.value = 0;
 
     // Check URL for position, then fall back to saved state
@@ -499,6 +512,9 @@ export const useGameStore = defineStore('game', () => {
           const x = col - 1;
           if (currentBoard[ROWS - 1][x] === 0 && !checkForWin(currentBoard)) {
             moveHistory.value.push(col);
+            moveOptimality.value.push(
+              saved?.optimality?.[i] === 1 ? true : saved?.optimality?.[i] === 0 ? false : null,
+            );
           }
         }
       }
@@ -526,6 +542,7 @@ export const useGameStore = defineStore('game', () => {
     replayActive,
     loading,
     moveHistory,
+    moveOptimality,
     viewCursor,
     resetPending,
     // Solver

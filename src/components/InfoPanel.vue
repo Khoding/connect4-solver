@@ -33,7 +33,28 @@
 
     <div class="info-card">
       <h3>Move sequence</h3>
-      <p class="mono">{{ game.repstr || '(start)' }}</p>
+      <p class="mono">
+        <template v-if="!game.repstr"> (start) </template>
+        <template v-else>
+          <span
+            v-for="(move, i) in game.repstr"
+            :key="i"
+            class="move-char"
+            :class="{
+              'is-optimal': game.moveOptimality[i] === true,
+              'is-suboptimal': game.moveOptimality[i] === false,
+            }"
+            :title="
+              game.moveOptimality[i] === true
+                ? 'Optimal move'
+                : game.moveOptimality[i] === false
+                  ? 'Suboptimal move'
+                  : 'Unknown'
+            "
+            >{{ move }}</span
+          >
+        </template>
+      </p>
       <p class="dim">
         Move {{ game.viewCursor }} / {{ game.totalMoves }} &bull;
         <RouterLink to="/rules">{{ game.currentOpening }}</RouterLink>
@@ -289,6 +310,16 @@ function formatTotal(score) {
   flex-direction: column;
   max-inline-size: 380px;
   gap: 1rem;
+}
+
+.move-char {
+  &.is-optimal {
+    color: oklch(0.75 0.15 150); /* green */
+  }
+
+  &.is-suboptimal {
+    color: oklch(0.65 0.2 25); /* red */
+  }
 }
 
 .color-inputs {
