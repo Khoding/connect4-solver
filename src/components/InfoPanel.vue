@@ -40,7 +40,9 @@
     <div class="info-card">
       <h2
         :style="{
-          color: game.winLine ? undefined : game.displayColorOf(game.internalCurrentPlayer),
+          color: game.winLine
+            ? undefined
+            : `oklch(from ${game.displayColorOf(game.internalCurrentPlayer)} max(0.65, l) c h)`,
         }"
       >
         {{ game.statusTitle }}
@@ -54,7 +56,9 @@
     >
       <h3>Position evaluation</h3>
       <div class="eval-row">
-        <span class="eval-label" :style="{color: game.color1}">1st player</span>
+        <span class="eval-label" :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">
+          1st player
+        </span>
         <span class="eval-score" :class="evalClass(game.positionEval?.first)">
           {{ formatEval(game.positionEval?.first) }}
         </span>
@@ -63,7 +67,9 @@
         </span>
       </div>
       <div class="eval-row">
-        <span class="eval-label" :style="{color: game.color2}">2nd player</span>
+        <span class="eval-label" :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">
+          2nd player
+        </span>
         <span class="eval-score" :class="evalClass(game.positionEval?.second)">
           {{ formatEval(game.positionEval?.second) }}
         </span>

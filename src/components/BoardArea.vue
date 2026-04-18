@@ -17,8 +17,7 @@
             game.boardArr[game.ROWS - 1][c - 1] === 0 &&
             !game.winLine
               ? {
-                  backgroundColor: game.displayColorOf(game.internalCurrentPlayer),
-                  color: 'var(--color-bg)',
+                  '--player-color': game.displayColorOf(game.internalCurrentPlayer),
                 }
               : {}
           "
@@ -50,8 +49,8 @@
       </div>
     </div>
     <div class="player-indicators">
-      <span :style="{color: game.color1}">P1</span>
-      <span :style="{color: game.color2}">P2</span>
+      <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">P1</span>
+      <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">P2</span>
     </div>
   </div>
 </template>
@@ -165,7 +164,7 @@ function isLastMove(row, col) {
 
   &:hover:not(:disabled) {
     background-color: var(--color-accent);
-    color: var(--color-bg);
+    color: oklch(from var(--color-accent) clamp(0.15, (0.5 - l) * 10000, 0.95) c h);
   }
 
   &:disabled {
@@ -174,6 +173,8 @@ function isLastMove(row, col) {
   }
 
   &.suggested {
+    background-color: var(--player-color);
+    color: oklch(from var(--player-color) clamp(0.15, (0.5 - l) * 10000, 0.95) c h);
     animation: pulse 1.2s ease-in-out infinite;
   }
 }
