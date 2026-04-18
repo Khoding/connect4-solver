@@ -42,11 +42,30 @@
       <p>Made for personal use.</p>
     </div>
 
+    <div class="info-card">
+      <h3>Recognized Openings</h3>
+      <div class="openings-list">
+        <ul class="openings-columns">
+          <li v-for="(opening, i) in gameStore.prefixList" :key="i">
+            <strong>{{ Object.keys(opening)[0] }}</strong
+            >:
+            <span class="mono">{{ Object.values(opening)[0].join(', ') || '(Empty)' }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
     <div style="margin-block-start: 1.5rem; text-align: center">
       <RouterLink to="/" class="back-btn">Back to Solver</RouterLink>
     </div>
   </div>
 </template>
+
+<script setup>
+import {useGameStore} from '@/stores/game';
+
+const gameStore = useGameStore();
+</script>
 
 <style scoped>
 .rules-container {
@@ -81,6 +100,34 @@
 
   & a {
     color: var(--color-accent);
+  }
+}
+
+.openings-list {
+  margin-block-start: 1rem;
+}
+
+.openings-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  padding: 0;
+  gap: 0.5rem;
+  list-style: none;
+
+  & li {
+    margin: 0;
+    color: var(--color-text-dim);
+    font-size: 0.85rem;
+  }
+
+  & strong {
+    color: var(--color-text);
+  }
+
+  & .mono {
+    color: oklch(0.8 0.1 220);
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
   }
 }
 

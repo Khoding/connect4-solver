@@ -34,7 +34,10 @@
     <div class="info-card">
       <h3>Move sequence</h3>
       <p class="mono">{{ game.repstr || '(start)' }}</p>
-      <p class="dim">Move {{ game.viewCursor }} / {{ game.totalMoves }}</p>
+      <p class="dim">
+        Move {{ game.viewCursor }} / {{ game.totalMoves }} &bull;
+        <RouterLink to="/rules">{{ game.currentOpening }}</RouterLink>
+      </p>
     </div>
 
     <div class="info-card">

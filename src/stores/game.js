@@ -221,6 +221,46 @@ export const useGameStore = defineStore('game', () => {
     };
   });
 
+  const prefixList = [
+    {'Two-bar': ['436766']},
+    {'Bent two-bar': ['436761663']},
+    {'Short Cup Opening': ['46213522']},
+    {'Tall Cup Opening': ['46213524224']},
+    {'No Cup Opening': ['46213523']},
+    {'6-1': ['4444445']},
+    {47: ['47']},
+    {426566: ['426566']},
+    {426564: ['426564']},
+    {'Shoulder Spike': ['44444521', '44444524']},
+    {4444452: ['4444452']},
+    {'True Candlesticks': ['44444222266']},
+    {'Half Candlesticks': ['444442222', '444446622']},
+    {'Crown Variations': ['44444']},
+    {'D3-D4 Openings': ['4442', '4441']},
+    {4363: ['4363']},
+    {'Fist Variations': ['4366755535']},
+    {'Palm Variations': ['436556766']},
+    {4366: ['4366']},
+    {Triline: ['4623272', '4623262']},
+    {'Other 4367 Lines': ['4367']},
+    {'3-2': ['4443673', '4443613']},
+    {'Two-holes': ['4361']},
+    {'Other 462 Lines': ['462']},
+    {'Hills Opening': ['4443655', '4364455', '4365', '452443']},
+    {'Very Beginning': ['']},
+  ];
+
+  const currentOpening = computed(() => {
+    const str = repstr.value;
+    for (const prefix of prefixList) {
+      const [name, prefixes] = Object.entries(prefix)[0];
+      if (prefixes.some(p => str.startsWith(p))) {
+        return name;
+      }
+    }
+    return 'Unknown Opening';
+  });
+
   /** Running totals: each player accumulates the solver score of the column they picked */
   const runningTotals = computed(() => {
     let first = 0;
@@ -513,6 +553,8 @@ export const useGameStore = defineStore('game', () => {
     gameHasWin,
     positionEval,
     runningTotals,
+    currentOpening,
+    prefixList,
     // Helpers
     displayColorOf,
     // Actions
