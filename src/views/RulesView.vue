@@ -1,7 +1,7 @@
 <template>
   <div class="rules-container">
     <div class="info-card">
-      <h3>Recognized Openings</h3>
+      <h3>Recognized Openings (by 2swap)</h3>
       <div class="openings-list">
         <ul class="openings-columns">
           <li v-for="(opening, i) in gameStore.prefixList" :key="i">
