@@ -218,8 +218,8 @@ function isLastMove(row, col) {
 
     &::after {
       position: absolute;
-      inline-size: 25%;
-      block-size: 25%;
+      inline-size: 15%;
+      block-size: 15%;
       inset: 50%;
       translate: -50% -50%;
       border-radius: 50%;
