@@ -57,8 +57,18 @@
       </div>
     </div>
     <div class="player-indicators">
-      <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">P1</span>
-      <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">P2</span>
+      <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">
+        P1
+        <span v-if="game.winLine && game.internalCurrentPlayer === 2" class="winner-label"
+          >(Winner)</span
+        >
+      </span>
+      <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">
+        P2
+        <span v-if="game.winLine && game.internalCurrentPlayer === 1" class="winner-label"
+          >(Winner)</span
+        >
+      </span>
     </div>
   </div>
 </template>
@@ -159,6 +169,17 @@ function scoreClass(score) {
   justify-content: center;
   gap: 1rem;
   font-size: small;
+}
+
+.player-indicators > span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.winner-label {
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .col-header {
