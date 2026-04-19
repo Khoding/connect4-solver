@@ -73,6 +73,11 @@
         weak solution explorer.
       </p>
       <p>
+        <a href="https://github.com/Khoding/connect4-solver" target="_blank" rel="noopener"
+          >GitHub Repository</a
+        >
+      </p>
+      <p>
         Source code licensed under
         <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener"
           >AGPL-3.0</a
