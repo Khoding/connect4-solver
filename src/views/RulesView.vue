@@ -1,3 +1,23 @@
+<!--
+  Copyright (C) Pascal Pons (https://github.com/PascalPons/connect4)
+  Copyright (C) 2026 Khodok
+
+  This file is part of Connect4 Game Solver.
+
+  Connect4 Game Solver is free software: you can redistribute it and/or
+  modify it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+
+  Connect4 Game Solver is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with Connect4 Game Solver. If not, see <http://www.gnu.org/licenses/>.
+-->
+
 <template>
   <div class="rules-container">
     <div class="info-card">
@@ -52,7 +72,12 @@
         <a href="https://2swap.github.io/WeakC4/" target="_blank" rel="noopener">2swap's WeakC4</a>
         weak solution explorer.
       </p>
-      <p>Made for personal use.</p>
+      <p>
+        Source code licensed under
+        <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener"
+          >AGPL-3.0</a
+        >.
+      </p>
     </div>
 
     <div style="margin-block-start: 1.5rem; text-align: center">

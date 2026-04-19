@@ -1,3 +1,29 @@
+/*
+ * Copyright (C) Pascal Pons (https://github.com/PascalPons/connect4)
+ * Copyright (C) 2026 Khodok
+ *
+ * This file is part of Connect4 Game Solver.
+ *
+ * Connect4 Game Solver is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * Connect4 Game Solver is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with Connect4 Game Solver. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * Copyright (C) 2swap (https://github.com/2swap/WeakC4)
+ * Parts of this code are derived from WeakC4, originally licensed under the GNU General Public License v3.0.
+ * It is distributed here under the overarching GNU Affero General Public License v3.0 of this project.
+ */
+
 import {ref, computed, watch} from 'vue';
 import {defineStore} from 'pinia';
 
@@ -176,6 +202,7 @@ export const useGameStore = defineStore('game', () => {
     };
   });
 
+  /* This was taken from 2swap's solution https://github.com/2swap/WeakC4 */
   const prefixList = [
     {'Two-bar': ['436766']},
     {'Bent two-bar': ['436761663']},

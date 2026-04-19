@@ -1,3 +1,23 @@
+<!--
+  Copyright (C) Pascal Pons (https://github.com/PascalPons/connect4)
+  Copyright (C) 2026 Khodok
+
+  This file is part of Connect4 Game Solver.
+
+  Connect4 Game Solver is free software: you can redistribute it and/or
+  modify it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+
+  Connect4 Game Solver is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with Connect4 Game Solver. If not, see <http://www.gnu.org/licenses/>.
+-->
+
 <template>
   <aside class="info-panel">
     <div class="controls">
@@ -297,7 +317,11 @@
       <a href="http://connect4.gamesolver.org" target="_blank" rel="noopener">Pascal Pons</a>.
       Inspired by
       <a href="https://2swap.github.io/WeakC4/" target="_blank" rel="noopener">2swap's WeakC4</a>.
-      Made for personal use.
+      <br />
+      Licensed under
+      <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener"
+        >AGPL-3.0</a
+      >
     </p>
   </aside>
 </template>
@@ -368,12 +392,6 @@ function updateColor2(value) {
 
 /* ── Score helpers ─────────────────────────────────────── */
 
-function scoreClass(score) {
-  if (score > 0) return 'score-win';
-  if (score === 0) return 'score-draw';
-  return 'score-loss';
-}
-
 function evalClass(score) {
   score = score ?? 0;
   if (score > 0) return 'eval-win';
@@ -386,12 +404,6 @@ function formatEval(score) {
   if (score > 0) return `+${score} (wins)`;
   if (score === 0) return '0 (draw)';
   return `${score} (loses)`;
-}
-
-function formatTotal(score) {
-  score = score ?? 0;
-  if (score > 0) return `+${score}`;
-  return `${score}`;
 }
 </script>
 
@@ -409,11 +421,11 @@ function formatTotal(score) {
 
 .move-char {
   &.is-optimal {
-    color: oklch(0.75 0.15 150); /* green */
+    color: oklch(0.75 0.15 150);
   }
 
   &.is-suboptimal {
-    color: oklch(0.65 0.2 25); /* red */
+    color: oklch(0.65 0.2 25);
   }
 }
 

@@ -1,6 +1,8 @@
 /*
- * This file is part of Connect4 Game Solver <http://connect4.gamesolver.org>
- * Copyright (C) 2017-2019 Pascal Pons <contact@gamesolver.org>
+ * Copyright (C) Pascal Pons (https://github.com/PascalPons/connect4)
+ * Copyright (C) 2026 Khodok
+ * 
+ * This file is part of Connect4 Game Solver.
  *
  * Connect4 Game Solver is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License as
@@ -15,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Connect4 Game Solver. If not, see <http://www.gnu.org/licenses/>.
  */
-
+ 
 #ifndef SOLVER_HPP
 #define SOLVER_HPP
 
