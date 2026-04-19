@@ -71,7 +71,6 @@ const gameStore = useGameStore();
 .rules-container {
   max-width: 600px;
   margin: 0 auto;
-  padding: 2rem;
 }
 
 .info-card {

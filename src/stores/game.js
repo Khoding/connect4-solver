@@ -158,7 +158,10 @@ export const useGameStore = defineStore('game', () => {
     if (suggestion.value?.bestCols?.length > 1)
       return `Columns ${suggestion.value.bestCols.join(', ')}`;
     if (suggestion.value?.col > 0) return `Column ${suggestion.value.col}`;
-    if (winLine.value) return 'Game over';
+    if (winLine.value) {
+      const winnerInternal = boardArr.value[winLine.value[0][0]][winLine.value[0][1]];
+      return winnerInternal === 1 ? 'Game over, 1st player wins!' : 'Game over, 2nd player wins!';
+    }
     return '—';
   });
 
@@ -175,30 +178,6 @@ export const useGameStore = defineStore('game', () => {
     if (s.bookError) return `Book error: ${s.bookError}`;
     if (s.bookLoaded) return 'Ready (with opening book)';
     return 'Ready (no opening book)';
-  });
-
-  const statusTitle = computed(() => {
-    if (winLine.value) {
-      const winnerInternal = boardArr.value[winLine.value[0][0]][winLine.value[0][1]];
-      return winnerInternal === 1 ? '1st player wins!' : '2nd player wins!';
-    }
-    return isUserTurn.value ? "1st player's turn" : "2nd player's turn";
-  });
-
-  const statusText = computed(() => {
-    if (winLine.value) return 'Press Reset to start over.';
-    if (viewCursor.value < moveHistory.value.length)
-      return 'Reviewing history — use ▶ to step forward.';
-    if (isUserTurn.value) {
-      if (solverLoading.value) {
-        if (!solverStatus.value?.bookLoaded) return 'Loading opening book…';
-        return 'Querying solver…';
-      }
-      if (suggestion.value?.col > 0) return 'Solver suggests a move.';
-      if (solverError.value) return 'Solver unavailable — play freely.';
-      return 'Play freely.';
-    }
-    return 'Place their move.';
   });
 
   const isReviewingHistory = computed(() => viewCursor.value < moveHistory.value.length);
@@ -261,21 +240,6 @@ export const useGameStore = defineStore('game', () => {
       }
     }
     return 'Unknown Opening';
-  });
-
-  /** Running totals: each player accumulates the solver score of the column they picked */
-  const runningTotals = computed(() => {
-    let first = 0;
-    let second = 0;
-    const limit = viewCursor.value;
-    for (let i = 0; i < limit; i++) {
-      const s = moveScores.value[i];
-      if (s == null) continue;
-      if (i % 2 === 0)
-        first += s; // move 0, 2, 4… = 1st player
-      else second += s; // move 1, 3, 5… = 2nd player
-    }
-    return {first, second};
   });
 
   /* ── Display color mapping ──────────────────────────── */
@@ -577,15 +541,12 @@ export const useGameStore = defineStore('game', () => {
     suggestionText,
     suggestionLabel,
     solverStatusText,
-    statusTitle,
-    statusText,
     isReviewingHistory,
     canStepBack,
     canStepForward,
     totalMoves,
     gameHasWin,
     positionEval,
-    runningTotals,
     currentOpening,
     prefixList,
     // Helpers

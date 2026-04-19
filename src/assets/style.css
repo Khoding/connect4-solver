@@ -24,7 +24,7 @@
   --color-win: oklch(0.85 0.2 85);
 
   --board-gap: 6px;
-  --cell-size: clamp(40px, 10vw, 104px);
+  --cell-size: clamp(30px, 7.5vw, 104px);
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -60,7 +60,7 @@ a {
 
 #app {
   margin-inline: auto;
-  padding: 1.5rem;
+  padding: clamp(0.5rem, 2vw, 2.5rem);
 }
 
 .info-card {
@@ -70,10 +70,6 @@ a {
   background-color: var(--color-surface);
   word-break: break-word;
   overflow-wrap: break-word;
-
-  &.steady-state {
-    overflow: auto;
-  }
 }
 
 .info-card h2 {
@@ -97,24 +93,4 @@ a {
 .dim {
   color: var(--color-text-dim);
   font-size: 0.85rem;
-}
-
-/* ── Responsive visibility ──────────────────────────────── */
-
-.mobile-only {
-  display: none !important;
-}
-
-@media (max-width: 720px) {
-  .desktop-only {
-    display: none !important;
-  }
-
-  .mobile-only {
-    display: block !important;
-  }
-
-  #app {
-    padding: 1rem;
-  }
 }

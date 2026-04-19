@@ -16,21 +16,6 @@
       </button>
     </div>
 
-    <div class="info-card" :style="!game.solverScores && {opacity: 0.35, pointerEvents: 'none'}">
-      <h3>Column scores</h3>
-      <div class="score-row">
-        <div
-          v-for="(s, i) in game.solverScores ?? Array(7).fill(-1000)"
-          :key="i"
-          class="score-cell"
-          :class="scoreClass(s)"
-        >
-          {{ s === -1000 ? '—' : s > 0 ? `+${s}` : s }}
-        </div>
-      </div>
-      <p class="dim">+ = win, 0 = draw, − = loss (higher is better)</p>
-    </div>
-
     <div class="info-card">
       <h3>Move sequence</h3>
       <p class="mono">
@@ -61,19 +46,6 @@
       </p>
     </div>
 
-    <div class="info-card">
-      <h2
-        :style="{
-          color: game.winLine
-            ? undefined
-            : `oklch(from ${game.displayColorOf(game.internalCurrentPlayer)} max(0.65, l) c h)`,
-        }"
-      >
-        {{ game.statusTitle }}
-      </h2>
-      <p>{{ game.statusText }}</p>
-    </div>
-
     <div
       class="info-card eval-card"
       :style="!game.positionEval && {opacity: 0.35, pointerEvents: 'none'}"
@@ -86,9 +58,6 @@
         <span class="eval-score" :class="evalClass(game.positionEval?.first)">
           {{ formatEval(game.positionEval?.first) }}
         </span>
-        <span class="eval-score" :class="evalClass(game.runningTotals?.first)">
-          {{ formatTotal(game.runningTotals?.first) }}
-        </span>
       </div>
       <div class="eval-row">
         <span class="eval-label" :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">
@@ -96,9 +65,6 @@
         </span>
         <span class="eval-score" :class="evalClass(game.positionEval?.second)">
           {{ formatEval(game.positionEval?.second) }}
-        </span>
-        <span class="eval-score" :class="evalClass(game.runningTotals?.second)">
-          {{ formatTotal(game.runningTotals?.second) }}
         </span>
       </div>
     </div>
@@ -335,10 +301,18 @@ function formatTotal(score) {
 .color-inputs {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+
+  @container info-panel (max-width: 350px) {
+    & {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
 }
 
 .swap-btn {
+  max-inline-size: fit-content;
   padding: 4px 8px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -386,42 +360,6 @@ function formatTotal(score) {
   font-size: 0.8rem;
   font-family: var(--font-mono);
   text-transform: uppercase;
-}
-
-.score-row {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
-  font-size: 0.8rem;
-  font-family: var(--font-mono);
-  text-align: center;
-}
-
-.score-cell {
-  padding: 4px 2px;
-  border-radius: 3px;
-  font-weight: 600;
-
-  &.score-win {
-    background-color: oklch(0.35 0.12 145);
-    color: oklch(0.8 0.15 145);
-  }
-
-  &.score-draw {
-    background-color: var(--color-surface-alt);
-    color: var(--color-text-dim);
-  }
-
-  &.score-loss {
-    background-color: oklch(0.3 0.1 25);
-    color: oklch(0.75 0.15 25);
-  }
-
-  &.score-full {
-    background-color: var(--color-surface-alt);
-    color: var(--color-text-dim);
-    opacity: 0.4;
-  }
 }
 
 .presets {

@@ -68,14 +68,14 @@ function onKeydown(e) {
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: center;
-  gap: 2rem;
+  gap: clamp(1rem, 2vw, 2.5rem);
 }
 
 @media (max-width: 720px) {
   .main {
     flex-direction: column;
     align-items: stretch;
-    gap: 1rem;
+    gap: clamp(1rem, 2vw, 2.5rem);
   }
 }
 

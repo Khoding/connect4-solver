@@ -2,10 +2,19 @@
   <div class="board-area">
     <div class="board-grid">
       <div class="column-buttons">
-        <button
+        <div
+          v-for="(s, i) in game.solverScores ?? Array(7).fill(-1000)"
+          :key="i"
+          class="score-cell"
+          :class="scoreClass(s)"
+        >
+          {{ s === -1000 ? '—' : s > 0 ? `+${s}` : s }}
+        </div>
+
+        <div
           v-for="c in game.COLS"
           :key="c"
-          class="col-btn"
+          class="col-header"
           :class="{
             suggested:
               game.suggestion?.bestCols?.includes(c) &&
@@ -22,10 +31,9 @@
               : {}
           "
           :disabled="game.boardArr[game.ROWS - 1][c - 1] !== 0 || !!game.winLine"
-          @click="game.makeMove(c)"
         >
           {{ c }}
-        </button>
+        </div>
       </div>
 
       <div class="row-labels">
@@ -86,6 +94,12 @@ function isLastMove(row, col) {
   }
   return false;
 }
+
+function scoreClass(score) {
+  if (score > 0) return 'score-win';
+  if (score === 0) return 'score-draw';
+  return 'score-loss';
+}
 </script>
 
 <style scoped>
@@ -103,19 +117,18 @@ function isLastMove(row, col) {
   grid-template-columns: max-content max-content;
   max-inline-size: 100%;
   margin-inline: auto;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
   padding-bottom: 0.5rem;
+  overflow-x: auto;
 }
 
 .column-buttons {
   display: grid;
   grid-template-columns: repeat(7, var(--cell-size));
-  grid-row: 1;
   grid-column: 2;
   margin-block-end: 4px;
   padding-inline: var(--board-gap);
   gap: var(--board-gap);
+  font-size: 0.85rem;
 }
 
 .row-labels {
@@ -144,28 +157,17 @@ function isLastMove(row, col) {
 .player-indicators {
   display: flex;
   justify-content: center;
-  margin-block-start: 0.5rem;
   gap: 1rem;
   font-size: small;
 }
 
-.col-btn {
-  block-size: 28px;
-  border: none;
+.col-header {
+  padding: 4px 2px;
   border-radius: var(--radius-sm);
   background-color: var(--color-surface-alt);
   color: var(--color-text-dim);
   font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition:
-    background-color 0.15s,
-    color 0.15s;
-
-  &:hover:not(:disabled) {
-    background-color: var(--color-accent);
-    color: oklch(from var(--color-accent) clamp(0.15, (0.5 - l) * 10000, 0.95) c h);
-  }
+  text-align: center;
 
   &:disabled {
     cursor: not-allowed;
@@ -247,6 +249,34 @@ function isLastMove(row, col) {
   .board-area {
     align-items: stretch;
     max-inline-size: 100%;
+  }
+}
+
+.score-cell {
+  padding: 4px 2px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-align: center;
+
+  &.score-win {
+    background-color: oklch(0.35 0.12 145);
+    color: oklch(0.8 0.15 145);
+  }
+
+  &.score-draw {
+    background-color: var(--color-surface-alt);
+    color: var(--color-text-dim);
+  }
+
+  &.score-loss {
+    background-color: oklch(0.3 0.1 25);
+    color: oklch(0.75 0.15 25);
+  }
+
+  &.score-full {
+    background-color: var(--color-surface-alt);
+    color: var(--color-text-dim);
+    opacity: 0.4;
   }
 }
 </style>
