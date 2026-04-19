@@ -20,6 +20,7 @@
               game.suggestion?.bestCols?.includes(c) &&
               game.boardArr[game.ROWS - 1][c - 1] === 0 &&
               !game.winLine,
+            disabled: game.boardArr[game.ROWS - 1][c - 1] !== 0 || !!game.winLine,
           }"
           :style="
             game.suggestion?.bestCols?.includes(c) &&
@@ -30,7 +31,6 @@
                 }
               : {}
           "
-          :disabled="game.boardArr[game.ROWS - 1][c - 1] !== 0 || !!game.winLine"
         >
           {{ c }}
         </div>
@@ -106,6 +106,7 @@ function isLastMove(row, col) {
 }
 
 function scoreClass(score) {
+  if (score === -1000) return 'disabled';
   if (score > 0) return 'score-win';
   if (score === 0) return 'score-draw';
   return 'score-loss';
@@ -190,8 +191,7 @@ function scoreClass(score) {
   font-weight: 600;
   text-align: center;
 
-  &:disabled {
-    cursor: not-allowed;
+  &.disabled {
     opacity: 0.3;
   }
 
@@ -294,10 +294,10 @@ function scoreClass(score) {
     color: oklch(0.75 0.15 25);
   }
 
-  &.score-full {
+  &.disabled {
     background-color: var(--color-surface-alt);
     color: var(--color-text-dim);
-    opacity: 0.4;
+    opacity: 0.3;
   }
 }
 </style>
