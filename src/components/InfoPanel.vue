@@ -69,17 +69,6 @@
       </div>
     </div>
 
-    <div class="info-card">
-      <h3>Suggested move</h3>
-      <p>{{ game.suggestionText }}</p>
-      <p class="dim" :style="{visibility: game.suggestionLabel ? 'visible' : 'hidden'}">
-        {{ game.suggestionLabel || '&nbsp;' }}
-      </p>
-      <p v-if="game.solverError" class="dim" style="color: oklch(0.7 0.18 25)">
-        Solver error: {{ game.solverError }}
-      </p>
-    </div>
-
     <div class="controls">
       <button
         v-if="!game.resetPending"
@@ -171,6 +160,9 @@
     <div class="info-card">
       <h3>Solver</h3>
       <p class="dim">{{ game.solverStatusText }}</p>
+      <p v-if="game.solverError" class="dim" style="color: oklch(0.7 0.18 25)">
+        Solver error: {{ game.solverError }}
+      </p>
     </div>
 
     <p class="credit">

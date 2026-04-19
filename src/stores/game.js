@@ -65,12 +65,7 @@ function interpretScores(scores) {
   if (bestCols.length === 0) return null;
   const bestCol = bestCols[Math.floor(Math.random() * bestCols.length)];
 
-  let reason;
-  if (bestScore > 0) reason = 'Winning move (solver)';
-  else if (bestScore === 0) reason = 'Drawing move (solver)';
-  else reason = 'Best defense (solver)';
-
-  return {col: bestCol, bestCols, reason, score: bestScore, scores, source: 'solver'};
+  return {col: bestCol, bestCols, score: bestScore, scores, source: 'solver'};
 }
 
 /* ── Store ──────────────────────────────────────────────── */
@@ -149,27 +144,6 @@ export const useGameStore = defineStore('game', () => {
     },
     {immediate: true},
   );
-
-  const suggestionText = computed(() => {
-    if (solverLoading.value) {
-      if (!solverStatus.value?.bookLoaded) return 'Loading opening book…';
-      return 'Querying solver…';
-    }
-    if (suggestion.value?.bestCols?.length > 1)
-      return `Columns ${suggestion.value.bestCols.join(', ')}`;
-    if (suggestion.value?.col > 0) return `Column ${suggestion.value.col}`;
-    if (winLine.value) {
-      const winnerInternal = boardArr.value[winLine.value[0][0]][winLine.value[0][1]];
-      return winnerInternal === 1 ? 'Game over, 1st player wins!' : 'Game over, 2nd player wins!';
-    }
-    return '—';
-  });
-
-  const suggestionLabel = computed(() => {
-    const sug = suggestion.value;
-    if (!sug || sug.col <= 0) return '';
-    return sug.reason;
-  });
 
   const solverStatusText = computed(() => {
     const s = solverStatus.value;
@@ -538,8 +512,6 @@ export const useGameStore = defineStore('game', () => {
     internalCurrentPlayer,
     currentPlayerLabel,
     isUserTurn,
-    suggestionText,
-    suggestionLabel,
     solverStatusText,
     isReviewingHistory,
     canStepBack,
