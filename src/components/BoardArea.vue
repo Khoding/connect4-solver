@@ -16,16 +16,11 @@
           :key="c"
           class="col-header"
           :class="{
-            suggested:
-              game.suggestion?.bestCols?.includes(c) &&
-              game.boardArr[game.ROWS - 1][c - 1] === 0 &&
-              !game.winLine,
+            suggested: isSuggested(c),
             disabled: game.boardArr[game.ROWS - 1][c - 1] !== 0 || !!game.winLine,
           }"
           :style="
-            game.suggestion?.bestCols?.includes(c) &&
-            game.boardArr[game.ROWS - 1][c - 1] === 0 &&
-            !game.winLine
+            isSuggested(c)
               ? {
                   '--player-color': game.displayColorOf(game.internalCurrentPlayer),
                 }
@@ -77,6 +72,15 @@
 import {useGameStore} from '@/stores/game';
 
 const game = useGameStore();
+
+function isSuggested(col) {
+  if (!game.repstr.length) return col === 4;
+  return (
+    game.suggestion?.bestCols?.includes(col) &&
+    game.boardArr[game.ROWS - 1][col - 1] === 0 &&
+    !game.winLine
+  );
+}
 
 function cellStyle(row, col) {
   const p = game.boardArr[row][col];

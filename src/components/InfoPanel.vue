@@ -2,17 +2,46 @@
   <aside class="info-panel">
     <div class="controls">
       <button title="Step back" :disabled="!game.canStepBack" @click="game.stepBack()">
-        ◀ Back
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path d="M640-200 200-480l440-280v560Zm-80-280Zm0 134v-268L350-480l210 134Z" />
+        </svg>
+        Back
       </button>
       <button title="Step forward" :disabled="!game.canStepForward" @click="game.stepForward()">
-        ▶ Forward
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path d="M320-200v-560l440 280-440 280Zm80-280Zm0 134 210-134-210-134v268Z" />
+        </svg>
+        Forward
       </button>
       <button
         title="Jump to latest move"
         :disabled="!game.isReviewingHistory"
         @click="game.goToLatest()"
       >
-        ⏭ Latest
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path
+            d="M660-240v-480h80v480h-80Zm-440 0v-480l320 240-320 240Zm80-240Zm0 114 152-114-152-114v228Z"
+          />
+        </svg>
+        Latest
       </button>
     </div>
 
@@ -76,7 +105,18 @@
         :disabled="game.totalMoves === 0"
         @click="game.resetBoard()"
       >
-        ⟳ Reset (R)
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path
+            d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440h80q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l62 62-56 58-160-160 160-160 56 58-62 62h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z"
+          />
+        </svg>
+        Reset (R)
       </button>
       <template v-else>
         <button class="confirm-btn" @click="game.resetBoard()">Confirm reset</button>
@@ -90,14 +130,58 @@
         :class="{active: game.autoP1}"
         @click="game.toggleAutoP1()"
       >
-        {{ game.autoP1 ? '⏸ Auto P1' : '▶ Auto P1' }}
+        <svg
+          v-if="game.autoP1"
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path
+            d="M520-200v-560h240v560H520Zm-320 0v-560h240v560H200Zm400-80h80v-400h-80v400Zm-320 0h80v-400h-80v400Zm0-400v400-400Zm320 0v400-400Z"
+          />
+        </svg>
+        <svg
+          v-else
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path d="M320-200v-560l440 280-440 280Zm80-280Zm0 134 210-134-210-134v268Z" />
+        </svg>
+        Auto P1
       </button>
       <button
         title="Auto-play player 2's moves"
         :class="{active: game.autoP2}"
         @click="game.toggleAutoP2()"
       >
-        {{ game.autoP2 ? '⏸ Auto P2' : '▶ Auto P2' }}
+        <svg
+          v-if="game.autoP2"
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path
+            d="M520-200v-560h240v560H520Zm-320 0v-560h240v560H200Zm400-80h80v-400h-80v400Zm-320 0h80v-400h-80v400Zm0-400v400-400Zm320 0v400-400Z"
+          />
+        </svg>
+        <svg
+          v-else
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path d="M320-200v-560l440 280-440 280Zm80-280Zm0 134 210-134-210-134v268Z" />
+        </svg>
+        Auto P2
       </button>
     </div>
 
@@ -108,7 +192,29 @@
         :class="{active: game.replayActive}"
         @click="game.replayActive ? game.stopReplay() : game.startReplay()"
       >
-        {{ game.replayActive ? '⏹ Stop' : '⟳ Replay' }}
+        <svg
+          v-if="game.replayActive"
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path d="M320-320v-320h320v320H320Z" />
+        </svg>
+        <svg
+          v-else
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path
+            d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440h80q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l62 62-56 58-160-160 160-160 56 58-62 62h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z"
+          />
+        </svg>
+        {{ game.replayActive ? 'Stop' : 'Replay' }}
       </button>
       <button
         v-if="!game.replayActive"
@@ -116,7 +222,16 @@
         :disabled="!game.isReviewingHistory || !game.gameHasWin"
         @click="game.continueReplay()"
       >
-        ▶ Continue
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path d="M320-200v-560l440 280-440 280Zm80-280Zm0 134 210-134-210-134v268Z" />
+        </svg>
+        Continue
       </button>
     </div>
 
@@ -133,7 +248,19 @@
             @change="updateColor1($event.target.value)"
           />
         </label>
-        <button class="swap-btn" title="Swap colors" @click="game.swapColors()">⇄</button>
+        <button class="swap-btn" title="Swap colors" @click="game.swapColors()">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="1.2em"
+            viewBox="0 -960 960 960"
+            width="1.2em"
+            fill="currentColor"
+          >
+            <path
+              d="M280-120 80-320l200-200 57 56-104 104h607v80H233l104 104-57 56Zm400-320-57-56 104-104H120v-80h607L623-784l57-56 200 200-200 200Z"
+            />
+          </svg>
+        </button>
         <label class="color-label">
           <input type="color" :value="game.color2" @input="game.setColor2($event.target.value)" />
           <input
@@ -304,6 +431,9 @@ function formatTotal(score) {
 }
 
 .swap-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   max-inline-size: fit-content;
   padding: 4px 8px;
   border: 1px solid var(--color-border);
@@ -434,8 +564,12 @@ function formatTotal(score) {
   gap: 0.5rem;
 
   & button {
+    display: inline-flex;
     flex: 1;
+    align-items: center;
+    justify-content: center;
     padding: 8px 12px;
+    gap: 0.3rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     background-color: var(--color-surface);
