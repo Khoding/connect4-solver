@@ -70,42 +70,42 @@
           ></div>
         </template>
       </div>
-    </div>
 
-    <div class="player-indicators">
-      <div class="player-info-row">
-        <div class="player-info">
-          <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">P1</span>
-          <span class="eval-score" :class="evalClass(game.positionEval?.first)">
-            {{ formatEval(game.positionEval?.first) }}
-          </span>
+      <div class="player-indicators">
+        <div class="player-info-row">
+          <div class="player-info">
+            <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">P1</span>
+            <span class="eval-score" :class="evalClass(game.positionEval?.first)">
+              {{ formatEval(game.positionEval?.first) }}
+            </span>
+          </div>
+
+          <div
+            v-if="game.winLine"
+            class="winner-label"
+            :style="{
+              color: `oklch(from ${game.internalCurrentPlayer === 2 ? game.color1 : game.color2} max(0.65, l) c h)`,
+            }"
+          >
+            P{{ game.internalCurrentPlayer === 2 ? 1 : 2 }} Winner
+          </div>
+
+          <div class="player-info">
+            <span class="eval-score" :class="evalClass(game.positionEval?.second)">
+              {{ formatEval(game.positionEval?.second) }}
+            </span>
+            <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">P2</span>
+          </div>
         </div>
 
-        <div
-          v-if="game.winLine"
-          class="winner-label"
-          :style="{
-            color: `oklch(from ${game.internalCurrentPlayer === 2 ? game.color1 : game.color2} max(0.65, l) c h)`,
-          }"
-        >
-          P{{ game.internalCurrentPlayer === 2 ? 1 : 2 }} Winner
-        </div>
-
-        <div class="player-info">
-          <span class="eval-score" :class="evalClass(game.positionEval?.second)">
-            {{ formatEval(game.positionEval?.second) }}
-          </span>
-          <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">P2</span>
-        </div>
+        <meter
+          class="eval-meter"
+          :min="0"
+          :max="100"
+          :optimum="50"
+          :value="(((game.positionEval?.first ?? 0) + 18) / 36) * 100"
+        ></meter>
       </div>
-
-      <meter
-        class="eval-meter"
-        :min="0"
-        :max="100"
-        :optimum="50"
-        :value="(((game.positionEval?.first ?? 0) + 18) / 36) * 100"
-      ></meter>
     </div>
   </div>
 </template>
@@ -190,13 +190,13 @@ function formatEval(score) {
   margin-inline: auto;
   padding-bottom: 0.5rem;
   overflow-x: auto;
+  gap: var(--board-gap);
 }
 
 .column-buttons {
   display: grid;
   grid-template-columns: repeat(7, var(--cell-size));
   grid-column: 2;
-  margin-block-end: 4px;
   padding-inline: var(--board-gap);
   gap: var(--board-gap);
   font-size: 0.85rem;
@@ -227,6 +227,7 @@ function formatEval(score) {
 
 .player-indicators {
   display: flex;
+  grid-column: 2;
   flex-direction: column;
   inline-size: 100%;
   gap: 0.5rem;
