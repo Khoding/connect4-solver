@@ -62,12 +62,12 @@ function onKeydown(e) {
 
 <style scoped>
 .header {
-  margin-block-end: 2rem;
+  margin-block-end: clamp(1rem, 3vh, 2rem);
   text-align: center;
 
   & h1 {
     font-weight: 700;
-    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-size: clamp(1.4rem, min(3vw, 4vh), 2rem);
     letter-spacing: -0.02em;
   }
 }
@@ -80,7 +80,7 @@ function onKeydown(e) {
 .tagline {
   margin-block-start: 0.25rem;
   color: var(--color-text-dim);
-  font-size: clamp(0.85rem, 1.8vw, 1rem);
+  font-size: clamp(0.85rem, min(1.8vw, 2vh), 1rem);
 }
 
 .main {
@@ -88,14 +88,14 @@ function onKeydown(e) {
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: center;
-  gap: clamp(1rem, 2vw, 2.5rem);
+  gap: clamp(1rem, min(2vw, 2vh), 2.5rem);
 }
 
 @media (max-width: 720px) {
   .main {
     flex-direction: column;
     align-items: stretch;
-    gap: clamp(1rem, 2vw, 2.5rem);
+    gap: clamp(1rem, min(2vw, 2vh), 2.5rem);
   }
 }
 

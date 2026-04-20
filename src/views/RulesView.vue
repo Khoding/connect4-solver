@@ -34,9 +34,13 @@
     <div class="info-card">
       <h3>How it works</h3>
       <p>
-        Connect 4 is a <strong>solved game</strong>. With perfect play, the first player can always
-        force a win. This app uses a perfect solver to analyze every position and suggest the
-        optimal move.
+        Connect 4 is a
+        <strong
+          ><a href="https://en.wikipedia.org/wiki/Solved_game" target="_blank" rel="noopener"
+            >solved game</a
+          ></strong
+        >. With perfect play, the first player can always force a win. This app uses a perfect
+        solver to analyze every position and suggest the optimal move.
       </p>
       <p>
         The solver runs entirely in your browser via WebAssembly — no server required. It uses

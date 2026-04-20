@@ -428,7 +428,7 @@ function formatEval(score) {
   flex: 1;
   flex-direction: column;
   max-inline-size: 380px;
-  gap: 1rem;
+  gap: clamp(0.5rem, 1.5vh, 1rem);
 }
 
 .move-char {
