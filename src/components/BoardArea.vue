@@ -100,10 +100,20 @@
 
         <meter
           class="eval-meter"
+          :style="{
+            '--winning-color':
+              (game.positionEval?.first ?? 0) > 0
+                ? game.color1
+                : (game.positionEval?.first ?? 0) < 0
+                  ? game.color2
+                  : 'var(--color-text-dim)',
+          }"
           :min="0"
           :max="100"
+          :low="49"
           :optimum="50"
-          :value="(((game.positionEval?.first ?? 0) + 18) / 36) * 100"
+          :high="51"
+          :value="50 - ((game.positionEval?.first ?? 0) / 21) * 50"
         ></meter>
       </div>
     </div>
@@ -411,11 +421,15 @@ function formatEval(score) {
 .eval-meter {
   inline-size: 100%;
 
-  &::-webkit-meter-optimum-value {
-    background-color: var(--color-win);
+  &::-webkit-meter-optimum-value,
+  &::-webkit-meter-suboptimum-value,
+  &::-webkit-meter-even-less-good-value {
+    background-color: var(--winning-color, var(--color-win));
+    transition: background-color 0.2s;
   }
   &::-moz-meter-bar {
-    background-color: var(--color-win);
+    background-color: var(--winning-color, var(--color-win));
+    transition: background-color 0.2s;
   }
 }
 </style>
