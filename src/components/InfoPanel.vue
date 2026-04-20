@@ -95,10 +95,7 @@
       </p>
     </div>
 
-    <div
-      class="info-card eval-card"
-      :style="!game.positionEval && {opacity: 0.35, pointerEvents: 'none'}"
-    >
+    <div class="info-card">
       <h3>Position evaluation</h3>
       <div class="eval-row">
         <span class="eval-label" :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">
