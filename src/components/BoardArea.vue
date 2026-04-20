@@ -409,5 +409,12 @@ function formatEval(score) {
 
 .eval-meter {
   inline-size: 100%;
+
+  &::-webkit-meter-optimum-value {
+    background-color: var(--color-win);
+  }
+  &::-moz-meter-bar {
+    background-color: var(--color-win);
+  }
 }
 </style>
