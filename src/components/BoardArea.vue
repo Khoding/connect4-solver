@@ -71,19 +71,41 @@
         </template>
       </div>
     </div>
+
     <div class="player-indicators">
-      <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">
-        P1
-        <span v-if="game.winLine && game.internalCurrentPlayer === 2" class="winner-label"
-          >(Winner)</span
+      <div class="player-info-row">
+        <div class="player-info">
+          <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">P1</span>
+          <span class="eval-score" :class="evalClass(game.positionEval?.first)">
+            {{ formatEval(game.positionEval?.first) }}
+          </span>
+        </div>
+
+        <div
+          v-if="game.winLine"
+          class="winner-label"
+          :style="{
+            color: `oklch(from ${game.internalCurrentPlayer === 2 ? game.color1 : game.color2} max(0.65, l) c h)`,
+          }"
         >
-      </span>
-      <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">
-        P2
-        <span v-if="game.winLine && game.internalCurrentPlayer === 1" class="winner-label"
-          >(Winner)</span
-        >
-      </span>
+          P{{ game.internalCurrentPlayer === 2 ? 1 : 2 }} Winner
+        </div>
+
+        <div class="player-info">
+          <span class="eval-score" :class="evalClass(game.positionEval?.second)">
+            {{ formatEval(game.positionEval?.second) }}
+          </span>
+          <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">P2</span>
+        </div>
+      </div>
+
+      <meter
+        class="eval-meter"
+        :min="0"
+        :max="100"
+        :optimum="50"
+        :value="(((game.positionEval?.first ?? 0) + 21) / 42) * 100"
+      ></meter>
     </div>
   </div>
 </template>
@@ -134,6 +156,20 @@ function scoreClass(score) {
   if (score > 0) return 'score-win';
   if (score === 0) return 'score-draw';
   return 'score-loss';
+}
+
+function evalClass(score) {
+  score = score ?? 0;
+  if (score > 0) return 'eval-win';
+  if (score === 0) return 'eval-draw';
+  return 'eval-loss';
+}
+
+function formatEval(score) {
+  score = score ?? 0;
+  if (score > 0) return `+${score} (wins)`;
+  if (score === 0) return '0 (draw)';
+  return `${score} (loses)`;
 }
 </script>
 
@@ -191,19 +227,35 @@ function scoreClass(score) {
 
 .player-indicators {
   display: flex;
-  justify-content: center;
-  gap: 1rem;
+  flex-direction: column;
+  inline-size: 100%;
+  gap: 0.5rem;
   font-size: small;
 }
 
-.player-indicators > span {
+.player-info-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  inline-size: 100%;
+}
+
+.player-info {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.player-info:last-child {
+  grid-column: 3;
+  justify-content: flex-end;
 }
 
 .winner-label {
+  grid-column: 2;
   font-weight: 700;
+  text-align: center;
   text-transform: uppercase;
 }
 
@@ -323,5 +375,39 @@ function scoreClass(score) {
     color: var(--color-text-dim);
     opacity: 0.3;
   }
+}
+
+.eval-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.eval-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.eval-score {
+  font-weight: 600;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+
+  &.eval-win {
+    color: oklch(0.75 0.15 145);
+  }
+
+  &.eval-draw {
+    color: var(--color-text-dim);
+  }
+
+  &.eval-loss {
+    color: oklch(0.75 0.15 25);
+  }
+}
+
+.eval-meter {
+  inline-size: 100%;
 }
 </style>

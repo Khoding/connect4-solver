@@ -95,34 +95,6 @@
       </p>
     </div>
 
-    <div class="info-card">
-      <h3>Position evaluation</h3>
-      <div class="eval-row">
-        <span class="eval-label" :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">
-          1st player
-        </span>
-        <span class="eval-score" :class="evalClass(game.positionEval?.first)">
-          {{ formatEval(game.positionEval?.first) }}
-        </span>
-      </div>
-      <div class="eval-row">
-        <span class="eval-label" :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">
-          2nd player
-        </span>
-        <span class="eval-score" :class="evalClass(game.positionEval?.second)">
-          {{ formatEval(game.positionEval?.second) }}
-        </span>
-      </div>
-
-      <meter
-        class="eval-meter"
-        :min="0"
-        :max="100"
-        :optimum="50"
-        :value="(((game.positionEval?.first ?? 0) + 21) / 42) * 100"
-      ></meter>
-    </div>
-
     <div class="controls">
       <button
         v-if="!game.resetPending"
@@ -642,36 +614,6 @@ function formatEval(score) {
   text-align: center;
 }
 
-.eval-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 0;
-}
-
-.eval-label {
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.eval-score {
-  font-weight: 600;
-  font-size: 0.85rem;
-  font-family: var(--font-mono);
-
-  &.eval-win {
-    color: oklch(0.75 0.15 145);
-  }
-
-  &.eval-draw {
-    color: var(--color-text-dim);
-  }
-
-  &.eval-loss {
-    color: oklch(0.75 0.15 25);
-  }
-}
-
 @media (max-width: 720px) {
   .info-panel {
     inline-size: 100%;
@@ -683,9 +625,5 @@ function formatEval(score) {
   .info-panel {
     min-inline-size: 260px;
   }
-}
-
-.eval-meter {
-  inline-size: 100%;
 }
 </style>
