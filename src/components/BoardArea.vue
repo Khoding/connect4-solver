@@ -104,7 +104,7 @@
         :min="0"
         :max="100"
         :optimum="50"
-        :value="(((game.positionEval?.first ?? 0) + 21) / 42) * 100"
+        :value="(((game.positionEval?.first ?? 0) + 18) / 36) * 100"
       ></meter>
     </div>
   </div>
