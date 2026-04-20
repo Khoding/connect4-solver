@@ -44,7 +44,7 @@ html {
 }
 
 body {
-  min-block-size: 100dvh;
+  min-block-size: 100svh;
 }
 
 a {
