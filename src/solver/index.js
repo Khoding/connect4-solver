@@ -1,7 +1,7 @@
 /*
  * Copyright (C) Pascal Pons (https://github.com/PascalPons/connect4)
  * Copyright (C) 2026 Khodok
- * 
+ *
  * This file is part of Connect4 Game Solver.
  *
  * Connect4 Game Solver is free software: you can redistribute it and/or

@@ -116,6 +116,14 @@
           {{ formatEval(game.positionEval?.second) }}
         </span>
       </div>
+
+      <meter
+        class="eval-meter"
+        :min="0"
+        :max="100"
+        :optimum="50"
+        :value="(((game.positionEval?.first ?? 0) + 21) / 42) * 100"
+      ></meter>
     </div>
 
     <div class="controls">
@@ -678,5 +686,9 @@ function formatEval(score) {
   .info-panel {
     min-inline-size: 260px;
   }
+}
+
+.eval-meter {
+  inline-size: 100%;
 }
 </style>

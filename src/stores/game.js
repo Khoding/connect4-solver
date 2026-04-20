@@ -202,44 +202,75 @@ export const useGameStore = defineStore('game', () => {
     };
   });
 
-  /* This was taken from 2swap's solution https://github.com/2swap/WeakC4 */
-  const prefixList = [
-    {'Two-bar': ['436766']},
-    {'Bent two-bar': ['436761663']},
-    {'Short Cup Opening': ['46213522']},
-    {'Tall Cup Opening': ['46213524224']},
-    {'No Cup Opening': ['46213523']},
-    {'6-1': ['4444445']},
-    {47: ['47']},
-    {426566: ['426566']},
-    {426564: ['426564']},
-    {'Shoulder Spike': ['44444521', '44444524']},
-    {4444452: ['4444452']},
-    {'True Candlesticks': ['44444222266']},
-    {'Half Candlesticks': ['444442222', '444446622']},
-    {'Crown Variations': ['44444']},
-    {'D3-D4 Openings': ['4442', '4441']},
-    {4363: ['4363']},
-    {'Fist Variations': ['4366755535']},
-    {'Palm Variations': ['436556766']},
-    {4366: ['4366']},
-    {Triline: ['4623272', '4623262']},
-    {'Other 4367 Lines': ['4367']},
-    {'3-2': ['4443673', '4443613']},
-    {'Two-holes': ['4361']},
-    {'Other 462 Lines': ['462']},
-    {'Hills Opening': ['4443655', '4364455', '4365', '452443']},
-    {'Very Beginning': ['']},
-  ];
+  /* This was taken from 2swap's solution but expanded via procedural generation */
+  const openingsDict = ref(null);
+
+  async function loadOpenings() {
+    try {
+      const dbUrl = 'c4_openings';
+      const request = indexedDB.open(dbUrl, 1);
+
+      request.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('openings_store')) {
+          db.createObjectStore('openings_store');
+        }
+      };
+
+      const db = await new Promise((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+
+      const getTx = db.transaction('openings_store', 'readonly');
+      const store = getTx.objectStore('openings_store');
+      const getReq = store.get('dict');
+
+      let dict = await new Promise((resolve, reject) => {
+        getReq.onsuccess = () => resolve(getReq.result);
+        getReq.onerror = () => reject(getReq.error);
+      });
+
+      if (!dict) {
+        const res = await fetch('/openings.json');
+        dict = await res.json();
+
+        const putTx = db.transaction('openings_store', 'readwrite');
+        const putStore = putTx.objectStore('openings_store');
+        putStore.put(dict, 'dict');
+      }
+
+      openingsDict.value = dict;
+    } catch (e) {
+      console.warn('Failed to load openings via IndexedDB, falling back to fetch', e);
+      try {
+        const res = await fetch('/openings.json');
+        openingsDict.value = await res.json();
+      } catch (err) {
+        console.error('Failed to load openings', err);
+      }
+    }
+  }
+
+  loadOpenings();
 
   const currentOpening = computed(() => {
     const str = repstr.value;
-    for (const prefix of prefixList) {
-      const [name, prefixes] = Object.entries(prefix)[0];
-      if (prefixes.some(p => str.startsWith(p))) {
-        return name;
+    if (!str) return 'Very Beginning';
+
+    if (openingsDict.value) {
+      if (openingsDict.value[str]) {
+        return openingsDict.value[str];
+      }
+      // If no exact match, find the longest matching prefix
+      for (let len = str.length - 1; len > 0; len--) {
+        const prefix = str.slice(0, len);
+        if (openingsDict.value[prefix]) {
+          return openingsDict.value[prefix] + ' Variation';
+        }
       }
     }
+
     return 'Unknown Opening';
   });
 
@@ -547,7 +578,6 @@ export const useGameStore = defineStore('game', () => {
     gameHasWin,
     positionEval,
     currentOpening,
-    prefixList,
     // Helpers
     displayColorOf,
     // Actions

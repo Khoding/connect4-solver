@@ -21,7 +21,7 @@
 <template>
   <header class="header">
     <h1>Connect 4 <span class="subtitle">Solver</span></h1>
-    <p class="tagline">Pick your color and turn order, then follow the solver's suggestions.</p>
+    <p class="tagline">Pick your color, then follow the solver's suggestions.</p>
   </header>
 
   <main class="main">

@@ -21,15 +21,13 @@
 <template>
   <div class="rules-container">
     <div class="info-card">
-      <h3>Recognized Openings (by 2swap)</h3>
+      <h3>The Openings Book</h3>
       <div class="openings-list">
-        <ul class="openings-columns">
-          <li v-for="(opening, i) in gameStore.prefixList" :key="i">
-            <strong>{{ Object.keys(opening)[0] }}</strong
-            >:
-            <span class="mono">{{ Object.values(opening)[0].join(', ') || '(Empty)' }}</span>
-          </li>
-        </ul>
+        <p>
+          This application features an exhaustive list of nearly 20,000 creatively named openings
+          built for sequences up to depth 5. All valid sequences uniquely map to an epic DC Comics
+          and Star Wars themed name, cached securely in your browser!
+        </p>
       </div>
     </div>
 
