@@ -43,10 +43,6 @@ html {
   font-family: var(--font-sans);
 }
 
-body {
-  min-block-size: 100svh;
-}
-
 a {
   color: var(--color-accent);
   transition: color 0.25s;
