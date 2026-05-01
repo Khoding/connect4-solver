@@ -89,6 +89,13 @@
           >
             P{{ game.internalCurrentPlayer === 2 ? 1 : 2 }} Winner
           </div>
+          <div
+            v-else-if="statusLabel !== null"
+            class="status-label"
+            :style="{color: statusColor}"
+          >
+            {{ statusLabel }}
+          </div>
 
           <div class="player-info">
             <span class="eval-score" :class="evalClass(game.positionEval?.second)">
@@ -121,9 +128,33 @@
 </template>
 
 <script setup>
+import {computed} from 'vue';
 import {useGameStore} from '@/stores/game';
 
 const game = useGameStore();
+
+const statusLabel = computed(() => {
+  const score = game.suggestion?.score;
+  if (score == null) return null;
+  if (score === 0) return 'Draw';
+  const k = game.viewCursor;
+  const m =
+    score > 0
+      ? 43 + (k % 2) - k - 2 * score
+      : 44 - (k % 2) - k + 2 * score;
+  const winner =
+    score > 0 ? game.internalCurrentPlayer : game.internalCurrentPlayer === 1 ? 2 : 1;
+  return `P${winner} wins in ${m}`;
+});
+
+const statusColor = computed(() => {
+  const score = game.suggestion?.score;
+  if (score == null || score === 0) return 'var(--color-text-dim)';
+  const winner =
+    score > 0 ? game.internalCurrentPlayer : game.internalCurrentPlayer === 1 ? 2 : 1;
+  const color = winner === 1 ? game.color1 : game.color2;
+  return `oklch(from ${color} max(0.65, l) c h)`;
+});
 
 function isSuggested(col) {
   if (!game.repstr.length) return col === 4;
@@ -268,6 +299,14 @@ function formatEval(score) {
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
+}
+
+.status-label {
+  grid-column: 2;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .col-header {

@@ -21,17 +21,6 @@
 <template>
   <div class="rules-container">
     <div class="info-card">
-      <h3>The Openings Book</h3>
-      <div class="openings-list">
-        <p>
-          This application features an exhaustive list of nearly 20,000 creatively named openings
-          built for sequences up to depth 5. All valid sequences uniquely map to an epic DC Comics
-          and Star Wars themed name, cached securely in your browser!
-        </p>
-      </div>
-    </div>
-
-    <div class="info-card">
       <h3>How it works</h3>
       <p>
         Connect 4 is a
@@ -94,9 +83,6 @@
 </template>
 
 <script setup>
-import {useGameStore} from '@/stores/game';
-
-const gameStore = useGameStore();
 </script>
 
 <style scoped>
@@ -131,34 +117,6 @@ const gameStore = useGameStore();
 
   & a {
     color: var(--color-accent);
-  }
-}
-
-.openings-list {
-  margin-block-start: 1rem;
-}
-
-.openings-columns {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  padding: 0;
-  gap: 0.5rem;
-  list-style: none;
-
-  & li {
-    margin: 0;
-    color: var(--color-text-dim);
-    font-size: 0.85rem;
-  }
-
-  & strong {
-    color: var(--color-text);
-  }
-
-  & .mono {
-    color: oklch(0.8 0.1 220);
-    font-size: 0.8rem;
-    font-family: var(--font-mono);
   }
 }
 

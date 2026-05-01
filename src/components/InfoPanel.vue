@@ -70,29 +70,33 @@
       <p class="mono">
         <template v-if="!game.repstr"> (start) </template>
         <template v-else>
-          <span
-            v-for="(move, i) in game.repstr"
-            :key="i"
-            class="move-char"
-            :class="{
-              'is-optimal': game.moveOptimality[i] === true,
-              'is-suboptimal': game.moveOptimality[i] === false,
-            }"
-            :title="
-              game.moveOptimality[i] === true
-                ? 'Optimal move'
-                : game.moveOptimality[i] === false
-                  ? 'Suboptimal move'
-                  : 'Unknown'
-            "
-            >{{ move }}</span
-          >
+          <div class="move-list">
+            <div
+              v-for="(move, i) in game.repstr"
+              :key="i"
+              class="move-item"
+              :class="{
+                'is-optimal': game.moveOptimality[i] === true,
+                'is-suboptimal': game.moveOptimality[i] === false,
+              }"
+              :title="
+                game.moveOptimality[i] === true
+                  ? 'Optimal move'
+                  : game.moveOptimality[i] === false
+                    ? 'Suboptimal move'
+                    : 'Unknown'
+              "
+            >
+              <span class="move-num">{{ i + 1 }}</span>
+              <span class="move-col">{{ move }}</span>
+              <span class="move-score" :class="scoreClass(game.moveScores[i])">{{
+                formatMoveScore(game.moveScores[i])
+              }}</span>
+            </div>
+          </div>
         </template>
       </p>
-      <p class="dim">
-        Move {{ game.viewCursor }} / {{ game.totalMoves }} &bull;
-        <RouterLink to="/rules">{{ game.currentOpening }}</RouterLink>
-      </p>
+      <p class="dim">Move {{ game.viewCursor }} / {{ game.totalMoves }}</p>
     </div>
 
     <div class="controls">
@@ -371,6 +375,21 @@ function updateColor2(value) {
   if (hex) game.setColor2(hex);
 }
 
+/* ── Move score helpers ────────────────────────────────── */
+
+function formatMoveScore(score) {
+  if (score == null) return '?';
+  if (score > 0) return `+${score}`;
+  return `${score}`;
+}
+
+function scoreClass(score) {
+  if (score == null) return 'score-unknown';
+  if (score > 0) return 'score-win';
+  if (score < 0) return 'score-loss';
+  return 'score-draw';
+}
+
 /* ── Score helpers ─────────────────────────────────────── */
 
 function evalClass(score) {
@@ -400,13 +419,57 @@ function formatEval(score) {
   gap: clamp(0.5rem, 1.5vh, 1rem);
 }
 
-.move-char {
+.move-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.move-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  min-inline-size: 2rem;
+
   &.is-optimal {
-    color: oklch(0.75 0.15 150);
+    border-color: oklch(0.75 0.15 150);
   }
 
   &.is-suboptimal {
+    border-color: oklch(0.65 0.2 25);
+  }
+}
+
+.move-num {
+  color: var(--color-text-dim);
+  font-size: 0.6rem;
+  line-height: 1.2;
+}
+
+.move-col {
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.move-score {
+  font-size: 0.65rem;
+  line-height: 1.2;
+
+  &.score-win {
+    color: oklch(0.75 0.15 150);
+  }
+
+  &.score-loss {
     color: oklch(0.65 0.2 25);
+  }
+
+  &.score-draw,
+  &.score-unknown {
+    color: var(--color-text-dim);
   }
 }
 
