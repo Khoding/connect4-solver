@@ -89,11 +89,7 @@
           >
             P{{ game.internalCurrentPlayer === 2 ? 1 : 2 }} Winner
           </div>
-          <div
-            v-else-if="statusLabel !== null"
-            class="status-label"
-            :style="{color: statusColor}"
-          >
+          <div v-else-if="statusLabel !== null" class="status-label" :style="{color: statusColor}">
             {{ statusLabel }}
           </div>
 
@@ -138,20 +134,15 @@ const statusLabel = computed(() => {
   if (score == null) return null;
   if (score === 0) return 'Draw';
   const k = game.viewCursor;
-  const m =
-    score > 0
-      ? 43 + (k % 2) - k - 2 * score
-      : 44 - (k % 2) - k + 2 * score;
-  const winner =
-    score > 0 ? game.internalCurrentPlayer : game.internalCurrentPlayer === 1 ? 2 : 1;
+  const m = score > 0 ? 43 + (k % 2) - k - 2 * score : 44 - (k % 2) - k + 2 * score;
+  const winner = score > 0 ? game.internalCurrentPlayer : game.internalCurrentPlayer === 1 ? 2 : 1;
   return `P${winner} wins in ${m}`;
 });
 
 const statusColor = computed(() => {
   const score = game.suggestion?.score;
   if (score == null || score === 0) return 'var(--color-text-dim)';
-  const winner =
-    score > 0 ? game.internalCurrentPlayer : game.internalCurrentPlayer === 1 ? 2 : 1;
+  const winner = score > 0 ? game.internalCurrentPlayer : game.internalCurrentPlayer === 1 ? 2 : 1;
   const color = winner === 1 ? game.color1 : game.color2;
   return `oklch(from ${color} max(0.65, l) c h)`;
 });
@@ -208,9 +199,9 @@ function evalClass(score) {
 
 function formatEval(score) {
   score = score ?? 0;
-  if (score > 0) return `+${score} (wins)`;
-  if (score === 0) return '0 (draw)';
-  return `${score} (loses)`;
+  if (score > 0) return `+${score}`;
+  if (score === 0) return '0';
+  return `${score}`;
 }
 </script>
 

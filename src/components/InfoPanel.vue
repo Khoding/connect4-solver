@@ -88,7 +88,13 @@
               "
             >
               <span class="move-num">{{ i + 1 }}</span>
-              <span class="move-col">{{ move }}</span>
+              <span
+                class="move-col"
+                :style="{
+                  color: `oklch(from ${i % 2 === 0 ? game.color1 : game.color2} max(0.65, l) c h)`,
+                }"
+                >{{ move }}</span
+              >
               <span class="move-score" :class="scoreClass(game.moveScores[i])">{{
                 formatMoveScore(game.moveScores[i])
               }}</span>
@@ -389,22 +395,6 @@ function scoreClass(score) {
   if (score < 0) return 'score-loss';
   return 'score-draw';
 }
-
-/* ── Score helpers ─────────────────────────────────────── */
-
-function evalClass(score) {
-  score = score ?? 0;
-  if (score > 0) return 'eval-win';
-  if (score === 0) return 'eval-draw';
-  return 'eval-loss';
-}
-
-function formatEval(score) {
-  score = score ?? 0;
-  if (score > 0) return `+${score} (wins)`;
-  if (score === 0) return '0 (draw)';
-  return `${score} (loses)`;
-}
 </script>
 
 <style scoped>
@@ -429,11 +419,11 @@ function formatEval(score) {
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-inline-size: 2rem;
   padding: 3px 6px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
-  min-inline-size: 2rem;
 
   &.is-optimal {
     border-color: oklch(0.75 0.15 150);
