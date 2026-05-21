@@ -20,6 +20,73 @@
 
 <template>
   <aside class="info-panel">
+    <div class="info-card">
+      <h3>Move sequence</h3>
+      <p class="mono">
+        <template v-if="!game.repstr"> (start) </template>
+        <template v-else>
+          <div class="move-list">
+            <div
+              v-for="(move, i) in game.repstr"
+              :key="i"
+              class="move-item"
+              :class="{
+                'is-optimal': game.moveOptimality[i] === true,
+                'is-suboptimal': game.moveOptimality[i] === false,
+              }"
+              :title="
+                game.moveOptimality[i] === true
+                  ? 'Optimal move'
+                  : game.moveOptimality[i] === false
+                    ? 'Suboptimal move'
+                    : 'Unknown'
+              "
+            >
+              <span class="move-num">{{ i + 1 }}</span>
+              <span
+                class="move-col"
+                :style="{
+                  color: `oklch(from ${i % 2 === 0 ? game.color1 : game.color2} max(0.65, l) c h)`,
+                }"
+                >{{ move }}</span
+              >
+              <span class="move-score" :class="scoreClass(game.moveScores[i])">{{
+                formatMoveScore(game.moveScores[i])
+              }}</span>
+            </div>
+          </div>
+        </template>
+      </p>
+      <p class="dim">Move {{ game.viewCursor }} / {{ game.totalMoves }}</p>
+    </div>
+
+    <div class="controls">
+      <button
+        v-if="!game.resetPending"
+        class="reset-btn"
+        title="Reset board (R)"
+        :disabled="game.totalMoves === 0"
+        @click="game.resetBoard()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path
+            d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440h80q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l62 62-56 58-160-160 160-160 56 58-62 62h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z"
+          />
+        </svg>
+        Reset (R)
+      </button>
+      <template v-else>
+        <button class="confirm-btn" @click="game.resetBoard()">Confirm reset</button>
+        <button @click="game.cancelReset()">Cancel</button>
+      </template>
+    </div>
+
     <div class="controls">
       <button title="Step back" :disabled="!game.canStepBack" @click="game.stepBack()">
         <svg
@@ -65,135 +132,9 @@
       </button>
     </div>
 
-    <div class="info-card">
-      <h3>Move sequence</h3>
-      <p class="mono">
-        <template v-if="!game.repstr"> (start) </template>
-        <template v-else>
-          <div class="move-list">
-            <div
-              v-for="(move, i) in game.repstr"
-              :key="i"
-              class="move-item"
-              :class="{
-                'is-optimal': game.moveOptimality[i] === true,
-                'is-suboptimal': game.moveOptimality[i] === false,
-              }"
-              :title="
-                game.moveOptimality[i] === true
-                  ? 'Optimal move'
-                  : game.moveOptimality[i] === false
-                    ? 'Suboptimal move'
-                    : 'Unknown'
-              "
-            >
-              <span class="move-num">{{ i + 1 }}</span>
-              <span
-                class="move-col"
-                :style="{
-                  color: `oklch(from ${i % 2 === 0 ? game.color1 : game.color2} max(0.65, l) c h)`,
-                }"
-                >{{ move }}</span
-              >
-              <span class="move-score" :class="scoreClass(game.moveScores[i])">{{
-                formatMoveScore(game.moveScores[i])
-              }}</span>
-            </div>
-          </div>
-        </template>
-      </p>
-      <p class="dim">Move {{ game.viewCursor }} / {{ game.totalMoves }}</p>
-    </div>
-
     <div class="controls">
       <button
-        v-if="!game.resetPending"
-        title="Reset board (R)"
-        :disabled="game.totalMoves === 0"
-        @click="game.resetBoard()"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          height="1.2em"
-          viewBox="0 -960 960 960"
-          width="1.2em"
-          fill="currentColor"
-        >
-          <path
-            d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440h80q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l62 62-56 58-160-160 160-160 56 58-62 62h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z"
-          />
-        </svg>
-        Reset (R)
-      </button>
-      <template v-else>
-        <button class="confirm-btn" @click="game.resetBoard()">Confirm reset</button>
-        <button @click="game.cancelReset()">Cancel</button>
-      </template>
-    </div>
-
-    <div class="controls">
-      <button
-        title="Auto-play player 1's moves"
-        :class="{active: game.autoP1}"
-        @click="game.toggleAutoP1()"
-      >
-        <svg
-          v-if="game.autoP1"
-          xmlns="http://www.w3.org/2000/svg"
-          height="1.2em"
-          viewBox="0 -960 960 960"
-          width="1.2em"
-          fill="currentColor"
-        >
-          <path
-            d="M520-200v-560h240v560H520Zm-320 0v-560h240v560H200Zm400-80h80v-400h-80v400Zm-320 0h80v-400h-80v400Zm0-400v400-400Zm320 0v400-400Z"
-          />
-        </svg>
-        <svg
-          v-else
-          xmlns="http://www.w3.org/2000/svg"
-          height="1.2em"
-          viewBox="0 -960 960 960"
-          width="1.2em"
-          fill="currentColor"
-        >
-          <path d="M320-200v-560l440 280-440 280Zm80-280Zm0 134 210-134-210-134v268Z" />
-        </svg>
-        Auto P1
-      </button>
-      <button
-        title="Auto-play player 2's moves"
-        :class="{active: game.autoP2}"
-        @click="game.toggleAutoP2()"
-      >
-        <svg
-          v-if="game.autoP2"
-          xmlns="http://www.w3.org/2000/svg"
-          height="1.2em"
-          viewBox="0 -960 960 960"
-          width="1.2em"
-          fill="currentColor"
-        >
-          <path
-            d="M520-200v-560h240v560H520Zm-320 0v-560h240v560H200Zm400-80h80v-400h-80v400Zm-320 0h80v-400h-80v400Zm0-400v400-400Zm320 0v400-400Z"
-          />
-        </svg>
-        <svg
-          v-else
-          xmlns="http://www.w3.org/2000/svg"
-          height="1.2em"
-          viewBox="0 -960 960 960"
-          width="1.2em"
-          fill="currentColor"
-        >
-          <path d="M320-200v-560l440 280-440 280Zm80-280Zm0 134 210-134-210-134v268Z" />
-        </svg>
-        Auto P2
-      </button>
-    </div>
-
-    <div class="controls">
-      <button
+        class="replay-btn"
         title="Replay the game from the start"
         :disabled="!game.gameHasWin && !game.replayActive"
         :class="{active: game.replayActive}"
@@ -218,7 +159,7 @@
           fill="currentColor"
         >
           <path
-            d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440h80q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l62 62-56 58-160-160 160-160 56 58-62 62h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z"
+            d="M380-300l280-180-280-180v360Zm100 220q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
           />
         </svg>
         {{ game.replayActive ? 'Stop' : 'Replay' }}
@@ -622,7 +563,10 @@ function scoreClass(score) {
     color: var(--color-text);
     font-size: 0.9rem;
     cursor: pointer;
-    transition: background-color 0.15s;
+    transition:
+      background-color 0.15s,
+      border-color 0.15s,
+      color 0.15s;
 
     &:hover:not(:disabled) {
       background-color: var(--color-surface-alt);
@@ -633,13 +577,34 @@ function scoreClass(score) {
       opacity: 0.3;
     }
 
-    &.active {
-      border-color: var(--color-accent);
-      background-color: var(--color-accent);
-      color: var(--color-bg);
+    &.reset-btn {
+      border-color: color-mix(in oklch, var(--color-border), oklch(0.65 0.2 25) 30%);
+      color: oklch(0.65 0.2 25);
 
-      &:hover {
-        background-color: color-mix(in oklch, var(--color-accent), black 15%);
+      &:hover:not(:disabled) {
+        border-color: oklch(0.65 0.2 25);
+        background-color: oklch(0.65 0.2 25 / 0.1);
+        color: oklch(0.7 0.22 25);
+      }
+    }
+
+    &.replay-btn {
+      border-color: color-mix(in oklch, var(--color-border), var(--color-accent) 30%);
+      color: var(--color-accent);
+
+      &:hover:not(:disabled) {
+        border-color: var(--color-accent);
+        background-color: color-mix(in oklch, var(--color-accent), transparent 90%);
+      }
+
+      &.active {
+        border-color: var(--color-accent);
+        background-color: var(--color-accent);
+        color: var(--color-bg);
+
+        &:hover {
+          background-color: color-mix(in oklch, var(--color-accent), black 15%);
+        }
       }
     }
 

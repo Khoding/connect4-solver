@@ -73,11 +73,24 @@
 
       <div class="player-indicators">
         <div class="player-info-row">
-          <div class="player-info">
-            <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">P1</span>
-            <span class="eval-score" :class="evalClass(game.positionEval?.first)">
-              {{ formatEval(game.positionEval?.first) }}
-            </span>
+          <div class="player-container">
+            <div class="player-info">
+              <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">P1</span>
+              <span class="eval-score" :class="evalClass(game.positionEval?.first)">
+                {{ formatEval(game.positionEval?.first) }}
+              </span>
+            </div>
+            <button
+              class="auto-btn"
+              :class="{active: game.autoP1}"
+              :style="{
+                '--player-accent': game.color1,
+              }"
+              title="Auto-play Player 1's moves"
+              @click="game.toggleAutoP1()"
+            >
+              Auto
+            </button>
           </div>
 
           <div
@@ -93,11 +106,24 @@
             {{ statusLabel }}
           </div>
 
-          <div class="player-info">
-            <span class="eval-score" :class="evalClass(game.positionEval?.second)">
-              {{ formatEval(game.positionEval?.second) }}
-            </span>
-            <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">P2</span>
+          <div class="player-container">
+            <div class="player-info">
+              <span class="eval-score" :class="evalClass(game.positionEval?.second)">
+                {{ formatEval(game.positionEval?.second) }}
+              </span>
+              <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">P2</span>
+            </div>
+            <button
+              class="auto-btn"
+              :class="{active: game.autoP2}"
+              :style="{
+                '--player-accent': game.color2,
+              }"
+              title="Auto-play Player 2's moves"
+              @click="game.toggleAutoP2()"
+            >
+              Auto
+            </button>
           </div>
         </div>
 
@@ -269,8 +295,24 @@ function formatEval(score) {
 .player-info-row {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  align-items: center;
+  align-items: start;
   inline-size: 100%;
+}
+
+.player-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.player-container:first-child {
+  grid-column: 1;
+  align-items: flex-start;
+}
+
+.player-container:last-child {
+  grid-column: 3;
+  align-items: flex-end;
 }
 
 .player-info {
@@ -280,9 +322,30 @@ function formatEval(score) {
   white-space: nowrap;
 }
 
-.player-info:last-child {
-  grid-column: 3;
-  justify-content: flex-end;
+.auto-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text-dim);
+  font-weight: 500;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background-color 0.15s;
+
+  &:hover {
+    border-color: var(--player-accent);
+    color: var(--color-text);
+  }
+
+  &.active {
+    border-color: var(--player-accent);
+    background-color: var(--player-accent);
+    color: oklch(from var(--player-accent) clamp(0.15, (0.5 - l) * 10000, 0.95) c h);
+  }
 }
 
 .winner-label {
