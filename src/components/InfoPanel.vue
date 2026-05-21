@@ -240,6 +240,20 @@
       </p>
     </div>
 
+    <div class="info-card">
+      <h3>Preferences</h3>
+      <div class="options-list">
+        <label class="setting-label">
+          <input
+            type="checkbox"
+            :checked="game.hideHeader"
+            @change="game.setHideHeader($event.target.checked)"
+          />
+          <span>Hide header</span>
+        </label>
+      </div>
+    </div>
+
     <p class="credit">
       Solver by
       <a href="http://connect4.gamesolver.org" target="_blank" rel="noopener">Pascal Pons</a>.
@@ -348,6 +362,34 @@ function scoreClass(score) {
   flex-direction: column;
   max-inline-size: 380px;
   gap: clamp(0.5rem, 1.5vh, 1rem);
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.setting-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-dim);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: color 0.15s;
+  user-select: none;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  & input[type='checkbox'] {
+    inline-size: 16px;
+    block-size: 16px;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+  }
 }
 
 .move-list {

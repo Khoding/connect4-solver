@@ -100,6 +100,7 @@ export const useGameStore = defineStore('game', () => {
   const userIsFirst = ref(true); // does the human play as the first mover?
   const color1 = ref('#e03030'); // display color for the first player
   const color2 = ref('#e8d020'); // display color for the second player
+  const hideHeader = ref(false);
   const autoP1 = ref(false);
   const autoP2 = ref(false);
   const replayActive = ref(false);
@@ -309,6 +310,11 @@ export const useGameStore = defineStore('game', () => {
     saveState();
   }
 
+  function setHideHeader(val) {
+    hideHeader.value = val;
+    saveState();
+  }
+
   function swapColors() {
     const tmp = color1.value;
     color1.value = color2.value;
@@ -390,6 +396,7 @@ export const useGameStore = defineStore('game', () => {
           userIsFirst: userIsFirst.value,
           color1: color1.value,
           color2: color2.value,
+          hideHeader: hideHeader.value,
         }),
       );
     } catch {
@@ -439,6 +446,7 @@ export const useGameStore = defineStore('game', () => {
       if (typeof saved.userIsFirst === 'boolean') userIsFirst.value = saved.userIsFirst;
       if (saved.color1) color1.value = saved.color1;
       if (saved.color2) color2.value = saved.color2;
+      if (typeof saved.hideHeader === 'boolean') hideHeader.value = saved.hideHeader;
     }
 
     // Replay moves
@@ -476,6 +484,7 @@ export const useGameStore = defineStore('game', () => {
     userIsFirst,
     color1,
     color2,
+    hideHeader,
     autoP1,
     autoP2,
     replayActive,
@@ -518,6 +527,7 @@ export const useGameStore = defineStore('game', () => {
     setUserIsFirst,
     setColor1,
     setColor2,
+    setHideHeader,
     swapColors,
     toggleAutoP1,
     toggleAutoP2,
