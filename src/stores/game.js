@@ -171,6 +171,78 @@ export const useGameStore = defineStore('game', () => {
     {immediate: true},
   );
 
+  /* ── Historical Scores/Optimality Solver ─────────────── */
+
+  let analysisRunId = 0;
+
+  async function fillHistoricalScores() {
+    const s = solverStatus.value;
+    if (!s?.moduleReady) return;
+
+    analysisRunId++;
+    const currentRunId = analysisRunId;
+
+    const history = [...moveHistory.value];
+    const n = history.length;
+
+    // Ensure our arrays have at least n length (padded with null)
+    while (moveScores.value.length < n) {
+      moveScores.value.push(null);
+    }
+    while (moveOptimality.value.length < n) {
+      moveOptimality.value.push(null);
+    }
+
+    for (let i = 0; i < n; i++) {
+      if (currentRunId !== analysisRunId) return; // aborted by a newer run
+
+      // Check if we need to compute this move
+      if (
+        moveScores.value[i] !== null &&
+        moveScores.value[i] !== undefined &&
+        moveOptimality.value[i] !== null &&
+        moveOptimality.value[i] !== undefined
+      ) {
+        continue;
+      }
+
+      const prefix = history.slice(0, i).join('');
+      const col = history[i];
+
+      try {
+        const scores = await wasmSolver.analyze(prefix);
+        if (currentRunId !== analysisRunId) return;
+
+        const colIndex = col - 1;
+        const scoreForMove = scores[colIndex];
+
+        let bestScore = -Infinity;
+        for (let c = 0; c < 7; c++) {
+          if (scores[c] !== -1000 && scores[c] > bestScore) {
+            bestScore = scores[c];
+          }
+        }
+
+        const isOptimal = scoreForMove !== -1000 && scoreForMove === bestScore;
+
+        if (moveHistory.value[i] === col && moveHistory.value.length === n) {
+          moveScores.value[i] = scoreForMove !== -1000 ? scoreForMove : null;
+          moveOptimality.value[i] = isOptimal;
+        }
+      } catch (err) {
+        console.error(`Failed to analyze historical move at index ${i}`, err);
+      }
+    }
+  }
+
+  watch(
+    [moveHistory, solverStatus],
+    () => {
+      fillHistoricalScores();
+    },
+    {deep: true, immediate: true},
+  );
+
   const solverStatusText = computed(() => {
     const s = solverStatus.value;
     if (!s?.moduleReady) return 'Loading WASM module…';
