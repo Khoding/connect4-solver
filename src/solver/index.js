@@ -176,7 +176,7 @@ export async function analyze(moves) {
  * @param {boolean} weak - If true, only determine win/draw/loss (faster)
  * @returns {number} Score for current player
  */
-export async function solve(moves, weak = false) {
+async function solve(moves, weak = false) {
   const mod = await initModule();
   if (!bookLoaded) await loadOpeningBook();
 
@@ -186,7 +186,7 @@ export async function solve(moves, weak = false) {
 /**
  * Get the node count from the last computation.
  */
-export async function getNodeCount() {
+async function getNodeCount() {
   const mod = await initModule();
   return mod.ccall('get_node_count', 'number', [], []);
 }
@@ -210,5 +210,3 @@ export async function warmup() {
   await initModule();
   await loadOpeningBook();
 }
-
-export default {analyze, solve, getNodeCount, getStatus, warmup};
