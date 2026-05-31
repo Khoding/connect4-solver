@@ -93,7 +93,7 @@
             </button>
           </div>
 
-          <div>
+          <div class="center-col">
             <div
               v-if="game.winLine"
               class="winner-label"
@@ -170,6 +170,8 @@ import {useGameStore} from '@/stores/game';
 const game = useGameStore();
 
 const statusLabel = computed(() => {
+  if (game.resignedPlayer !== 0) return `Player ${game.resignedPlayer} resigned`;
+  if (game.isDraw) return 'Draw';
   const score = game.suggestion?.score;
   if (score == null) return null;
   if (score === 0) return 'Draw';
@@ -362,10 +364,14 @@ function formatEval(score) {
   }
 }
 
+.center-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
 .auto-both-btn {
-  grid-column: 2;
-  justify-self: center;
-  margin-block-start: 4px;
   padding: 2px 8px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -393,14 +399,12 @@ function formatEval(score) {
 }
 
 .winner-label {
-  grid-column: 2;
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
 }
 
 .status-label {
-  grid-column: 2;
   font-weight: 600;
   font-size: 0.8rem;
   text-align: center;
