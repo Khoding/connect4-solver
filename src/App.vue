@@ -20,4 +20,37 @@
 
 <template>
   <RouterView />
+  <footer class="site-footer" v-if="!game.hideFooter">
+    <div>
+      Solver by
+      <a href="http://connect4.gamesolver.org" target="_blank" rel="noopener">Pascal Pons</a>.
+      Inspired by
+      <a href="https://2swap.github.io/WeakC4/" target="_blank" rel="noopener">2swap's WeakC4</a>.
+    </div>
+    <div>
+      <a href="https://github.com/Khoding/connect4-solver" target="_blank" rel="noopener"
+        >GitHub Repository</a
+      >
+    </div>
+    <div>
+      Licensed under
+      <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener"
+        >AGPL-3.0</a
+      >
+    </div>
+  </footer>
 </template>
+
+<script setup>
+import {useGameStore} from '@/stores/game';
+const game = useGameStore();
+</script>
+
+<style>
+.site-footer {
+  padding: 0.75rem 0;
+  color: var(--color-text-dim);
+  font-size: 0.8rem;
+  text-align: center;
+}
+</style>

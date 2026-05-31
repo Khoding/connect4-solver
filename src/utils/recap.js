@@ -350,7 +350,9 @@ export function recapCardSvg(recap) {
     parts.push(
       `<text x="${x + 16}" y="${ty}" font-family="${MONO}" font-size="13" fill="${THEME.text}" xml:space="preserve">${esc(line)}</text>`,
     );
-    parts.push(`<circle cx="${x + colW - 16}" cy="${ty - 4}" r="5" fill="${meta.color}"/>`);
+    // Quality dot at a fixed offset next to the content (not the column edge,
+    // which would bleed into the next column and orphan trailing-row dots).
+    parts.push(`<circle cx="${x + 160}" cy="${ty - 4}" r="5" fill="${meta.color}"/>`);
   });
   y += rows * rowH + 16;
 

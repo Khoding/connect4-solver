@@ -101,6 +101,7 @@ export const useGameStore = defineStore('game', () => {
   const color1 = ref('#e03030'); // display color for the first player
   const color2 = ref('#e8d020'); // display color for the second player
   const hideHeader = ref(false);
+  const hideFooter = ref(false);
   const autoP1 = ref(false);
   const autoP2 = ref(false);
   const replayActive = ref(false);
@@ -424,6 +425,11 @@ export const useGameStore = defineStore('game', () => {
     saveState();
   }
 
+  function setHideFooter(val) {
+    hideFooter.value = val;
+    saveState();
+  }
+
   function swapColors() {
     const tmp = color1.value;
     color1.value = color2.value;
@@ -513,6 +519,7 @@ export const useGameStore = defineStore('game', () => {
           color1: color1.value,
           color2: color2.value,
           hideHeader: hideHeader.value,
+          hideFooter: hideFooter.value,
         }),
       );
     } catch {
@@ -565,6 +572,7 @@ export const useGameStore = defineStore('game', () => {
       if (saved.color1) color1.value = saved.color1;
       if (saved.color2) color2.value = saved.color2;
       if (typeof saved.hideHeader === 'boolean') hideHeader.value = saved.hideHeader;
+      if (typeof saved.hideFooter === 'boolean') hideFooter.value = saved.hideFooter;
     }
 
     // Replay moves
@@ -603,6 +611,7 @@ export const useGameStore = defineStore('game', () => {
     color1,
     color2,
     hideHeader,
+    hideFooter,
     autoP1,
     autoP2,
     replayActive,
@@ -653,6 +662,7 @@ export const useGameStore = defineStore('game', () => {
     setColor1,
     setColor2,
     setHideHeader,
+    setHideFooter,
     swapColors,
     toggleAutoP1,
     toggleAutoP2,

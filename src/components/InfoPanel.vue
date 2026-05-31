@@ -253,24 +253,16 @@
           />
           <span>Hide header</span>
         </label>
+        <label class="setting-label">
+          <input
+            type="checkbox"
+            :checked="game.hideFooter"
+            @change="game.setHideFooter($event.target.checked)"
+          />
+          <span>Hide footer</span>
+        </label>
       </div>
     </div>
-
-    <p class="credit">
-      Solver by
-      <a href="http://connect4.gamesolver.org" target="_blank" rel="noopener">Pascal Pons</a>.
-      Inspired by
-      <a href="https://2swap.github.io/WeakC4/" target="_blank" rel="noopener">2swap's WeakC4</a>.
-      <br />
-      <a href="https://github.com/Khoding/connect4-solver" target="_blank" rel="noopener"
-        >GitHub Repository</a
-      >
-      <br />
-      Licensed under
-      <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener"
-        >AGPL-3.0</a
-      >
-    </p>
   </aside>
 </template>
 
