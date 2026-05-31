@@ -425,6 +425,40 @@ export const useGameStore = defineStore('game', () => {
     saveState();
   }
 
+  function loadMoves(moveString) {
+    const history = [];
+    const scores = [];
+    const optimality = [];
+    const bestScores = [];
+    const bestCols = [];
+
+    for (let i = 0; i < moveString.length; i++) {
+      const col = parseInt(moveString[i]);
+      if (col >= 1 && col <= 7) {
+        const currentBoard = constructBoardArr(history.join(''));
+        const x = col - 1;
+        if (currentBoard[ROWS - 1][x] === 0 && !checkForWin(currentBoard)) {
+          history.push(col);
+          scores.push(null);
+          optimality.push(null);
+          bestScores.push(null);
+          bestCols.push(null);
+        }
+      }
+    }
+
+    moveHistory.value = history;
+    moveScores.value = scores;
+    moveOptimality.value = optimality;
+    moveBestScores.value = bestScores;
+    moveBestCols.value = bestCols;
+    viewCursor.value = history.length;
+    resetPending.value = false;
+    resignedPlayer.value = 0;
+    saveState();
+    syncUrl();
+  }
+
   function setUserIsFirst(val) {
     userIsFirst.value = val;
     saveState();
@@ -594,7 +628,7 @@ export const useGameStore = defineStore('game', () => {
       if (saved.color2) color2.value = saved.color2;
       if (typeof saved.hideHeader === 'boolean') hideHeader.value = saved.hideHeader;
       if (typeof saved.hideFooter === 'boolean') hideFooter.value = saved.hideFooter;
-      if (saved.resignedPlayer === 1 || saved.resignedPlayer === 2)
+      if (!urlPos && (saved.resignedPlayer === 1 || saved.resignedPlayer === 2))
         resignedPlayer.value = saved.resignedPlayer;
     }
 
@@ -684,6 +718,7 @@ export const useGameStore = defineStore('game', () => {
     cancelReset,
     resign,
     undoResign,
+    loadMoves,
     setUserIsFirst,
     setColor1,
     setColor2,

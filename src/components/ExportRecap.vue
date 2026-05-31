@@ -20,34 +20,56 @@
 
 <template>
   <div class="info-card">
-    <h3>Export</h3>
-    <p class="dim recap-summary">
-      <template v-if="game.gameOver">
-        {{ recap.summary.result }} · {{ recap.summary.totalPlies }} plies<template
-          v-if="recap.summary.accuracy != null"
-        >
-          · {{ recap.summary.accuracy }}% accuracy</template
-        >
-      </template>
-      <template v-else-if="game.totalMoves === 0"> Start a game to export a recap. </template>
-      <template v-else> Declare a resignation or finish the game to export a recap. </template>
-    </p>
-    <div v-if="!game.gameOver && game.totalMoves > 0" class="resign-actions">
-      <button @click="game.resign(1)">P1 resigned</button>
-      <button @click="game.resign(2)">P2 resigned</button>
+    <div class="card-tabs">
+      <button :class="{active: cardTab === 'export'}" @click="cardTab = 'export'">Export</button>
+      <button :class="{active: cardTab === 'import'}" @click="cardTab = 'import'">Import</button>
     </div>
-    <div v-if="game.resignedPlayer" class="resign-badge">
-      <span>Player {{ game.resignedPlayer }} resigned</span>
-      <button class="resign-undo" @click="game.undoResign()">Undo</button>
-    </div>
-    <div class="recap-actions">
-      <button class="recap-primary" :disabled="!game.gameOver" @click="open = true">
-        View recap
-      </button>
-      <button :disabled="!game.gameOver" @click="quickCopyText">
-        {{ quickCopied ? 'Copied!' : 'Copy text' }}
-      </button>
-    </div>
+
+    <template v-if="cardTab === 'export'">
+      <p class="dim recap-summary">
+        <template v-if="game.gameOver">
+          {{ recap.summary.result }} · {{ recap.summary.totalPlies }} plies<template
+            v-if="recap.summary.accuracy != null"
+          >
+            · {{ recap.summary.accuracy }}% accuracy</template
+          >
+        </template>
+        <template v-else-if="game.totalMoves === 0"> Start a game to export a recap. </template>
+        <template v-else> Declare a resignation or finish the game to export a recap. </template>
+      </p>
+      <div v-if="!game.gameOver && game.totalMoves > 0" class="resign-actions">
+        <button @click="game.resign(1)">P1 resigned</button>
+        <button @click="game.resign(2)">P2 resigned</button>
+      </div>
+      <div v-if="game.resignedPlayer" class="resign-badge">
+        <span>Player {{ game.resignedPlayer }} resigned</span>
+        <button class="resign-undo" @click="game.undoResign()">Undo</button>
+      </div>
+      <div class="recap-actions">
+        <button class="recap-primary" :disabled="!game.gameOver" @click="open = true">
+          View recap
+        </button>
+        <button :disabled="!game.gameOver" @click="quickCopyText">
+          {{ quickCopied ? 'Copied!' : 'Copy text' }}
+        </button>
+      </div>
+    </template>
+
+    <template v-else>
+      <p class="dim recap-summary">Paste any text containing column numbers (1–7) to load a game.</p>
+      <textarea
+        v-model="importInput"
+        class="import-textarea"
+        placeholder="e.g. 45627346475461456575617"
+        rows="3"
+        spellcheck="false"
+      />
+      <div class="recap-actions">
+        <button class="recap-primary" :disabled="!parsedMoves" @click="doImport">
+          Load{{ parsedMoves ? ` (${parsedMoves.length} moves)` : '' }}
+        </button>
+      </div>
+    </template>
   </div>
 
   <Teleport to="body">
@@ -109,6 +131,23 @@ const note = ref('');
 const quickCopied = ref(false);
 const textCopied = ref(false);
 const imgCopied = ref(false);
+
+const cardTab = ref('export');
+const importInput = ref('');
+
+const parsedMoves = computed(() => {
+  const input = importInput.value;
+  const movesLine = input.match(/^Moves:\s+([1-7]+)/m);
+  const raw = movesLine ? movesLine[1] : input.replace(/[^1-7]/g, '');
+  return raw || null;
+});
+
+function doImport() {
+  if (!parsedMoves.value) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set('pos', parsedMoves.value);
+  window.location.assign(url.toString());
+}
 
 const recap = computed(() =>
   Recap.buildRecap({
@@ -203,6 +242,64 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <style scoped>
+.card-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-block-end: 0.5rem;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+
+  & button {
+    flex: 1;
+    padding: 5px 10px;
+    border: none;
+    border-radius: calc(var(--radius-sm) - 2px);
+    background-color: transparent;
+    color: var(--color-text-dim);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+
+    &.active {
+      background-color: var(--color-surface-alt);
+      color: var(--color-text);
+    }
+  }
+}
+
+.import-textarea {
+  inline-size: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+
+  &::placeholder {
+    color: var(--color-text-dim);
+    opacity: 0.6;
+  }
+
+  &:focus {
+    border-color: var(--color-accent);
+    outline: none;
+  }
+}
+
+.import-note {
+  margin: 0;
+  color: var(--color-text-dim);
+  font-size: 0.8rem;
+}
+
 .recap-summary {
   margin-block: 0.25rem 0.5rem;
 }
