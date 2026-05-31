@@ -93,17 +93,31 @@
             </button>
           </div>
 
-          <div
-            v-if="game.winLine"
-            class="winner-label"
-            :style="{
-              color: `oklch(from ${game.internalCurrentPlayer === 2 ? game.color1 : game.color2} max(0.65, l) c h)`,
-            }"
-          >
-            P{{ game.internalCurrentPlayer === 2 ? 1 : 2 }} Winner
-          </div>
-          <div v-else-if="statusLabel !== null" class="status-label" :style="{color: statusColor}">
-            {{ statusLabel }}
+          <div>
+            <div
+              v-if="game.winLine"
+              class="winner-label"
+              :style="{
+                color: `oklch(from ${game.internalCurrentPlayer === 2 ? game.color1 : game.color2} max(0.65, l) c h)`,
+              }"
+            >
+              P{{ game.internalCurrentPlayer === 2 ? 1 : 2 }} Winner
+            </div>
+            <div
+              v-else-if="statusLabel !== null"
+              class="status-label"
+              :style="{color: statusColor}"
+            >
+              {{ statusLabel }}
+            </div>
+            <button
+              class="auto-both-btn"
+              :class="{active: game.autoP1 && game.autoP2}"
+              title="Auto-play both players' moves"
+              @click="game.toggleAutoBoth()"
+            >
+              Auto both
+            </button>
           </div>
 
           <div class="player-container">
@@ -345,6 +359,36 @@ function formatEval(score) {
     border-color: var(--player-accent);
     background-color: var(--player-accent);
     color: oklch(from var(--player-accent) clamp(0.15, (0.5 - l) * 10000, 0.95) c h);
+  }
+}
+
+.auto-both-btn {
+  grid-column: 2;
+  justify-self: center;
+  margin-block-start: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text-dim);
+  font-weight: 500;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background-color 0.15s;
+
+  &:hover {
+    border-color: var(--color-text);
+    color: var(--color-text);
+  }
+
+  &.active {
+    border-color: var(--color-text);
+    background-color: var(--color-text);
+    color: var(--color-surface);
   }
 }
 

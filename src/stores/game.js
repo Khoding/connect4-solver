@@ -108,6 +108,8 @@ export const useGameStore = defineStore('game', () => {
   const moveHistory = ref([]); // array of column numbers (1-7)
   const moveScores = ref([]); // solver score for each move at the time it was played (parallel to moveHistory)
   const moveOptimality = ref([]); // true if optimal, false if suboptimal, null if unknown (parallel to moveHistory)
+  const moveBestScores = ref([]); // best available score at each ply, mover's perspective (parallel to moveHistory)
+  const moveBestCols = ref([]); // best column (1-7) at each ply (parallel to moveHistory)
   const viewCursor = ref(0); // how many moves are currently displayed (0 = start)
   const resetPending = ref(false); // true when waiting for confirm
 
@@ -192,6 +194,12 @@ export const useGameStore = defineStore('game', () => {
     while (moveOptimality.value.length < n) {
       moveOptimality.value.push(null);
     }
+    while (moveBestScores.value.length < n) {
+      moveBestScores.value.push(null);
+    }
+    while (moveBestCols.value.length < n) {
+      moveBestCols.value.push(null);
+    }
 
     for (let i = 0; i < n; i++) {
       if (currentRunId !== analysisRunId) return; // aborted by a newer run
@@ -201,7 +209,11 @@ export const useGameStore = defineStore('game', () => {
         moveScores.value[i] !== null &&
         moveScores.value[i] !== undefined &&
         moveOptimality.value[i] !== null &&
-        moveOptimality.value[i] !== undefined
+        moveOptimality.value[i] !== undefined &&
+        moveBestScores.value[i] !== null &&
+        moveBestScores.value[i] !== undefined &&
+        moveBestCols.value[i] !== null &&
+        moveBestCols.value[i] !== undefined
       ) {
         continue;
       }
@@ -217,9 +229,11 @@ export const useGameStore = defineStore('game', () => {
         const scoreForMove = scores[colIndex];
 
         let bestScore = -Infinity;
+        let bestColIndex = -1;
         for (let c = 0; c < 7; c++) {
           if (scores[c] !== -1000 && scores[c] > bestScore) {
             bestScore = scores[c];
+            bestColIndex = c;
           }
         }
 
@@ -228,6 +242,8 @@ export const useGameStore = defineStore('game', () => {
         if (moveHistory.value[i] === col && moveHistory.value.length === n) {
           moveScores.value[i] = scoreForMove !== -1000 ? scoreForMove : null;
           moveOptimality.value[i] = isOptimal;
+          moveBestScores.value[i] = bestScore !== -Infinity ? bestScore : null;
+          moveBestCols.value[i] = bestColIndex >= 0 ? bestColIndex + 1 : null;
         }
       } catch (err) {
         console.error(`Failed to analyze historical move at index ${i}`, err);
@@ -257,10 +273,25 @@ export const useGameStore = defineStore('game', () => {
   const canStepForward = computed(() => viewCursor.value < moveHistory.value.length);
   const totalMoves = computed(() => moveHistory.value.length);
 
+  /* ── Full-game outcome (independent of the review cursor) ── */
+
+  /** Board for the complete move history, ignoring the review cursor */
+  const fullBoard = computed(() => constructBoardArr(moveHistory.value.join('')));
+  const fullWinLine = computed(() => checkForWin(fullBoard.value));
+
   /** Whether the full move history (regardless of viewCursor) contains a win */
-  const gameHasWin = computed(
-    () => checkForWin(constructBoardArr(moveHistory.value.join(''))) !== null,
-  );
+  const gameHasWin = computed(() => fullWinLine.value !== null);
+
+  /** Winning player number (1 or 2), or 0 if none */
+  const winner = computed(() => {
+    const wl = fullWinLine.value;
+    if (!wl?.length) return 0;
+    const [y, x] = wl[0];
+    return fullBoard.value[y][x];
+  });
+
+  const isDraw = computed(() => !fullWinLine.value && moveHistory.value.length >= ROWS * COLS);
+  const gameOver = computed(() => !!fullWinLine.value || moveHistory.value.length >= ROWS * COLS);
 
   /** Position evaluation for both players (score relative to each) */
   const positionEval = computed(() => {
@@ -295,6 +326,8 @@ export const useGameStore = defineStore('game', () => {
       moveHistory.value = moveHistory.value.slice(0, viewCursor.value);
       moveScores.value = moveScores.value.slice(0, viewCursor.value);
       moveOptimality.value = moveOptimality.value.slice(0, viewCursor.value);
+      moveBestScores.value = moveBestScores.value.slice(0, viewCursor.value);
+      moveBestCols.value = moveBestCols.value.slice(0, viewCursor.value);
     }
 
     // Record the solver score for the chosen column (from current player's perspective)
@@ -309,6 +342,8 @@ export const useGameStore = defineStore('game', () => {
 
     moveScores.value.push(scoreForMove !== -1000 ? scoreForMove : null);
     moveOptimality.value.push(isOptimal);
+    moveBestScores.value.push(bestScore);
+    moveBestCols.value.push(suggestion.value?.bestCols?.[0] ?? null);
 
     moveHistory.value.push(column);
     viewCursor.value = moveHistory.value.length;
@@ -357,6 +392,8 @@ export const useGameStore = defineStore('game', () => {
     moveHistory.value = [];
     moveScores.value = [];
     moveOptimality.value = [];
+    moveBestScores.value = [];
+    moveBestCols.value = [];
     viewCursor.value = 0;
     resetPending.value = false;
     saveState();
@@ -456,6 +493,13 @@ export const useGameStore = defineStore('game', () => {
     updateAutoInterval();
   }
 
+  function toggleAutoBoth() {
+    const next = !(autoP1.value && autoP2.value);
+    autoP1.value = next;
+    autoP2.value = next;
+    updateAutoInterval();
+  }
+
   /* ── Persistence ────────────────────────────────────── */
 
   function saveState() {
@@ -505,6 +549,8 @@ export const useGameStore = defineStore('game', () => {
     moveHistory.value = [];
     moveScores.value = [];
     moveOptimality.value = [];
+    moveBestScores.value = [];
+    moveBestCols.value = [];
     viewCursor.value = 0;
 
     // Check URL for position, then fall back to saved state
@@ -564,6 +610,8 @@ export const useGameStore = defineStore('game', () => {
     moveHistory,
     moveScores,
     moveOptimality,
+    moveBestScores,
+    moveBestCols,
     viewCursor,
     resetPending,
     // Solver
@@ -585,6 +633,11 @@ export const useGameStore = defineStore('game', () => {
     canStepForward,
     totalMoves,
     gameHasWin,
+    fullBoard,
+    fullWinLine,
+    winner,
+    isDraw,
+    gameOver,
     positionEval,
     // Helpers
     displayColorOf,
@@ -603,6 +656,7 @@ export const useGameStore = defineStore('game', () => {
     swapColors,
     toggleAutoP1,
     toggleAutoP2,
+    toggleAutoBoth,
     startReplay,
     continueReplay,
     stopReplay,

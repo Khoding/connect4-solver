@@ -183,6 +183,8 @@
       </button>
     </div>
 
+    <ExportRecap />
+
     <div class="info-card">
       <h3>Colors</h3>
       <div class="color-inputs">
@@ -275,6 +277,7 @@
 <script setup>
 import {ref} from 'vue';
 import {useGameStore} from '@/stores/game';
+import ExportRecap from './ExportRecap.vue';
 
 const game = useGameStore();
 
