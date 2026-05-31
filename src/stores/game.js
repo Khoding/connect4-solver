@@ -113,6 +113,7 @@ export const useGameStore = defineStore('game', () => {
   const moveBestCols = ref([]); // best column (1-7) at each ply (parallel to moveHistory)
   const viewCursor = ref(0); // how many moves are currently displayed (0 = start)
   const resetPending = ref(false); // true when waiting for confirm
+  const resignedPlayer = ref(0); // 0 = no resignation, 1 = P1 resigned, 2 = P2 resigned
 
   // Solver state
   const suggestion = ref(null);
@@ -285,6 +286,8 @@ export const useGameStore = defineStore('game', () => {
 
   /** Winning player number (1 or 2), or 0 if none */
   const winner = computed(() => {
+    if (resignedPlayer.value === 1) return 2;
+    if (resignedPlayer.value === 2) return 1;
     const wl = fullWinLine.value;
     if (!wl?.length) return 0;
     const [y, x] = wl[0];
@@ -292,7 +295,12 @@ export const useGameStore = defineStore('game', () => {
   });
 
   const isDraw = computed(() => !fullWinLine.value && moveHistory.value.length >= ROWS * COLS);
-  const gameOver = computed(() => !!fullWinLine.value || moveHistory.value.length >= ROWS * COLS);
+  const gameOver = computed(
+    () =>
+      !!fullWinLine.value ||
+      moveHistory.value.length >= ROWS * COLS ||
+      resignedPlayer.value !== 0,
+  );
 
   /** Position evaluation for both players (score relative to each) */
   const positionEval = computed(() => {
@@ -317,7 +325,7 @@ export const useGameStore = defineStore('game', () => {
   /* ── Actions ────────────────────────────────────────── */
 
   function makeMove(column) {
-    if (winLine.value) return;
+    if (winLine.value || resignedPlayer.value !== 0) return;
     const x = column - 1;
     if (x < 0 || x >= COLS) return;
     if (boardArr.value[ROWS - 1][x] !== 0) return;
@@ -397,12 +405,24 @@ export const useGameStore = defineStore('game', () => {
     moveBestCols.value = [];
     viewCursor.value = 0;
     resetPending.value = false;
+    resignedPlayer.value = 0;
     saveState();
     syncUrl();
   }
 
   function cancelReset() {
     resetPending.value = false;
+  }
+
+  function resign(player) {
+    if (resignedPlayer.value || gameOver.value) return;
+    resignedPlayer.value = player;
+    saveState();
+  }
+
+  function undoResign() {
+    resignedPlayer.value = 0;
+    saveState();
   }
 
   function setUserIsFirst(val) {
@@ -515,6 +535,7 @@ export const useGameStore = defineStore('game', () => {
         JSON.stringify({
           moves: moveHistory.value.join(''),
           optimality: moveOptimality.value.map(v => (v === true ? 1 : v === false ? 0 : null)),
+          resignedPlayer: resignedPlayer.value || undefined,
           userIsFirst: userIsFirst.value,
           color1: color1.value,
           color2: color2.value,
@@ -573,6 +594,8 @@ export const useGameStore = defineStore('game', () => {
       if (saved.color2) color2.value = saved.color2;
       if (typeof saved.hideHeader === 'boolean') hideHeader.value = saved.hideHeader;
       if (typeof saved.hideFooter === 'boolean') hideFooter.value = saved.hideFooter;
+      if (saved.resignedPlayer === 1 || saved.resignedPlayer === 2)
+        resignedPlayer.value = saved.resignedPlayer;
     }
 
     // Replay moves
@@ -623,6 +646,7 @@ export const useGameStore = defineStore('game', () => {
     moveBestCols,
     viewCursor,
     resetPending,
+    resignedPlayer,
     // Solver
     suggestion,
     solverScores,
@@ -658,6 +682,8 @@ export const useGameStore = defineStore('game', () => {
     goToLatest,
     resetBoard,
     cancelReset,
+    resign,
+    undoResign,
     setUserIsFirst,
     setColor1,
     setColor2,

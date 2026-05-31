@@ -136,7 +136,7 @@
       <button
         class="replay-btn"
         title="Replay the game from the start"
-        :disabled="!game.gameHasWin && !game.replayActive"
+        :disabled="!game.gameOver && !game.replayActive"
         :class="{active: game.replayActive}"
         @click="game.replayActive ? game.stopReplay() : game.startReplay()"
       >
@@ -167,7 +167,7 @@
       <button
         v-if="!game.replayActive"
         title="Continue replay from current position"
-        :disabled="!game.isReviewingHistory || !game.gameHasWin"
+        :disabled="!game.isReviewingHistory || !game.gameOver"
         @click="game.continueReplay()"
       >
         <svg

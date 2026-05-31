@@ -29,8 +29,17 @@
           · {{ recap.summary.accuracy }}% accuracy</template
         >
       </template>
-      <template v-else> Finish a game to export a recap. </template>
+      <template v-else-if="game.totalMoves === 0"> Start a game to export a recap. </template>
+      <template v-else> Declare a resignation or finish the game to export a recap. </template>
     </p>
+    <div v-if="!game.gameOver && game.totalMoves > 0" class="resign-actions">
+      <button @click="game.resign(1)">P1 resigned</button>
+      <button @click="game.resign(2)">P2 resigned</button>
+    </div>
+    <div v-if="game.resignedPlayer" class="resign-badge">
+      <span>Player {{ game.resignedPlayer }} resigned</span>
+      <button class="resign-undo" @click="game.undoResign()">Undo</button>
+    </div>
     <div class="recap-actions">
       <button class="recap-primary" :disabled="!game.gameOver" @click="open = true">
         View recap
@@ -110,6 +119,7 @@ const recap = computed(() =>
     moveBestCols: game.moveBestCols,
     winner: game.winner,
     winningCells: game.fullWinLine ?? [],
+    resignedPlayer: game.resignedPlayer,
     color1: game.color1,
     color2: game.color2,
   }),
@@ -195,6 +205,62 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 <style scoped>
 .recap-summary {
   margin-block: 0.25rem 0.5rem;
+}
+
+.resign-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-block-end: 0.5rem;
+
+  & button {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid color-mix(in oklch, var(--color-border), oklch(0.65 0.2 25) 30%);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-surface);
+    color: oklch(0.65 0.2 25);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      border-color 0.15s;
+
+    &:hover {
+      border-color: oklch(0.65 0.2 25);
+      background-color: oklch(0.65 0.2 25 / 0.1);
+    }
+  }
+}
+
+.resign-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: 0.5rem;
+  padding: 6px 10px;
+  border: 1px solid oklch(0.65 0.2 25 / 0.5);
+  border-radius: var(--radius-sm);
+  background-color: oklch(0.65 0.2 25 / 0.08);
+  color: oklch(0.75 0.15 25);
+  font-size: 0.85rem;
+}
+
+.resign-undo {
+  padding: 2px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text-dim);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+
+  &:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+  }
 }
 
 .recap-actions {

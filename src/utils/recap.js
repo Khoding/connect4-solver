@@ -93,6 +93,7 @@ export function buildRecap({
   moveBestCols = [],
   winner = 0,
   winningCells = [],
+  resignedPlayer = 0,
   color1,
   color2,
   date = new Date(),
@@ -119,13 +120,17 @@ export function buildRecap({
 
   const isDraw = winner === 0 && plies.length >= ROWS * COLS;
   const result =
-    winner === 1
-      ? 'Player 1 wins'
-      : winner === 2
-        ? 'Player 2 wins'
-        : isDraw
-          ? 'Draw'
-          : 'In progress';
+    resignedPlayer === 1
+      ? 'Player 1 resigned'
+      : resignedPlayer === 2
+        ? 'Player 2 resigned'
+        : winner === 1
+          ? 'Player 1 wins'
+          : winner === 2
+            ? 'Player 2 wins'
+            : isDraw
+              ? 'Draw'
+              : 'In progress';
 
   return {
     plies,
