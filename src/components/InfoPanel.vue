@@ -23,23 +23,26 @@
     <div class="info-card">
       <h3>Move sequence</h3>
       <p class="mono">
-        <template v-if="!game.repstr"> (start) </template>
+        <template v-if="!game.moveHistory.length"> (start) </template>
         <template v-else>
           <div class="move-list">
             <div
-              v-for="(move, i) in game.repstr"
+              v-for="(move, i) in game.moveHistory"
               :key="i"
               class="move-item"
               :class="{
-                'is-optimal': game.moveOptimality[i] === true,
-                'is-suboptimal': game.moveOptimality[i] === false,
+                'is-optimal': i < game.viewCursor && game.moveOptimality[i] === true,
+                'is-suboptimal': i < game.viewCursor && game.moveOptimality[i] === false,
+                'is-future': i >= game.viewCursor,
               }"
               :title="
-                game.moveOptimality[i] === true
-                  ? 'Optimal move'
-                  : game.moveOptimality[i] === false
-                    ? 'Suboptimal move'
-                    : 'Unknown'
+                i >= game.viewCursor
+                  ? 'Future move'
+                  : game.moveOptimality[i] === true
+                    ? 'Optimal move'
+                    : game.moveOptimality[i] === false
+                      ? 'Suboptimal move'
+                      : 'Unknown'
               "
             >
               <span class="move-num">{{ i + 1 }}</span>
@@ -402,6 +405,7 @@ function scoreClass(score) {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
+  transition: opacity 0.15s;
 
   &.is-optimal {
     border-color: oklch(0.75 0.15 150);
@@ -409,6 +413,10 @@ function scoreClass(score) {
 
   &.is-suboptimal {
     border-color: oklch(0.65 0.2 25);
+  }
+
+  &.is-future {
+    opacity: 0.35;
   }
 }
 
