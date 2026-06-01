@@ -232,6 +232,35 @@ const MONO = "ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace";
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+function getContrastColor(colorStr, player) {
+  if (typeof colorStr !== 'string') {
+    return player === 1 ? 'oklch(0.99 0 0)' : 'oklch(0.15 0.02 265)';
+  }
+  const hex = colorStr.trim();
+  if (hex.startsWith('#')) {
+    const cleaned = hex.substring(1);
+    let r = 0,
+      g = 0,
+      b = 0;
+    if (cleaned.length === 3) {
+      r = parseInt(cleaned[0] + cleaned[0], 16);
+      g = parseInt(cleaned[1] + cleaned[1], 16);
+      b = parseInt(cleaned[2] + cleaned[2], 16);
+    } else if (cleaned.length === 6 || cleaned.length === 8) {
+      r = parseInt(cleaned.substring(0, 2), 16);
+      g = parseInt(cleaned.substring(2, 4), 16);
+      b = parseInt(cleaned.substring(4, 6), 16);
+    } else {
+      return player === 1 ? 'oklch(0.99 0 0)' : 'oklch(0.15 0.02 265)';
+    }
+    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminance > 0.6 ? 'oklch(0.15 0.02 265)' : 'oklch(0.99 0 0)';
+    }
+  }
+  return player === 1 ? 'oklch(0.99 0 0)' : 'oklch(0.15 0.02 265)';
+}
+
 /** Draw just the board diagram, translated to (ox, oy). Returns {svg, w, h}. */
 function boardGroup(recap, ox, oy) {
   const cell = 52;
@@ -240,6 +269,19 @@ function boardGroup(recap, ox, oy) {
   const w = COLS * cell + 2 * ipad;
   const h = ROWS * cell + 2 * ipad;
   const {color1, color2} = recap.colors;
+
+  // Track heights of columns to determine landing row for each ply (where row 0 is bottom row of board)
+  const stepNumbers = Array.from({length: ROWS}, () => Array.from({length: COLS}, () => 0));
+  const heights = Array(COLS).fill(0);
+  for (let i = 0; i < recap.plies.length; i++) {
+    const p = recap.plies[i];
+    const colIdx = p.col - 1;
+    const rowIdx = heights[colIdx];
+    if (rowIdx < ROWS) {
+      stepNumbers[rowIdx][colIdx] = p.n;
+      heights[colIdx]++;
+    }
+  }
 
   let s = `<g transform="translate(${ox},${oy})">`;
   s += `<rect width="${w}" height="${h}" rx="18" fill="${THEME.board}" stroke="${THEME.boardHi}" stroke-width="2"/>`;
@@ -259,6 +301,11 @@ function boardGroup(recap, ox, oy) {
         if (won) {
           s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="oklch(0.99 0 0)" stroke-width="3.5"/>`;
           s += `<circle cx="${cx}" cy="${cy}" r="${r + 4}" fill="none" stroke="oklch(0.99 0 0 / 0.4)" stroke-width="2"/>`;
+        }
+        const stepNum = stepNumbers[y][col];
+        if (stepNum > 0) {
+          const textColor = getContrastColor(fill, v);
+          s += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="14" font-weight="700" fill="${textColor}">${stepNum}</text>`;
         }
       }
     }
@@ -463,7 +510,7 @@ export function downloadBlob(blob, filename) {
 }
 
 export function downloadText(text, filename) {
-  downloadBlob(new Blob([text], {type: 'text/plain;charset=utf-8'}), filename);
+  downloadBlob(new Blob(['\ufeff', text], {type: 'text/plain;charset=utf-8'}), filename);
 }
 
 export async function copyText(text) {
