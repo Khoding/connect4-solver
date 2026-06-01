@@ -910,7 +910,7 @@ input:checked + .toggle-slider {
   text-align: center;
 
   &.accent {
-    border-color: var(--color-accent - 0.2);
+    border-color: color-mix(in oklch, var(--color-accent), transparent 50%);
     color: var(--color-accent);
   }
 }
