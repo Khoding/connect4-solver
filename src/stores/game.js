@@ -151,8 +151,19 @@ export const useGameStore = defineStore('game', () => {
   /** Display label for whose turn it is */
   const currentPlayerLabel = computed(() => (isUserTurn.value ? '1st player' : '2nd player'));
 
+  const isReviewingHistory = computed(() => viewCursor.value < moveHistory.value.length);
+  const canStepBack = computed(() => viewCursor.value > 0);
+  const canStepForward = computed(() => viewCursor.value < moveHistory.value.length);
+  const totalMoves = computed(() => moveHistory.value.length);
+
   const ghostCells = computed(() => {
-    if (!showGhostMoves.value || !ghostPath.value || ghostPath.value.length === 0) {
+    if (
+      !showGhostMoves.value ||
+      isReviewingHistory.value ||
+      replayActive.value ||
+      !ghostPath.value ||
+      ghostPath.value.length === 0
+    ) {
       return [];
     }
 
@@ -221,7 +232,13 @@ export const useGameStore = defineStore('game', () => {
   /* ── Ghost Path Calculator ───────────────────────────── */
 
   async function calculateGhostPath() {
-    if (!showGhostMoves.value || loading.value || winLine.value) {
+    if (
+      !showGhostMoves.value ||
+      isReviewingHistory.value ||
+      replayActive.value ||
+      loading.value ||
+      winLine.value
+    ) {
       ghostPath.value = [];
       ghostPathBasePos.value = null;
       return;
@@ -305,7 +322,7 @@ export const useGameStore = defineStore('game', () => {
 
   // Watch for changes and regenerate/update the path
   watch(
-    [repstr, showGhostMoves, winLine, loading],
+    [repstr, showGhostMoves, winLine, loading, replayActive, isReviewingHistory],
     () => {
       calculateGhostPath();
     },
@@ -398,6 +415,17 @@ export const useGameStore = defineStore('game', () => {
     {deep: true, immediate: true},
   );
 
+  // Watch if game is over to automatically deactivate autoplay
+  watch(
+    gameOver,
+    isOver => {
+      if (isOver) {
+        deactivateAutoplay();
+      }
+    },
+    {immediate: true},
+  );
+
   const solverStatusText = computed(() => {
     const s = solverStatus.value;
     if (!s?.moduleReady) return 'Loading WASM module…';
@@ -406,11 +434,6 @@ export const useGameStore = defineStore('game', () => {
     if (s.bookLoaded) return 'Ready (with opening book)';
     return 'Ready (no opening book)';
   });
-
-  const isReviewingHistory = computed(() => viewCursor.value < moveHistory.value.length);
-  const canStepBack = computed(() => viewCursor.value > 0);
-  const canStepForward = computed(() => viewCursor.value < moveHistory.value.length);
-  const totalMoves = computed(() => moveHistory.value.length);
 
   /* ── Full-game outcome (independent of the review cursor) ── */
 
@@ -465,6 +488,13 @@ export const useGameStore = defineStore('game', () => {
     if (x < 0 || x >= COLS) return;
     if (boardArr.value[ROWS - 1][x] !== 0) return;
 
+    if (
+      (internalCurrentPlayer.value === 1 && autoP1.value) ||
+      (internalCurrentPlayer.value === 2 && autoP2.value)
+    ) {
+      deactivateAutoplay();
+    }
+
     // If reviewing history, truncate future moves
     if (viewCursor.value < moveHistory.value.length) {
       moveHistory.value = moveHistory.value.slice(0, viewCursor.value);
@@ -510,6 +540,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function stepBack() {
+    deactivateAutoplay();
     if (viewCursor.value > 0) {
       const steps = autoP1.value && autoP2.value ? 1 : autoP1.value || autoP2.value ? 2 : 1;
       viewCursor.value = Math.max(0, viewCursor.value - steps);
@@ -518,6 +549,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function stepForward() {
+    deactivateAutoplay();
     if (viewCursor.value < moveHistory.value.length) {
       const steps = autoP1.value && autoP2.value ? 1 : autoP1.value || autoP2.value ? 2 : 1;
       viewCursor.value = Math.min(moveHistory.value.length, viewCursor.value + steps);
@@ -526,11 +558,13 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function goToLatest() {
+    deactivateAutoplay();
     viewCursor.value = moveHistory.value.length;
     syncUrl();
   }
 
   function resetBoard() {
+    deactivateAutoplay();
     if (!resetPending.value) {
       resetPending.value = true;
       return;
@@ -563,6 +597,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function loadMoves(moveString) {
+    deactivateAutoplay();
     const history = [];
     const scores = [];
     const optimality = [];
@@ -630,6 +665,7 @@ export const useGameStore = defineStore('game', () => {
 
   function startReplay() {
     if (replayActive.value) return;
+    deactivateAutoplay();
     stopReplay();
     replayActive.value = true;
     viewCursor.value = 0;
@@ -645,6 +681,7 @@ export const useGameStore = defineStore('game', () => {
   function continueReplay() {
     if (replayActive.value) return;
     if (viewCursor.value >= moveHistory.value.length) return;
+    deactivateAutoplay();
     replayActive.value = true;
     replayInterval = setInterval(() => {
       if (viewCursor.value < moveHistory.value.length) {
@@ -659,6 +696,12 @@ export const useGameStore = defineStore('game', () => {
     replayActive.value = false;
     clearInterval(replayInterval);
     replayInterval = null;
+  }
+
+  function deactivateAutoplay() {
+    autoP1.value = false;
+    autoP2.value = false;
+    updateAutoInterval();
   }
 
   function updateAutoInterval() {
@@ -876,6 +919,7 @@ export const useGameStore = defineStore('game', () => {
     toggleAutoP2,
     toggleAutoBoth,
     toggleGhostMoves,
+    deactivateAutoplay,
     startReplay,
     continueReplay,
     stopReplay,

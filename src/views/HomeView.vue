@@ -48,6 +48,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown);
+  game.deactivateAutoplay();
 });
 
 function onKeydown(e) {
