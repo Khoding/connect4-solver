@@ -240,9 +240,15 @@ export const useGameStore = defineStore('game', () => {
     }
 
     const currentId = ++ghostPathId;
+
+    // Clear displayed ghost path immediately so UI is instantaneous, responsive, and doesn't display stale trails.
+    ghostPath.value = [];
+    ghostPathBasePos.value = currentPos;
+
     let tempMoves = currentPos;
     const path = [];
     const maxMoves = ROWS * COLS;
+    const blockSize = 3;
 
     // Build the rest of the optimal game script step-by-step
     while (tempMoves.length < maxMoves) {
@@ -283,11 +289,17 @@ export const useGameStore = defineStore('game', () => {
       const chosenCol = bestCols[Math.floor(Math.random() * bestCols.length)];
       path.push(chosenCol);
       tempMoves += chosenCol;
+
+      // Group steps of calculation in blocks of 3, rendering them to the screen dynamically and yielding back to the browser
+      if (path.length % blockSize === 0) {
+        ghostPath.value = [...path];
+        await new Promise(resolve => setTimeout(resolve, 0));
+        if (currentId !== ghostPathId) return;
+      }
     }
 
     if (currentId === ghostPathId) {
       ghostPath.value = path;
-      ghostPathBasePos.value = currentPos;
     }
   }
 
