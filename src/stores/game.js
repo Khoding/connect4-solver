@@ -490,15 +490,16 @@ export const useGameStore = defineStore('game', () => {
 
   /* ── Actions ────────────────────────────────────────── */
 
-  function makeMove(column) {
+  function makeMove(column, isManual = true) {
     if (winLine.value || resignedPlayer.value !== 0) return;
     const x = column - 1;
     if (x < 0 || x >= COLS) return;
     if (boardArr.value[ROWS - 1][x] !== 0) return;
 
     if (
-      (internalCurrentPlayer.value === 1 && autoP1.value) ||
-      (internalCurrentPlayer.value === 2 && autoP2.value)
+      isManual &&
+      ((internalCurrentPlayer.value === 1 && autoP1.value) ||
+        (internalCurrentPlayer.value === 2 && autoP2.value))
     ) {
       deactivateAutoplay();
     }
@@ -541,9 +542,9 @@ export const useGameStore = defineStore('game', () => {
 
     // Use the ghost prediction moves if active and available, otherwise fallback to solver suggestion
     if (showGhostMoves.value && ghostPath.value && ghostPath.value.length > 0) {
-      makeMove(ghostPath.value[0]);
+      makeMove(ghostPath.value[0], false);
     } else if (suggestion.value?.col > 0) {
-      makeMove(suggestion.value.col);
+      makeMove(suggestion.value.col, false);
     }
   }
 

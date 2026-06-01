@@ -56,7 +56,9 @@
     </template>
 
     <template v-else>
-      <p class="dim recap-summary">Paste any text containing column numbers (1–7) to load a game.</p>
+      <p class="dim recap-summary">
+        Paste any text containing column numbers (1–7) to load a game.
+      </p>
       <textarea
         v-model="importInput"
         class="import-textarea"
@@ -234,7 +236,7 @@ async function download(format) {
 function onKey(e) {
   if (e.key === 'Escape') close();
 }
-watch(open, (isOpen) => {
+watch(open, isOpen => {
   if (isOpen) window.addEventListener('keydown', onKey);
   else window.removeEventListener('keydown', onKey);
 });
@@ -244,9 +246,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 <style scoped>
 .card-tabs {
   display: flex;
-  gap: 0.25rem;
   margin-block-end: 0.5rem;
   padding: 3px;
+  gap: 0.25rem;
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
 
@@ -271,6 +273,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 }
 
 .import-textarea {
+  box-sizing: border-box;
   inline-size: 100%;
   padding: 8px 10px;
   border: 1px solid var(--color-border);
@@ -280,7 +283,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   font-size: 0.85rem;
   font-family: var(--font-mono);
   resize: vertical;
-  box-sizing: border-box;
   transition: border-color 0.15s;
 
   &::placeholder {
@@ -306,8 +308,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 
 .resign-actions {
   display: flex;
-  gap: 0.5rem;
   margin-block-end: 0.5rem;
+  gap: 0.5rem;
 
   & button {
     flex: 1;
@@ -401,15 +403,15 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 }
 
 .recap-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
   display: flex;
+  z-index: 100;
+  position: fixed;
   align-items: center;
   justify-content: center;
+  inset: 0;
   padding: clamp(0.5rem, 3vw, 2rem);
-  background-color: oklch(0 0 0 / 0.6);
   backdrop-filter: blur(4px);
+  background-color: oklch(0 0 0 / 0.6);
 }
 
 .recap-modal {
@@ -418,10 +420,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   inline-size: min(680px, 100%);
   max-block-size: 92dvh;
   padding: clamp(0.75rem, 2vw, 1.25rem);
+  gap: 0.75rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md, 12px);
   background-color: var(--color-bg);
-  gap: 0.75rem;
 }
 
 .recap-modal-head {
@@ -460,8 +462,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 
 .recap-tabs {
   display: flex;
-  gap: 0.25rem;
   padding: 3px;
+  gap: 0.25rem;
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
 
@@ -492,10 +494,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   justify-content: center;
   min-block-size: 0;
   padding: clamp(0.5rem, 2vw, 1rem);
+  overflow: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
-  overflow: auto;
 
   &.is-text {
     align-items: stretch;
@@ -513,13 +515,13 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 }
 
 .recap-text {
-  margin: 0;
   inline-size: 100%;
+  margin: 0;
+  overflow-x: auto;
   color: var(--color-text);
   font-size: 0.75rem;
   font-family: var(--font-mono);
   white-space: pre;
-  overflow-x: auto;
 }
 
 .recap-modal-foot {
