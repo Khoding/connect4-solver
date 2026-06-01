@@ -124,6 +124,7 @@
             >
               {{ statusLabel }}
             </div>
+            <div v-else class="status-label placeholder">&nbsp;</div>
             <button
               v-if="!game.hideAutoplay"
               class="auto-both-btn"
@@ -471,6 +472,11 @@ function formatEval(score) {
     border-style: solid;
     border-color: currentColor;
     background-color: var(--color-surface-alt);
+  }
+
+  &.placeholder {
+    visibility: hidden;
+    pointer-events: none;
   }
 }
 
