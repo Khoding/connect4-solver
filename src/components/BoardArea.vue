@@ -66,6 +66,7 @@
               winning: isWinningCell(game.ROWS - vr, c - 1),
               'last-move': isLastMove(game.ROWS - vr, c - 1),
               ghost: !!getGhost(game.ROWS - vr, c - 1),
+              'next-ghost': getGhost(game.ROWS - vr, c - 1)?.step === 1,
             }"
             @click="game.makeMove(c)"
           >
@@ -540,11 +541,30 @@ function formatEval(score) {
     box-shadow: inset 0 0 8px oklch(from var(--ghost-color) l c h / 0.1);
     transition:
       background-color 0.2s,
-      border-color 0.2s;
+      border-color 0.2s,
+      box-shadow 0.2s;
 
     &:hover {
       border-color: oklch(from var(--ghost-color) l c h / 0.65);
       background-color: oklch(from var(--ghost-color) l c h / 0.35);
+    }
+
+    &.next-ghost {
+      border-style: solid;
+      border-color: oklch(from var(--ghost-color) max(0.6, l) c h / 0.7);
+      background-color: oklch(from var(--ghost-color) l c h / 0.25);
+      box-shadow:
+        inset 0 0 8px oklch(from var(--ghost-color) l c h / 0.2),
+        0 0 12px oklch(from var(--ghost-color) l c h / 0.4);
+      animation: ghost-pulse 2s ease-in-out infinite alternate;
+
+      &:hover {
+        border-color: oklch(from var(--ghost-color) max(0.65, l) c h / 0.95);
+        background-color: oklch(from var(--ghost-color) l c h / 0.4);
+        box-shadow:
+          inset 0 0 12px oklch(from var(--ghost-color) l c h / 0.3),
+          0 0 16px oklch(from var(--ghost-color) l c h / 0.6);
+      }
     }
   }
 }
@@ -555,6 +575,24 @@ function formatEval(score) {
   font-size: 0.75rem;
   font-family: var(--font-mono);
   user-select: none;
+
+  .next-ghost & {
+    color: oklch(from var(--ghost-color) max(0.75, l) c h);
+    font-size: 0.8rem;
+  }
+}
+
+@keyframes ghost-pulse {
+  from {
+    box-shadow:
+      inset 0 0 8px oklch(from var(--ghost-color) l c h / 0.2),
+      0 0 6px oklch(from var(--ghost-color) l c h / 0.25);
+  }
+  to {
+    box-shadow:
+      inset 0 0 8px oklch(from var(--ghost-color) l c h / 0.2),
+      0 0 14px oklch(from var(--ghost-color) l c h / 0.5);
+  }
 }
 
 @keyframes win-glow {

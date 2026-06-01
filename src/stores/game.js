@@ -489,8 +489,10 @@ export const useGameStore = defineStore('game', () => {
     if (replayActive.value) return;
     if (winLine.value) return;
 
-    // Use solver suggestion
-    if (suggestion.value?.col > 0) {
+    // Use the ghost prediction moves if active and available, otherwise fallback to solver suggestion
+    if (showGhostMoves.value && ghostPath.value && ghostPath.value.length > 0) {
+      makeMove(ghostPath.value[0]);
+    } else if (suggestion.value?.col > 0) {
       makeMove(suggestion.value.col);
     }
   }
