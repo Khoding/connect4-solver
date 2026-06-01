@@ -122,6 +122,12 @@ export const useGameStore = defineStore('game', () => {
   const solverError = ref(null);
   const solverStatus = ref(wasmSolver.getStatus());
 
+  // Ghost future moves state
+  const showGhostMoves = ref(false);
+  const ghostPath = ref([]);
+  const ghostPathBasePos = ref(null);
+  let ghostPathId = 0;
+
   let autoInterval = null;
   let replayInterval = null;
   let initialized = false;
@@ -144,6 +150,43 @@ export const useGameStore = defineStore('game', () => {
 
   /** Display label for whose turn it is */
   const currentPlayerLabel = computed(() => (isUserTurn.value ? '1st player' : '2nd player'));
+
+  const ghostCells = computed(() => {
+    if (!showGhostMoves.value || !ghostPath.value || ghostPath.value.length === 0) {
+      return [];
+    }
+
+    const currentBoard = boardArr.value;
+    const heights = Array(COLS).fill(0);
+    for (let c = 0; c < COLS; c++) {
+      let h = 0;
+      while (h < ROWS && currentBoard[h][c] !== 0) {
+        h++;
+      }
+      heights[c] = h;
+    }
+
+    const cells = [];
+    let currentPlayer = internalCurrentPlayer.value;
+
+    for (let idx = 0; idx < ghostPath.value.length; idx++) {
+      const col = ghostPath.value[idx];
+      const c = col - 1;
+      const h = heights[c];
+      if (h < ROWS) {
+        cells.push({
+          row: h,
+          col: c,
+          player: currentPlayer,
+          step: idx + 1,
+        });
+        heights[c]++;
+      }
+      currentPlayer = currentPlayer === 1 ? 2 : 1;
+    }
+
+    return cells;
+  });
 
   /* ── WASM solver watcher ─────────────────────────────── */
 
@@ -171,6 +214,88 @@ export const useGameStore = defineStore('game', () => {
       } finally {
         if (repstr.value === queryPos) solverLoading.value = false;
       }
+    },
+    {immediate: true},
+  );
+
+  /* ── Ghost Path Calculator ───────────────────────────── */
+
+  async function calculateGhostPath() {
+    if (!showGhostMoves.value || loading.value || winLine.value) {
+      ghostPath.value = [];
+      ghostPathBasePos.value = null;
+      return;
+    }
+
+    const currentPos = repstr.value;
+
+    // Follow the script if the current board position is the direct next sequence of the base position for which the script was computed
+    if (ghostPath.value && ghostPath.value.length > 0 && ghostPathBasePos.value !== null) {
+      const expectedNextMove = ghostPath.value[0];
+      if (currentPos === ghostPathBasePos.value + expectedNextMove) {
+        ghostPath.value = ghostPath.value.slice(1);
+        ghostPathBasePos.value = currentPos;
+        return;
+      }
+    }
+
+    const currentId = ++ghostPathId;
+    let tempMoves = currentPos;
+    const path = [];
+    const maxMoves = ROWS * COLS;
+
+    // Build the rest of the optimal game script step-by-step
+    while (tempMoves.length < maxMoves) {
+      if (currentId !== ghostPathId) return;
+
+      const tempBoard = constructBoardArr(tempMoves);
+      if (checkForWin(tempBoard)) {
+        break;
+      }
+
+      let scores;
+      try {
+        scores = await wasmSolver.analyze(tempMoves);
+      } catch (err) {
+        console.error('Error calculating ghost path:', err);
+        break;
+      }
+
+      if (currentId !== ghostPathId) return;
+
+      let bestCols = [];
+      let bestScore = -Infinity;
+      for (let i = 0; i < 7; i++) {
+        if (scores[i] === -1000) continue;
+        if (scores[i] > bestScore) {
+          bestScore = scores[i];
+          bestCols = [i + 1];
+        } else if (scores[i] === bestScore) {
+          bestCols.push(i + 1);
+        }
+      }
+
+      if (bestCols.length === 0) {
+        break;
+      }
+
+      // Randomly select one of the equally optimal best columns (as requested)
+      const chosenCol = bestCols[Math.floor(Math.random() * bestCols.length)];
+      path.push(chosenCol);
+      tempMoves += chosenCol;
+    }
+
+    if (currentId === ghostPathId) {
+      ghostPath.value = path;
+      ghostPathBasePos.value = currentPos;
+    }
+  }
+
+  // Watch for changes and regenerate/update the path
+  watch(
+    [repstr, showGhostMoves, winLine, loading],
+    () => {
+      calculateGhostPath();
     },
     {immediate: true},
   );
@@ -297,9 +422,7 @@ export const useGameStore = defineStore('game', () => {
   const isDraw = computed(() => !fullWinLine.value && moveHistory.value.length >= ROWS * COLS);
   const gameOver = computed(
     () =>
-      !!fullWinLine.value ||
-      moveHistory.value.length >= ROWS * COLS ||
-      resignedPlayer.value !== 0,
+      !!fullWinLine.value || moveHistory.value.length >= ROWS * COLS || resignedPlayer.value !== 0,
   );
 
   /** Position evaluation for both players (score relative to each) */
@@ -560,6 +683,11 @@ export const useGameStore = defineStore('game', () => {
     updateAutoInterval();
   }
 
+  function toggleGhostMoves() {
+    showGhostMoves.value = !showGhostMoves.value;
+    saveState();
+  }
+
   /* ── Persistence ────────────────────────────────────── */
 
   function saveState() {
@@ -575,6 +703,7 @@ export const useGameStore = defineStore('game', () => {
           color2: color2.value,
           hideHeader: hideHeader.value,
           hideFooter: hideFooter.value,
+          showGhostMoves: showGhostMoves.value,
         }),
       );
     } catch {
@@ -628,6 +757,7 @@ export const useGameStore = defineStore('game', () => {
       if (saved.color2) color2.value = saved.color2;
       if (typeof saved.hideHeader === 'boolean') hideHeader.value = saved.hideHeader;
       if (typeof saved.hideFooter === 'boolean') hideFooter.value = saved.hideFooter;
+      if (typeof saved.showGhostMoves === 'boolean') showGhostMoves.value = saved.showGhostMoves;
       if (!urlPos && (saved.resignedPlayer === 1 || saved.resignedPlayer === 2))
         resignedPlayer.value = saved.resignedPlayer;
     }
@@ -681,6 +811,8 @@ export const useGameStore = defineStore('game', () => {
     viewCursor,
     resetPending,
     resignedPlayer,
+    showGhostMoves,
+    ghostPath,
     // Solver
     suggestion,
     solverScores,
@@ -706,6 +838,7 @@ export const useGameStore = defineStore('game', () => {
     isDraw,
     gameOver,
     positionEval,
+    ghostCells,
     // Helpers
     displayColorOf,
     // Actions
@@ -728,6 +861,7 @@ export const useGameStore = defineStore('game', () => {
     toggleAutoP1,
     toggleAutoP2,
     toggleAutoBoth,
+    toggleGhostMoves,
     startReplay,
     continueReplay,
     stopReplay,

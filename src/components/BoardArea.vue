@@ -65,9 +65,14 @@
             :class="{
               winning: isWinningCell(game.ROWS - vr, c - 1),
               'last-move': isLastMove(game.ROWS - vr, c - 1),
+              ghost: !!getGhost(game.ROWS - vr, c - 1),
             }"
             @click="game.makeMove(c)"
-          ></div>
+          >
+            <span v-if="getGhost(game.ROWS - vr, c - 1)" class="ghost-step">
+              {{ getGhost(game.ROWS - vr, c - 1).step }}
+            </span>
+          </div>
         </template>
       </div>
 
@@ -106,7 +111,10 @@
             <div
               v-else-if="statusLabel !== null"
               class="status-label"
+              :class="{active: game.showGhostMoves}"
               :style="{color: statusColor}"
+              title="Click to toggle predictive future moves"
+              @click="game.toggleGhostMoves()"
             >
               {{ statusLabel }}
             </div>
@@ -189,6 +197,18 @@ const statusColor = computed(() => {
   return `oklch(from ${color} max(0.65, l) c h)`;
 });
 
+const ghostCellsMap = computed(() => {
+  const map = {};
+  for (const gc of game.ghostCells) {
+    map[`${gc.row}-${gc.col}`] = gc;
+  }
+  return map;
+});
+
+function getGhost(row, col) {
+  return ghostCellsMap.value[`${row}-${col}`] || null;
+}
+
 function isSuggested(col) {
   if (!game.repstr.length) return col === 4;
   return (
@@ -200,13 +220,24 @@ function isSuggested(col) {
 
 function cellStyle(row, col) {
   const p = game.boardArr[row][col];
-  if (p === 0) return {};
-  const color = game.displayColorOf(p);
-  return {
-    backgroundColor: color,
-    boxShadow: `0 0 12px ${color}40`,
-    '--glow': color,
-  };
+  if (p !== 0) {
+    const color = game.displayColorOf(p);
+    return {
+      backgroundColor: color,
+      boxShadow: `0 0 12px ${color}40`,
+      '--glow': color,
+    };
+  }
+
+  const ghost = getGhost(row, col);
+  if (ghost) {
+    const color = game.displayColorOf(ghost.player);
+    return {
+      '--ghost-color': color,
+    };
+  }
+
+  return {};
 }
 
 function isWinningCell(row, col) {
@@ -405,10 +436,29 @@ function formatEval(score) {
 }
 
 .status-label {
+  padding: 4px 10px;
+  border: 1px dashed transparent;
+  border-radius: var(--radius-sm);
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   text-align: center;
   white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+
+  &:hover {
+    border-color: currentColor;
+    background-color: var(--color-surface-alt);
+  }
+
+  &.active {
+    border-style: solid;
+    border-color: currentColor;
+    background-color: var(--color-surface-alt);
+  }
 }
 
 .col-header {
@@ -481,6 +531,30 @@ function formatEval(score) {
       content: '';
     }
   }
+
+  &.ghost {
+    display: grid;
+    place-items: center;
+    border: 2px dashed oklch(from var(--ghost-color) l c h / 0.4);
+    background-color: oklch(from var(--ghost-color) l c h / 0.15);
+    box-shadow: inset 0 0 8px oklch(from var(--ghost-color) l c h / 0.1);
+    transition:
+      background-color 0.2s,
+      border-color 0.2s;
+
+    &:hover {
+      border-color: oklch(from var(--ghost-color) l c h / 0.65);
+      background-color: oklch(from var(--ghost-color) l c h / 0.35);
+    }
+  }
+}
+
+.ghost-step {
+  color: oklch(from var(--ghost-color) max(0.65, l) c h / 0.85);
+  font-weight: 700;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  user-select: none;
 }
 
 @keyframes win-glow {
