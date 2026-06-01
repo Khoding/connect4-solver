@@ -20,7 +20,7 @@
 
 <template>
   <aside class="info-panel">
-    <div class="info-card">
+    <div v-if="!game.hideMoveSequence" class="info-card">
       <h3>Move sequence</h3>
       <p class="mono">
         <template v-if="!game.moveHistory.length"> (start) </template>
@@ -88,9 +88,24 @@
         <button class="confirm-btn" @click="game.resetBoard()">Confirm reset</button>
         <button @click="game.cancelReset()">Cancel</button>
       </template>
+
+      <RouterLink to="/settings" class="settings-btn" title="Settings">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="1.2em"
+          viewBox="0 -960 960 960"
+          width="1.2em"
+          fill="currentColor"
+        >
+          <path
+            d="m370-80-16-128q-19-5-38.5-15.5T279-247l-121 51-85-147 101-77q-2-10-2-19.5t2-19.5L73-538l85-147 121 51q16-14 35.5-24.5T353-674l17-126h170l17 127q19 5 38.5 15.5T629-633l121-51 85 147-101 77q2 10 2 19.5t-2 19.5l101 77-85 147-121-51q-16 14-35.5 24.5T547-206l-17 126H370Zm110-280q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Z"
+          />
+        </svg>
+        Settings
+      </RouterLink>
     </div>
 
-    <div class="controls">
+    <div v-if="!game.hideNavigation" class="controls">
       <button title="Step back" :disabled="!game.canStepBack" @click="game.stepBack()">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -135,7 +150,7 @@
       </button>
     </div>
 
-    <div class="controls">
+    <div v-if="!game.hideReplay" class="controls">
       <button
         class="replay-btn"
         title="Replay the game from the start"
@@ -186,9 +201,9 @@
       </button>
     </div>
 
-    <ExportRecap />
+    <ExportRecap v-if="!game.hideExportImport" />
 
-    <div class="info-card">
+    <div v-if="!game.hideColors" class="info-card">
       <h3>Colors</h3>
       <div class="color-inputs">
         <label class="color-label">
@@ -237,34 +252,12 @@
       <button class="save-preset-btn" @click="savePreset">+ Save preset</button>
     </div>
 
-    <div class="info-card">
+    <div v-if="!game.hideSolverStatus" class="info-card">
       <h3>Solver</h3>
       <p class="dim">{{ game.solverStatusText }}</p>
       <p v-if="game.solverError" class="dim" style="color: oklch(0.7 0.18 25)">
         Solver error: {{ game.solverError }}
       </p>
-    </div>
-
-    <div class="info-card">
-      <h3>Preferences</h3>
-      <div class="options-list">
-        <label class="setting-label">
-          <input
-            type="checkbox"
-            :checked="game.hideHeader"
-            @change="game.setHideHeader($event.target.checked)"
-          />
-          <span>Hide header</span>
-        </label>
-        <label class="setting-label">
-          <input
-            type="checkbox"
-            :checked="game.hideFooter"
-            @change="game.setHideFooter($event.target.checked)"
-          />
-          <span>Hide footer</span>
-        </label>
-      </div>
     </div>
   </aside>
 </template>
@@ -595,7 +588,8 @@ function scoreClass(score) {
   flex-wrap: wrap;
   gap: 0.5rem;
 
-  & button {
+  & button,
+  & .settings-btn {
     display: inline-flex;
     flex: 1;
     align-items: center;
@@ -607,6 +601,7 @@ function scoreClass(score) {
     background-color: var(--color-surface);
     color: var(--color-text);
     font-size: 0.9rem;
+    text-decoration: none;
     cursor: pointer;
     transition:
       background-color 0.15s,

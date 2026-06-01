@@ -82,11 +82,16 @@
           <div class="player-container">
             <div class="player-info">
               <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">P1</span>
-              <span class="eval-score" :class="evalClass(game.positionEval?.first)">
+              <span
+                v-if="!game.hideEvalBar"
+                class="eval-score"
+                :class="evalClass(game.positionEval?.first)"
+              >
                 {{ formatEval(game.positionEval?.first) }}
               </span>
             </div>
             <button
+              v-if="!game.hideAutoplay"
               class="auto-btn"
               :class="{active: game.autoP1}"
               :style="{
@@ -120,6 +125,7 @@
               {{ statusLabel }}
             </div>
             <button
+              v-if="!game.hideAutoplay"
               class="auto-both-btn"
               :class="{active: game.autoP1 && game.autoP2}"
               title="Auto-play both players' moves"
@@ -131,12 +137,17 @@
 
           <div class="player-container">
             <div class="player-info">
-              <span class="eval-score" :class="evalClass(game.positionEval?.second)">
+              <span
+                v-if="!game.hideEvalBar"
+                class="eval-score"
+                :class="evalClass(game.positionEval?.second)"
+              >
                 {{ formatEval(game.positionEval?.second) }}
               </span>
               <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">P2</span>
             </div>
             <button
+              v-if="!game.hideAutoplay"
               class="auto-btn"
               :class="{active: game.autoP2}"
               :style="{
@@ -151,6 +162,7 @@
         </div>
 
         <meter
+          v-if="!game.hideEvalBar"
           class="eval-meter"
           :style="{
             '--winning-color':

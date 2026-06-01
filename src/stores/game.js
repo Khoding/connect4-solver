@@ -102,6 +102,14 @@ export const useGameStore = defineStore('game', () => {
   const color2 = ref('#e8d020'); // display color for the second player
   const hideHeader = ref(false);
   const hideFooter = ref(false);
+  const hideMoveSequence = ref(false);
+  const hideNavigation = ref(false);
+  const hideReplay = ref(false);
+  const hideExportImport = ref(false);
+  const hideColors = ref(false);
+  const hideSolverStatus = ref(false);
+  const hideAutoplay = ref(false);
+  const hideEvalBar = ref(false);
   const autoP1 = ref(false);
   const autoP2 = ref(false);
   const replayActive = ref(false);
@@ -415,17 +423,6 @@ export const useGameStore = defineStore('game', () => {
     {deep: true, immediate: true},
   );
 
-  // Watch if game is over to automatically deactivate autoplay
-  watch(
-    gameOver,
-    isOver => {
-      if (isOver) {
-        deactivateAutoplay();
-      }
-    },
-    {immediate: true},
-  );
-
   const solverStatusText = computed(() => {
     const s = solverStatus.value;
     if (!s?.moduleReady) return 'Loading WASM module…';
@@ -458,6 +455,17 @@ export const useGameStore = defineStore('game', () => {
   const gameOver = computed(
     () =>
       !!fullWinLine.value || moveHistory.value.length >= ROWS * COLS || resignedPlayer.value !== 0,
+  );
+
+  // Watch if game is over to automatically deactivate autoplay
+  watch(
+    gameOver,
+    isOver => {
+      if (isOver) {
+        deactivateAutoplay();
+      }
+    },
+    {immediate: true},
   );
 
   /** Position evaluation for both players (score relative to each) */
@@ -656,6 +664,46 @@ export const useGameStore = defineStore('game', () => {
     saveState();
   }
 
+  function setHideMoveSequence(val) {
+    hideMoveSequence.value = val;
+    saveState();
+  }
+
+  function setHideNavigation(val) {
+    hideNavigation.value = val;
+    saveState();
+  }
+
+  function setHideReplay(val) {
+    hideReplay.value = val;
+    saveState();
+  }
+
+  function setHideExportImport(val) {
+    hideExportImport.value = val;
+    saveState();
+  }
+
+  function setHideColors(val) {
+    hideColors.value = val;
+    saveState();
+  }
+
+  function setHideSolverStatus(val) {
+    hideSolverStatus.value = val;
+    saveState();
+  }
+
+  function setHideAutoplay(val) {
+    hideAutoplay.value = val;
+    saveState();
+  }
+
+  function setHideEvalBar(val) {
+    hideEvalBar.value = val;
+    saveState();
+  }
+
   function swapColors() {
     const tmp = color1.value;
     color1.value = color2.value;
@@ -760,6 +808,14 @@ export const useGameStore = defineStore('game', () => {
           color2: color2.value,
           hideHeader: hideHeader.value,
           hideFooter: hideFooter.value,
+          hideMoveSequence: hideMoveSequence.value,
+          hideNavigation: hideNavigation.value,
+          hideReplay: hideReplay.value,
+          hideExportImport: hideExportImport.value,
+          hideColors: hideColors.value,
+          hideSolverStatus: hideSolverStatus.value,
+          hideAutoplay: hideAutoplay.value,
+          hideEvalBar: hideEvalBar.value,
           showGhostMoves: showGhostMoves.value,
         }),
       );
@@ -814,6 +870,17 @@ export const useGameStore = defineStore('game', () => {
       if (saved.color2) color2.value = saved.color2;
       if (typeof saved.hideHeader === 'boolean') hideHeader.value = saved.hideHeader;
       if (typeof saved.hideFooter === 'boolean') hideFooter.value = saved.hideFooter;
+      if (typeof saved.hideMoveSequence === 'boolean')
+        hideMoveSequence.value = saved.hideMoveSequence;
+      if (typeof saved.hideNavigation === 'boolean') hideNavigation.value = saved.hideNavigation;
+      if (typeof saved.hideReplay === 'boolean') hideReplay.value = saved.hideReplay;
+      if (typeof saved.hideExportImport === 'boolean')
+        hideExportImport.value = saved.hideExportImport;
+      if (typeof saved.hideColors === 'boolean') hideColors.value = saved.hideColors;
+      if (typeof saved.hideSolverStatus === 'boolean')
+        hideSolverStatus.value = saved.hideSolverStatus;
+      if (typeof saved.hideAutoplay === 'boolean') hideAutoplay.value = saved.hideAutoplay;
+      if (typeof saved.hideEvalBar === 'boolean') hideEvalBar.value = saved.hideEvalBar;
       if (typeof saved.showGhostMoves === 'boolean') showGhostMoves.value = saved.showGhostMoves;
       if (!urlPos && (saved.resignedPlayer === 1 || saved.resignedPlayer === 2))
         resignedPlayer.value = saved.resignedPlayer;
@@ -856,6 +923,14 @@ export const useGameStore = defineStore('game', () => {
     color2,
     hideHeader,
     hideFooter,
+    hideMoveSequence,
+    hideNavigation,
+    hideReplay,
+    hideExportImport,
+    hideColors,
+    hideSolverStatus,
+    hideAutoplay,
+    hideEvalBar,
     autoP1,
     autoP2,
     replayActive,
@@ -914,6 +989,14 @@ export const useGameStore = defineStore('game', () => {
     setColor2,
     setHideHeader,
     setHideFooter,
+    setHideMoveSequence,
+    setHideNavigation,
+    setHideReplay,
+    setHideExportImport,
+    setHideColors,
+    setHideSolverStatus,
+    setHideAutoplay,
+    setHideEvalBar,
     swapColors,
     toggleAutoP1,
     toggleAutoP2,

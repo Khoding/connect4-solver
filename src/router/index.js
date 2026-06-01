@@ -21,6 +21,7 @@
 import {createRouter, createWebHistory} from 'vue-router';
 import HomeView from '@/views/HomeView.vue';
 import RulesView from '@/views/RulesView.vue';
+import SettingsView from '@/views/SettingsView.vue';
 import NotFoundView from '@/views/Error/NotFoundView.vue';
 
 const router = createRouter({
@@ -45,6 +46,11 @@ const router = createRouter({
       path: '/rules',
       name: 'rules',
       component: RulesView,
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsView,
     },
     {
       path: '/:pathMatch(.*)*',
