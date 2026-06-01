@@ -370,7 +370,7 @@ function formatEval(score) {
 }
 
 .auto-btn {
-  padding: 2px 8px;
+  padding: 8px 16px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
