@@ -19,17 +19,6 @@
 -->
 
 <template>
-  <div class="lang-selector">
-    <button
-      v-for="l in ['en', 'fr', 'de']"
-      :key="l"
-      :class="{active: locale === l}"
-      @click="changeLocale(l)"
-      :aria-label="`Switch language to ${l.toUpperCase()}`"
-    >
-      {{ l.toUpperCase() }}
-    </button>
-  </div>
   <RouterView />
   <footer class="site-footer" v-if="!game.hideFooter">
     <div>
@@ -50,6 +39,19 @@
       >
     </div>
   </footer>
+  <div class="lang-selector-wrapper" v-if="!game.hideFooter">
+    <div class="lang-selector">
+      <button
+        v-for="l in ['en', 'fr', 'de']"
+        :key="l"
+        :class="{active: locale === l}"
+        @click="changeLocale(l)"
+        :aria-label="`Switch language to ${l.toUpperCase()}`"
+      >
+        {{ l.toUpperCase() }}
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -108,12 +110,14 @@ onUnmounted(() => {
   text-align: center;
 }
 
-.lang-selector {
+.lang-selector-wrapper {
   display: flex;
-  z-index: 50;
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
+  justify-content: center;
+}
+
+.lang-selector {
+  display: inline-flex;
+  margin-block-start: 0.75rem;
   padding: 3px;
   gap: 0.25rem;
   border: 1px solid var(--color-border);
@@ -145,14 +149,5 @@ onUnmounted(() => {
   background-color: var(--color-surface-alt);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   color: var(--color-accent);
-}
-
-@media (max-width: 480px) {
-  .lang-selector {
-    position: static;
-    align-self: center;
-    justify-content: center;
-    margin-block-end: 1rem;
-  }
 }
 </style>
