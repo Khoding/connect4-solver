@@ -19,48 +19,43 @@
 -->
 
 <template>
-  <aside class="info-panel">
-    <MoveSequenceCard />
-    <GameControlsCard />
-    <ExportRecap v-if="!game.hideExportImport" />
-    <ColorPresetsCard />
-    <SolverStatusCard />
-  </aside>
+  <section v-if="!game.hideSolverStatus" class="info-card" aria-labelledby="solver-heading">
+    <h2 id="solver-heading" class="card-heading">Solver</h2>
+    <div class="status-content" aria-live="polite">
+      <p class="dim">{{ game.solverStatusText }}</p>
+      <p v-if="game.solverError" class="dim error-text">Solver error: {{ game.solverError }}</p>
+    </div>
+  </section>
 </template>
 
 <script setup>
 import {useGameStore} from '@/stores/game';
-import MoveSequenceCard from './aside/MoveSequenceCard.vue';
-import GameControlsCard from './aside/GameControlsCard.vue';
-import ExportRecap from './ExportRecap.vue';
-import ColorPresetsCard from './aside/ColorPresetsCard.vue';
-import SolverStatusCard from './aside/SolverStatusCard.vue';
 
 const game = useGameStore();
 </script>
 
 <style scoped>
-.info-panel {
-  container-name: info-panel;
-  container-type: inline-size;
-
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  max-inline-size: 380px;
-  gap: clamp(0.5rem, 1.5vh, 1rem);
+.info-card {
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
 }
 
-@media (max-width: 720px) {
-  .info-panel {
-    inline-size: 100%;
-    max-inline-size: 100%;
-  }
+.card-heading {
+  margin: 0 0 0.75rem 0;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
-@media (min-width: 721px) and (max-width: 1100px) {
-  .info-panel {
-    min-inline-size: 260px;
-  }
+.dim {
+  margin: 0;
+  color: var(--color-text-dim);
+  font-size: 0.8rem;
+}
+
+.error-text {
+  margin-block-start: 0.5rem;
+  color: oklch(0.7 0.18 25);
 }
 </style>

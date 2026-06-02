@@ -31,7 +31,7 @@
           {{ s === -1000 ? '—' : s > 0 ? `+${s}` : s }}
         </div>
 
-        <div
+        <button
           v-for="c in game.COLS"
           :key="c"
           class="col-header"
@@ -39,6 +39,8 @@
             suggested: isSuggested(c),
             disabled: game.boardArr[game.ROWS - 1][c - 1] !== 0 || !!game.winLine,
           }"
+          :disabled="game.boardArr[game.ROWS - 1][c - 1] !== 0 || !!game.winLine"
+          :aria-label="getColumnAriaLabel(c)"
           :style="
             isSuggested(c)
               ? {
@@ -46,21 +48,23 @@
                 }
               : {}
           "
+          @click="game.makeMove(c)"
         >
           {{ c }}
-        </div>
+        </button>
       </div>
 
       <div class="row-labels">
         <div v-for="vr in game.ROWS" :key="vr" class="row-label">{{ game.ROWS - vr + 1 }}</div>
       </div>
 
-      <div class="board">
-        <template v-for="vr in game.ROWS" :key="vr">
+      <div class="board" role="grid" aria-label="Game board">
+        <div v-for="vr in game.ROWS" :key="vr" class="board-row" role="row">
           <div
             v-for="c in game.COLS"
             :key="`${vr}-${c}`"
             class="cell"
+            role="gridcell"
             :style="cellStyle(game.ROWS - vr, c - 1)"
             :class="{
               winning: isWinningCell(game.ROWS - vr, c - 1),
@@ -68,13 +72,15 @@
               ghost: !!getGhost(game.ROWS - vr, c - 1),
               'next-ghost': getGhost(game.ROWS - vr, c - 1)?.step === 1,
             }"
+            :aria-label="getCellAriaLabel(game.ROWS - vr, c - 1)"
+            tabindex="-1"
             @click="game.makeMove(c)"
           >
-            <span v-if="getGhost(game.ROWS - vr, c - 1)" class="ghost-step">
+            <span v-if="getGhost(game.ROWS - vr, c - 1)" class="ghost-step" aria-hidden="true">
               {{ getGhost(game.ROWS - vr, c - 1).step }}
             </span>
           </div>
-        </template>
+        </div>
       </div>
 
       <div class="player-indicators">
@@ -90,7 +96,7 @@
             </span>
           </div>
 
-          <div
+          <button
             class="status-label"
             :class="{
               active: game.showGhostMoves && !isGameOver,
@@ -99,11 +105,17 @@
               'win-position': !!game.winLine,
             }"
             :style="{color: statusColor}"
-            :title="!isGameOver && statusLabel !== null ? 'Click to toggle predictive future moves' : undefined"
+            :disabled="isGameOver || isPlaceholder"
+            :aria-label="statusAriaLabel"
+            :title="
+              !isGameOver && statusLabel !== null
+                ? 'Click to toggle predictive future moves'
+                : undefined
+            "
             @click="handleStatusClick"
           >
             {{ displayLabel }}
-          </div>
+          </button>
 
           <div class="player-info">
             <span
@@ -123,6 +135,7 @@
             :style="{
               '--player-accent': game.color1,
             }"
+            :aria-pressed="game.autoP1"
             title="Auto-play Player 1's moves"
             @click="game.toggleAutoP1()"
           >
@@ -133,6 +146,7 @@
             v-if="!game.hideAutoplay"
             class="auto-both-btn"
             :class="{active: game.autoP1 && game.autoP2}"
+            :aria-pressed="game.autoP1 && game.autoP2"
             title="Auto-play both players' moves"
             @click="game.toggleAutoBoth()"
           >
@@ -146,6 +160,7 @@
             :style="{
               '--player-accent': game.color2,
             }"
+            :aria-pressed="game.autoP2"
             title="Auto-play Player 2's moves"
             @click="game.toggleAutoP2()"
           >
@@ -301,6 +316,64 @@ function formatEval(score) {
   if (score === 0) return '0';
   return `${score}`;
 }
+
+function getColumnAriaLabel(col) {
+  const isFull = game.boardArr[game.ROWS - 1][col - 1] !== 0;
+  if (isFull) {
+    return `Column ${col} (Full)`;
+  }
+  if (game.winLine) {
+    return `Column ${col} (Game over)`;
+  }
+  const score = game.solverScores?.[col - 1];
+  let scoreText = '';
+  if (score !== undefined && score !== null && score !== -1000) {
+    if (score > 0) {
+      scoreText = `. Score +${score} (winning position)`;
+    } else if (score < 0) {
+      scoreText = `. Score ${score} (losing position)`;
+    } else {
+      scoreText = `. Score 0 (draw position)`;
+    }
+  }
+  const isOptimal = isSuggested(col);
+  const optimalText = isOptimal ? '. Recommended move' : '';
+  return `Column ${col}${scoreText}${optimalText}`;
+}
+
+function getCellAriaLabel(row, col) {
+  const cellValue = game.boardArr[row][col];
+  const visualRow = row + 1;
+  const colLabel = col + 1;
+
+  let contentText = 'Empty';
+  if (cellValue === 1) {
+    contentText = 'Player 1 checker';
+  } else if (cellValue === 2) {
+    contentText = 'Player 2 checker';
+  } else {
+    const ghost = getGhost(row, col);
+    if (ghost) {
+      contentText = `Ghost predictive move step ${ghost.step} for Player ${ghost.player}`;
+    }
+  }
+
+  if (isWinningCell(row, col)) {
+    contentText += ' (Winning checker)';
+  } else if (isLastMove(row, col)) {
+    contentText += ' (Last move)';
+  }
+
+  return `Row ${visualRow}, Column ${colLabel}: ${contentText}`;
+}
+
+const statusAriaLabel = computed(() => {
+  if (isPlaceholder.value) return '';
+  if (isGameOver.value) {
+    return `Game outcome: ${displayLabel.value}`;
+  }
+  return `Game status: ${displayLabel.value}. Click to toggle predictive future moves. Currently ${game.showGhostMoves ? 'enabled' : 'disabled'}`;
+});
 </script>
 
 <style scoped>
@@ -344,15 +417,20 @@ function formatEval(score) {
 }
 
 .board {
-  display: grid;
-  grid-template-rows: repeat(6, var(--cell-size));
-  grid-template-columns: repeat(7, var(--cell-size));
+  display: flex;
   grid-row: 2;
   grid-column: 2;
+  flex-direction: column;
   padding: var(--board-gap);
   gap: var(--board-gap);
   border-radius: calc(var(--board-gap) + var(--cell-size) / 2);
   background-color: oklch(0.3 0.1 250);
+}
+
+.board-row {
+  display: flex;
+  flex-direction: row;
+  gap: var(--board-gap);
 }
 
 .player-indicators {
@@ -366,46 +444,46 @@ function formatEval(score) {
 
 .player-info-row {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
   grid-template-rows: auto auto;
-  align-items: start;
+  grid-template-columns: 1fr auto 1fr;
   row-gap: 4px;
+  align-items: start;
   inline-size: 100%;
 }
 
 .player-info-row > .player-info:first-child {
-  grid-column: 1;
   grid-row: 1;
+  grid-column: 1;
   justify-self: start;
 }
 
 .player-info-row > .status-label {
-  grid-column: 2;
   grid-row: 1;
+  grid-column: 2;
   justify-self: center;
 }
 
 .player-info-row > .player-info:nth-child(3) {
-  grid-column: 3;
   grid-row: 1;
+  grid-column: 3;
   justify-self: end;
 }
 
 .player-info-row > button:first-of-type {
-  grid-column: 1;
   grid-row: 2;
+  grid-column: 1;
   justify-self: start;
 }
 
 .player-info-row > button:nth-of-type(2) {
-  grid-column: 2;
   grid-row: 2;
+  grid-column: 2;
   justify-self: center;
 }
 
 .player-info-row > button:last-of-type {
-  grid-column: 3;
   grid-row: 2;
+  grid-column: 3;
   justify-self: end;
 }
 
@@ -469,21 +547,29 @@ function formatEval(score) {
   }
 }
 
-
 .status-label {
   padding: 4px 10px;
   border: 1px dashed transparent;
   border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
   font-weight: 600;
   font-size: 0.85rem;
   text-align: center;
   white-space: nowrap;
+  cursor: default;
   transition:
     background-color 0.15s,
     border-color 0.15s,
     color 0.15s;
 
-  &:not(.placeholder):not(.game-over) {
+  &:disabled {
+    border-color: transparent;
+    cursor: default;
+  }
+
+  &:not(:disabled) {
     cursor: pointer;
 
     &:hover {
@@ -511,13 +597,17 @@ function formatEval(score) {
 
 .col-header {
   padding: 4px 2px;
+  border: none;
   border-radius: var(--radius-sm);
   background-color: var(--color-surface-alt);
   color: var(--color-text-dim);
+  font: inherit;
   font-weight: 600;
   text-align: center;
+  cursor: pointer;
 
-  &.disabled {
+  &:disabled {
+    cursor: not-allowed;
     opacity: 0.3;
   }
 

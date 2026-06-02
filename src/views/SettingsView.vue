@@ -510,6 +510,11 @@ input:checked + .toggle-slider {
   }
 }
 
+input:focus-visible + .toggle-slider {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 .toggle-info {
   display: flex;
   flex-direction: column;

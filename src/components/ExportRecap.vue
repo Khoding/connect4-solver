@@ -20,12 +20,33 @@
 
 <template>
   <div class="info-card">
-    <div class="card-tabs">
-      <button :class="{active: cardTab === 'export'}" @click="cardTab = 'export'">Export</button>
-      <button :class="{active: cardTab === 'import'}" @click="cardTab = 'import'">Import</button>
+    <div class="card-tabs" role="tablist" aria-label="Recap options">
+      <button
+        role="tab"
+        :aria-selected="cardTab === 'export'"
+        aria-controls="export-panel"
+        :class="{active: cardTab === 'export'}"
+        @click="cardTab = 'export'"
+      >
+        Export
+      </button>
+      <button
+        role="tab"
+        :aria-selected="cardTab === 'import'"
+        aria-controls="import-panel"
+        :class="{active: cardTab === 'import'}"
+        @click="cardTab = 'import'"
+      >
+        Import
+      </button>
     </div>
 
-    <template v-if="cardTab === 'export'">
+    <div
+      id="export-panel"
+      role="tabpanel"
+      aria-label="Export game recap"
+      v-if="cardTab === 'export'"
+    >
       <p class="dim recap-summary">
         <template v-if="game.gameOver">
           {{ recap.summary.result }} · {{ recap.summary.totalPlies }} plies<template
@@ -53,9 +74,9 @@
           {{ quickCopied ? 'Copied!' : 'Copy text' }}
         </button>
       </div>
-    </template>
+    </div>
 
-    <template v-else>
+    <div id="import-panel" role="tabpanel" aria-label="Import game recap" v-else>
       <p class="dim recap-summary">
         Paste any text containing column numbers (1–7) to load a game.
       </p>
@@ -71,26 +92,56 @@
           Load{{ parsedMoves ? ` (${parsedMoves.length} moves)` : '' }}
         </button>
       </div>
-    </template>
+    </div>
   </div>
 
   <Teleport to="body">
     <div v-if="open" class="recap-backdrop" @click="close">
-      <div class="recap-modal" role="dialog" aria-label="Game recap" @click.stop>
+      <div class="recap-modal" role="dialog" aria-modal="true" aria-label="Game recap" @click.stop>
         <header class="recap-modal-head">
           <h2>Game recap</h2>
           <button class="recap-close" title="Close (Esc)" @click="close">×</button>
         </header>
 
-        <div class="recap-tabs">
-          <button :class="{active: mode === 'image'}" @click="mode = 'image'">Image</button>
-          <button :class="{active: mode === 'text'}" @click="mode = 'text'">Text</button>
+        <div class="recap-tabs" role="tablist" aria-label="Recap format">
+          <button
+            role="tab"
+            :aria-selected="mode === 'image'"
+            aria-controls="image-recap-panel"
+            :class="{active: mode === 'image'}"
+            @click="mode = 'image'"
+          >
+            Image
+          </button>
+          <button
+            role="tab"
+            :aria-selected="mode === 'text'"
+            aria-controls="text-recap-panel"
+            :class="{active: mode === 'text'}"
+            @click="mode = 'text'"
+          >
+            Text
+          </button>
         </div>
 
         <div class="recap-preview" :class="{'is-text': mode === 'text'}">
           <!-- eslint-disable-next-line vue/no-v-html -->
-          <div v-if="mode === 'image'" class="recap-svg" v-html="cardSvg" />
-          <pre v-else class="recap-text">{{ text }}</pre>
+          <div
+            id="image-recap-panel"
+            role="tabpanel"
+            aria-label="Image format recap"
+            v-if="mode === 'image'"
+            class="recap-svg"
+            v-html="cardSvg"
+          />
+          <pre
+            id="text-recap-panel"
+            role="tabpanel"
+            aria-label="Text format recap"
+            v-else
+            class="recap-text"
+            >{{ text }}</pre
+          >
         </div>
 
         <footer class="recap-modal-foot">
