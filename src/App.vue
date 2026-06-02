@@ -19,21 +19,32 @@
 -->
 
 <template>
+  <div class="lang-selector">
+    <button
+      v-for="l in ['en', 'fr', 'de']"
+      :key="l"
+      :class="{active: locale === l}"
+      @click="changeLocale(l)"
+      :aria-label="`Switch language to ${l.toUpperCase()}`"
+    >
+      {{ l.toUpperCase() }}
+    </button>
+  </div>
   <RouterView />
   <footer class="site-footer" v-if="!game.hideFooter">
     <div>
-      Solver by
+      {{ $t('footer.solver_by') }}
       <a href="https://github.com/PascalPons/connect4" target="_blank" rel="noopener">Pascal Pons</a
-      >. Inspired by
+      >. {{ $t('footer.inspired_by') }}
       <a href="https://2swap.github.io/WeakC4/" target="_blank" rel="noopener">2swap's WeakC4</a>.
     </div>
     <div>
-      <a href="https://github.com/Khoding/connect4-solver" target="_blank" rel="noopener"
-        >GitHub Repository</a
-      >
+      <a href="https://github.com/Khoding/connect4-solver" target="_blank" rel="noopener">{{
+        $t('footer.github_repo')
+      }}</a>
     </div>
     <div>
-      Licensed under
+      {{ $t('footer.licensed_under') }}
       <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener"
         >AGPL-3.0</a
       >
@@ -43,8 +54,20 @@
 
 <script setup>
 import {onMounted, onUnmounted} from 'vue';
+import {useI18n} from 'vue-i18n';
 import {useGameStore} from '@/stores/game';
+
 const game = useGameStore();
+const {locale} = useI18n();
+
+function changeLocale(l) {
+  locale.value = l;
+  try {
+    localStorage.setItem('c4_locale', l);
+  } catch {
+    /* localStorage unavailable */
+  }
+}
 
 /*
  * Resolve --cell-size in JS rather than relying on a live `vmin` unit.
@@ -83,5 +106,53 @@ onUnmounted(() => {
   color: var(--color-text-dim);
   font-size: 0.8rem;
   text-align: center;
+}
+
+.lang-selector {
+  display: flex;
+  z-index: 50;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 3px;
+  gap: 0.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(8px);
+  background-color: var(--color-surface);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.lang-selector button {
+  padding: 4px 8px;
+  border: none;
+  border-radius: calc(var(--radius-sm) - 2px);
+  background: transparent;
+  color: var(--color-text-dim);
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.lang-selector button:hover {
+  color: var(--color-text);
+}
+
+.lang-selector button.active {
+  background-color: var(--color-surface-alt);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  color: var(--color-accent);
+}
+
+@media (max-width: 480px) {
+  .lang-selector {
+    position: static;
+    align-self: center;
+    justify-content: center;
+    margin-block-end: 1rem;
+  }
 }
 </style>

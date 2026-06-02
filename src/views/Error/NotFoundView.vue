@@ -20,19 +20,19 @@
 
 <template>
   <section class="not-found">
-    <h1>404 — Page not found</h1>
-    <p>The page you're looking for doesn't exist.</p>
+    <h1>{{ $t('not_found.title') }}</h1>
+    <p>{{ $t('not_found.desc') }}</p>
 
     <p v-if="redirecting">
-      Redirecting in
+      {{ $t('not_found.redirect') }}
       <strong class="time-left">
         {{ timeLeft }}
-        {{ timeLeft === 1 ? 'second' : 'seconds' }} </strong
+        {{ timeLeft === 1 ? $t('not_found.second') : $t('not_found.seconds') }} </strong
       >…
     </p>
 
     <p class="link-home-wrapper">
-      <RouterLink to="/" class="link-home">Back to home</RouterLink>
+      <RouterLink to="/" class="link-home">{{ $t('not_found.back_to_home') }}</RouterLink>
     </p>
   </section>
 </template>

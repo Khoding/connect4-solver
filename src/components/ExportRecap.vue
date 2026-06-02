@@ -19,8 +19,8 @@
 -->
 
 <template>
-  <section class="info-card" aria-label="Game recap export and import">
-    <div class="card-tabs" role="tablist" aria-label="Recap options">
+  <section class="info-card" :aria-label="$t('recap.aria')">
+    <div class="card-tabs" role="tablist" :aria-label="$t('recap.tablist_aria')">
       <button
         role="tab"
         :aria-selected="cardTab === 'export'"
@@ -28,7 +28,7 @@
         :class="{active: cardTab === 'export'}"
         @click="cardTab = 'export'"
       >
-        Export
+        {{ $t('recap.tab_export') }}
       </button>
       <button
         role="tab"
@@ -37,59 +37,62 @@
         :class="{active: cardTab === 'import'}"
         @click="cardTab = 'import'"
       >
-        Import
+        {{ $t('recap.tab_import') }}
       </button>
     </div>
 
     <div
       id="export-panel"
       role="tabpanel"
-      aria-label="Export game recap"
+      :aria-label="$t('recap.export_panel_aria')"
       v-if="cardTab === 'export'"
     >
       <p class="dim recap-summary">
         <template v-if="game.gameOver">
-          {{ recap.summary.result }} · {{ recap.summary.totalPlies }} plies<template
-            v-if="recap.summary.accuracy != null"
-          >
-            · {{ recap.summary.accuracy }}% accuracy</template
+          {{ recap.summary.result }} · {{ recap.summary.totalPlies }} {{ $t('recap.plies')
+          }}<template v-if="recap.summary.accuracy != null">
+            · {{ recap.summary.accuracy }}% {{ $t('recap.accuracy') }}</template
           >
         </template>
-        <template v-else-if="game.totalMoves === 0"> Start a game to export a recap. </template>
-        <template v-else> Declare a resignation or finish the game to export a recap. </template>
+        <template v-else-if="game.totalMoves === 0"> {{ $t('recap.summary_start') }} </template>
+        <template v-else> {{ $t('recap.summary_in_progress') }} </template>
       </p>
       <div v-if="!game.gameOver && game.totalMoves > 0" class="resign-actions">
-        <button @click="game.resign(1)">P1 resigned</button>
-        <button @click="game.resign(2)">P2 resigned</button>
+        <button @click="game.resign(1)">{{ $t('recap.p1_resigned') }}</button>
+        <button @click="game.resign(2)">{{ $t('recap.p2_resigned') }}</button>
       </div>
       <div v-if="game.resignedPlayer" class="resign-badge">
-        <span>Player {{ game.resignedPlayer }} resigned</span>
-        <button class="resign-undo" @click="game.undoResign()">Undo</button>
+        <span>{{ $t('recap.player_resigned_status', {player: game.resignedPlayer}) }}</span>
+        <button class="resign-undo" @click="game.undoResign()">{{ $t('recap.undo') }}</button>
       </div>
       <div class="recap-actions">
         <button class="recap-primary" :disabled="!game.gameOver" @click="open = true">
-          View recap
+          {{ $t('recap.view') }}
         </button>
         <button :disabled="!game.gameOver" @click="quickCopyText">
-          {{ quickCopied ? 'Copied!' : 'Copy text' }}
+          {{ quickCopied ? $t('recap.copied') : $t('recap.copy_text') }}
         </button>
       </div>
     </div>
 
-    <div id="import-panel" role="tabpanel" aria-label="Import game recap" v-else>
+    <div id="import-panel" role="tabpanel" :aria-label="$t('recap.import_panel_aria')" v-else>
       <p class="dim recap-summary">
-        Paste any text containing column numbers (1–7) to load a game.
+        {{ $t('recap.import_instructions') }}
       </p>
       <textarea
         v-model="importInput"
         class="import-textarea"
-        placeholder="e.g. 45627346475461456575617"
+        :placeholder="$t('recap.import_placeholder')"
         rows="3"
         spellcheck="false"
       />
       <div class="recap-actions">
         <button class="recap-primary" :disabled="!parsedMoves" @click="doImport">
-          Load{{ parsedMoves ? ` (${parsedMoves.length} moves)` : '' }}
+          {{
+            parsedMoves
+              ? $t('recap.load_moves', {n: parsedMoves.length})
+              : $t('recap.load_moves_simple')
+          }}
         </button>
       </div>
     </div>
@@ -97,13 +100,19 @@
 
   <Teleport to="body">
     <div v-if="open" class="recap-backdrop" @click="close">
-      <div class="recap-modal" role="dialog" aria-modal="true" aria-label="Game recap" @click.stop>
+      <div
+        class="recap-modal"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="$t('recap.modal_aria')"
+        @click.stop
+      >
         <header class="recap-modal-head">
-          <h2>Game recap</h2>
-          <button class="recap-close" title="Close (Esc)" @click="close">×</button>
+          <h2>{{ $t('recap.modal_title') }}</h2>
+          <button class="recap-close" :title="$t('recap.close_title')" @click="close">×</button>
         </header>
 
-        <div class="recap-tabs" role="tablist" aria-label="Recap format">
+        <div class="recap-tabs" role="tablist" :aria-label="$t('recap.modal_tablist_aria')">
           <button
             role="tab"
             :aria-selected="mode === 'image'"
@@ -111,7 +120,7 @@
             :class="{active: mode === 'image'}"
             @click="mode = 'image'"
           >
-            Image
+            {{ $t('recap.tab_image') }}
           </button>
           <button
             role="tab"
@@ -120,7 +129,7 @@
             :class="{active: mode === 'text'}"
             @click="mode = 'text'"
           >
-            Text
+            {{ $t('recap.tab_text') }}
           </button>
         </div>
 
@@ -129,7 +138,7 @@
           <div
             id="image-recap-panel"
             role="tabpanel"
-            aria-label="Image format recap"
+            :aria-label="$t('recap.image_panel_aria')"
             v-if="mode === 'image'"
             class="recap-svg"
             v-html="cardSvg"
@@ -137,7 +146,7 @@
           <pre
             id="text-recap-panel"
             role="tabpanel"
-            aria-label="Text format recap"
+            :aria-label="$t('recap.text_panel_aria')"
             v-else
             class="recap-text"
             >{{ text }}</pre
@@ -146,20 +155,24 @@
 
         <footer class="recap-modal-foot">
           <template v-if="mode === 'image'">
-            <span class="recap-foot-label">Download as</span>
+            <span class="recap-foot-label">{{ $t('recap.download_as') }}</span>
             <div class="recap-foot-btns">
               <button :disabled="busy" @click="download('svg')">SVG</button>
               <button :disabled="busy" @click="download('png')">PNG</button>
               <button :disabled="busy" @click="download('jpeg')">JPEG</button>
               <button class="recap-primary" :disabled="busy" @click="copyImage">
-                {{ imgCopied ? 'Copied!' : 'Copy image' }}
+                {{ imgCopied ? $t('recap.copied') : $t('recap.copy_image') }}
               </button>
             </div>
           </template>
           <template v-else>
             <div class="recap-foot-btns">
-              <button @click="copyTextBtn">{{ textCopied ? 'Copied!' : 'Copy text' }}</button>
-              <button class="recap-primary" @click="download('txt')">Download .txt</button>
+              <button @click="copyTextBtn">
+                {{ textCopied ? $t('recap.copied') : $t('recap.copy_text') }}
+              </button>
+              <button class="recap-primary" @click="download('txt')">
+                {{ $t('recap.download_txt') }}
+              </button>
             </div>
           </template>
         </footer>
@@ -172,10 +185,12 @@
 
 <script setup>
 import {ref, computed, watch, onUnmounted} from 'vue';
+import {useI18n} from 'vue-i18n';
 import {useGameStore} from '@/stores/game';
 import * as Recap from '@/utils/recap';
 
 const game = useGameStore();
+const {t} = useI18n();
 
 const open = ref(false);
 const mode = ref('image');
@@ -245,7 +260,7 @@ async function copyTextBtn() {
     await Recap.copyText(text.value);
     flash(textCopied);
   } catch {
-    note.value = 'Copy failed — your browser blocked clipboard access.';
+    note.value = t('recap.copy_failed_clipboard');
   }
 }
 
@@ -257,7 +272,7 @@ async function copyImage() {
     await Recap.copyImage(blob);
     flash(imgCopied);
   } catch {
-    note.value = 'Image copy unsupported here — use Download instead.';
+    note.value = t('recap.image_copy_unsupported');
   } finally {
     busy.value = false;
   }
@@ -277,7 +292,7 @@ async function download(format) {
       Recap.downloadBlob(blob, Recap.filenameFor(recap.value, ext));
     }
   } catch {
-    note.value = 'Export failed.';
+    note.value = t('recap.export_failed');
   } finally {
     busy.value = false;
   }

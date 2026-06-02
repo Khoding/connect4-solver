@@ -20,10 +20,12 @@
 
 <template>
   <section v-if="!game.hideSolverStatus" class="info-card" aria-labelledby="solver-heading">
-    <h2 id="solver-heading" class="card-heading">Solver</h2>
+    <h2 id="solver-heading" class="card-heading">{{ $t('solver.title') }}</h2>
     <div class="status-content" aria-live="polite">
       <p class="dim">{{ game.solverStatusText }}</p>
-      <p v-if="game.solverError" class="dim error-text">Solver error: {{ game.solverError }}</p>
+      <p v-if="game.solverError" class="dim error-text">
+        {{ $t('solver.status.error', {error: game.solverError}) }}
+      </p>
     </div>
   </section>
 </template>

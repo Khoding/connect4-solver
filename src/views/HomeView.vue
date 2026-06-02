@@ -20,8 +20,10 @@
 
 <template>
   <header v-if="!game.hideHeader" class="header">
-    <h1>Connect 4 <span class="subtitle">Solver</span></h1>
-    <p class="tagline">Pick your color, then follow the solver's suggestions.</p>
+    <h1>
+      {{ $t('header.title') }} <span class="subtitle">{{ $t('header.subtitle') }}</span>
+    </h1>
+    <p class="tagline">{{ $t('header.tagline') }}</p>
   </header>
 
   <main class="main">

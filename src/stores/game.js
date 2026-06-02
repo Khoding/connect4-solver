@@ -20,6 +20,7 @@
 
 import {ref, computed, watch} from 'vue';
 import {defineStore} from 'pinia';
+import i18n from '@/i18n';
 
 const ROWS = 6;
 const COLS = 7;
@@ -160,7 +161,9 @@ export const useGameStore = defineStore('game', () => {
   const isUserTurn = computed(() => (internalCurrentPlayer.value === 1) === userIsFirst.value);
 
   /** Display label for whose turn it is */
-  const currentPlayerLabel = computed(() => (isUserTurn.value ? '1st player' : '2nd player'));
+  const currentPlayerLabel = computed(() =>
+    isUserTurn.value ? i18n.global.t('moves.player_1') : i18n.global.t('moves.player_2'),
+  );
 
   const isReviewingHistory = computed(() => viewCursor.value < moveHistory.value.length);
   const canStepBack = computed(() => viewCursor.value > 0);
@@ -428,11 +431,11 @@ export const useGameStore = defineStore('game', () => {
 
   const solverStatusText = computed(() => {
     const s = solverStatus.value;
-    if (!s?.moduleReady) return 'Loading WASM module…';
-    if (s.bookLoading) return 'Loading opening book…';
-    if (s.bookError) return `Book error: ${s.bookError}`;
-    if (s.bookLoaded) return 'Ready (with opening book)';
-    return 'Ready (no opening book)';
+    if (!s?.moduleReady) return i18n.global.t('solver.status.loading_wasm');
+    if (s.bookLoading) return i18n.global.t('solver.status.loading_book');
+    if (s.bookError) return i18n.global.t('solver.status.book_error', {error: s.bookError});
+    if (s.bookLoaded) return i18n.global.t('solver.status.ready_book');
+    return i18n.global.t('solver.status.ready_no_book');
   });
 
   /* ── Full-game outcome (independent of the review cursor) ── */

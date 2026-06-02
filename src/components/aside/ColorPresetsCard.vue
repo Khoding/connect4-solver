@@ -20,32 +20,32 @@
 
 <template>
   <section v-if="!game.hideColors" class="info-card" aria-labelledby="colors-heading">
-    <h2 id="colors-heading" class="card-heading">Colors</h2>
+    <h2 id="colors-heading" class="card-heading">{{ $t('colors.title') }}</h2>
     <div class="color-inputs">
       <div class="color-control-group">
-        <label :for="p1ColorId" class="sr-only">Player 1 color picker</label>
+        <label :for="p1ColorId" class="sr-only">{{ $t('colors.p1_picker_aria') }}</label>
         <input
           :id="p1ColorId"
           type="color"
           :value="game.color1"
           @input="game.setColor1($event.target.value)"
         />
-        <label :for="p1HexId" class="sr-only">Player 1 hex value</label>
+        <label :for="p1HexId" class="sr-only">{{ $t('colors.p1_hex_aria') }}</label>
         <input
           :id="p1HexId"
           type="text"
           class="color-hex"
           :value="game.color1"
           maxlength="7"
-          aria-label="Player 1 hexadecimal color"
+          :aria-label="$t('colors.p1_hex_aria')"
           @change="updateColor1($event.target.value)"
         />
       </div>
 
       <button
         class="swap-btn"
-        title="Swap colors"
-        aria-label="Swap player colors"
+        :title="$t('colors.swap_title')"
+        :aria-label="$t('colors.swap_aria')"
         @click="game.swapColors()"
       >
         <svg
@@ -61,32 +61,32 @@
       </button>
 
       <div class="color-control-group">
-        <label :for="p2ColorId" class="sr-only">Player 2 color picker</label>
+        <label :for="p2ColorId" class="sr-only">{{ $t('colors.p2_picker_aria') }}</label>
         <input
           :id="p2ColorId"
           type="color"
           :value="game.color2"
           @input="game.setColor2($event.target.value)"
         />
-        <label :for="p2HexId" class="sr-only">Player 2 hex value</label>
+        <label :for="p2HexId" class="sr-only">{{ $t('colors.p2_hex_aria') }}</label>
         <input
           :id="p2HexId"
           type="text"
           class="color-hex"
           :value="game.color2"
           maxlength="7"
-          aria-label="Player 2 hexadecimal color"
+          :aria-label="$t('colors.p2_hex_aria')"
           @change="updateColor2($event.target.value)"
         />
       </div>
     </div>
 
-    <div v-if="presets.length" class="presets" aria-label="Saved color presets">
+    <div v-if="presets.length" class="presets" :aria-label="$t('colors.presets_aria')">
       <div v-for="(preset, i) in presets" :key="i" class="preset-item">
         <button
           class="preset-swatch"
-          :title="`Apply preset ${preset.name}`"
-          :aria-label="`Apply preset ${preset.name}`"
+          :title="$t('colors.apply_preset', {name: preset.name})"
+          :aria-label="$t('colors.apply_preset', {name: preset.name})"
           @click="applyPreset(preset)"
         >
           <span class="swatch-dot" :style="{backgroundColor: preset.color1}" />
@@ -94,8 +94,8 @@
         </button>
         <button
           class="preset-remove"
-          :title="`Remove preset ${preset.name}`"
-          :aria-label="`Remove preset ${preset.name}`"
+          :title="$t('colors.remove_preset', {name: preset.name})"
+          :aria-label="$t('colors.remove_preset', {name: preset.name})"
           @click="removePreset(i)"
         >
           ×
@@ -119,17 +119,19 @@
           <path d="M12 5v14" />
         </svg>
       </template>
-      Save preset
+      {{ $t('colors.save_preset') }}
     </BaseButton>
   </section>
 </template>
 
 <script setup>
 import {ref, useId} from 'vue';
+import {useI18n} from 'vue-i18n';
 import {useGameStore} from '@/stores/game';
 import BaseButton from '@/components/BaseButton.vue';
 
 const game = useGameStore();
+const {t} = useI18n();
 
 const p1ColorId = useId();
 const p1HexId = useId();
@@ -160,7 +162,7 @@ function persistPresets() {
 const presets = ref(loadPresets());
 
 function savePreset() {
-  const name = `Preset ${presets.value.length + 1}`;
+  const name = t('colors.preset_name', {n: presets.value.length + 1});
   presets.value.push({name, color1: game.color1, color2: game.color2});
   persistPresets();
 }

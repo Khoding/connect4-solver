@@ -20,7 +20,7 @@
 
 <template>
   <div class="loading-overlay" :class="{hidden: !game.loading}">
-    <p>Loading solution data…</p>
+    <p>{{ $t('loading_overlay.loading') }}</p>
   </div>
 </template>
 

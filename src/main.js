@@ -23,6 +23,7 @@ import {createPinia} from 'pinia';
 
 import App from '@/App.vue';
 import router from '@/router';
+import i18n from '@/i18n';
 import '@/assets/style.css';
 
 const app = createApp(App);
@@ -37,6 +38,7 @@ router.isReady().then(async () => {
 });
 
 app.use(createPinia());
+app.use(i18n);
 app.use(router);
 
 // --- DEBUGGER LOGIC START ---

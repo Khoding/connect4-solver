@@ -19,14 +19,14 @@
 -->
 
 <template>
-  <section class="controls-card-wrapper" aria-label="Game navigation and playback controls">
+  <section class="controls-card-wrapper" :aria-label="$t('controls.replay_aria')">
     <!-- Board controls -->
     <div class="controls">
       <BaseButton
         v-if="!game.resetPending"
         variant="reset"
-        title="Reset board (R)"
-        aria-label="Reset board"
+        :title="$t('controls.reset_title')"
+        :aria-label="$t('controls.reset_aria')"
         :disabled="game.totalMoves === 0"
         @click="game.resetBoard()"
       >
@@ -47,18 +47,26 @@
             <path d="M3 3v5h5" />
           </svg>
         </template>
-        Reset (R)
+        {{ $t('controls.reset') }}
       </BaseButton>
       <template v-else>
-        <BaseButton variant="confirm" aria-label="Confirm reset board" @click="game.resetBoard()">
-          Confirm reset
+        <BaseButton
+          variant="confirm"
+          :aria-label="$t('controls.confirm_reset_aria')"
+          @click="game.resetBoard()"
+        >
+          {{ $t('controls.confirm_reset') }}
         </BaseButton>
-        <BaseButton aria-label="Cancel reset board" @click="game.cancelReset()">
-          Cancel
+        <BaseButton :aria-label="$t('controls.cancel_reset_aria')" @click="game.cancelReset()">
+          {{ $t('controls.cancel') }}
         </BaseButton>
       </template>
 
-      <BaseButton to="/settings" title="Settings" aria-label="Open settings">
+      <BaseButton
+        to="/settings"
+        :title="$t('controls.settings_title')"
+        :aria-label="$t('controls.settings_aria')"
+      >
         <template #icon>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -78,15 +86,15 @@
             <circle cx="12" cy="12" r="3" />
           </svg>
         </template>
-        Settings
+        {{ $t('controls.settings') }}
       </BaseButton>
     </div>
 
     <!-- Navigation controls -->
     <div v-if="!game.hideNavigation" class="controls">
       <BaseButton
-        title="Step back"
-        aria-label="Step back in history"
+        :title="$t('controls.back_title')"
+        :aria-label="$t('controls.back_aria')"
         :disabled="!game.canStepBack"
         @click="game.stepBack()"
       >
@@ -106,11 +114,11 @@
             <path d="m15 18-6-6 6-6" />
           </svg>
         </template>
-        Back
+        {{ $t('controls.back') }}
       </BaseButton>
       <BaseButton
-        title="Step forward"
-        aria-label="Step forward in history"
+        :title="$t('controls.forward_title')"
+        :aria-label="$t('controls.forward_aria')"
         :disabled="!game.canStepForward"
         @click="game.stepForward()"
       >
@@ -130,11 +138,11 @@
             <path d="m9 18 6-6-6-6" />
           </svg>
         </template>
-        Forward
+        {{ $t('controls.forward') }}
       </BaseButton>
       <BaseButton
-        title="Jump to latest move"
-        aria-label="Jump to latest move"
+        :title="$t('controls.latest_title')"
+        :aria-label="$t('controls.latest_aria')"
         :disabled="!game.isReviewingHistory"
         @click="game.goToLatest()"
       >
@@ -155,15 +163,15 @@
             <line x1="19" x2="19" y1="5" y2="19" />
           </svg>
         </template>
-        Latest
+        {{ $t('controls.latest') }}
       </BaseButton>
     </div>
 
     <!-- Replay controls -->
     <div v-if="!game.hideReplay" class="controls">
       <BaseButton
-        title="Replay the game from the start"
-        aria-label="Replay game from start"
+        :title="$t('controls.replay_title')"
+        :aria-label="$t('controls.replay_aria')"
         :disabled="!game.gameOver && !game.replayActive"
         :variant="game.replayActive ? 'replay-active' : 'replay'"
         :aria-pressed="game.replayActive"
@@ -202,12 +210,12 @@
             <polygon points="10 8 16 12 10 16 10 8" />
           </svg>
         </template>
-        {{ game.replayActive ? 'Stop' : 'Replay' }}
+        {{ game.replayActive ? $t('controls.stop') : $t('controls.replay') }}
       </BaseButton>
       <BaseButton
         v-if="!game.replayActive"
-        title="Continue replay from current position"
-        aria-label="Continue replay from current position"
+        :title="$t('controls.continue_title')"
+        :aria-label="$t('controls.continue_aria')"
         :disabled="!game.isReviewingHistory || !game.gameOver"
         @click="game.continueReplay()"
       >
@@ -227,7 +235,7 @@
             <polygon points="6 3 20 12 6 21 6 3" />
           </svg>
         </template>
-        Continue
+        {{ $t('controls.continue') }}
       </BaseButton>
     </div>
   </section>

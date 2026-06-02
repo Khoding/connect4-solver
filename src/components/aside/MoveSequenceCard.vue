@@ -20,13 +20,13 @@
 
 <template>
   <section v-if="!game.hideMoveSequence" class="info-card" aria-labelledby="move-seq-heading">
-    <h2 id="move-seq-heading" class="card-heading">Move sequence</h2>
+    <h2 id="move-seq-heading" class="card-heading">{{ $t('moves.title') }}</h2>
     <div class="mono-wrapper">
       <template v-if="!game.moveHistory.length">
-        <p class="dim text-start">(start)</p>
+        <p class="dim text-start">{{ $t('moves.start') }}</p>
       </template>
       <template v-else>
-        <ol class="move-list" aria-label="Moves played">
+        <ol class="move-list" :aria-label="$t('moves.aria')">
           <li
             v-for="(move, i) in game.moveHistory"
             :key="i"
@@ -38,12 +38,12 @@
             }"
             :title="
               i >= game.viewCursor
-                ? 'Future move'
+                ? $t('moves.future')
                 : game.moveOptimality[i] === true
-                  ? 'Optimal move'
+                  ? $t('moves.optimal')
                   : game.moveOptimality[i] === false
-                    ? 'Suboptimal move'
-                    : 'Unknown'
+                    ? $t('moves.suboptimal')
+                    : $t('moves.unknown')
             "
             :aria-label="getMoveAriaLabel(move, i)"
           >
@@ -63,14 +63,18 @@
         </ol>
       </template>
     </div>
-    <p class="dim" aria-live="polite">Move {{ game.viewCursor }} / {{ game.totalMoves }}</p>
+    <p class="dim" aria-live="polite">
+      {{ $t('moves.count', {cursor: game.viewCursor, total: game.totalMoves}) }}
+    </p>
   </section>
 </template>
 
 <script setup>
+import {useI18n} from 'vue-i18n';
 import {useGameStore} from '@/stores/game';
 
 const game = useGameStore();
+const {t} = useI18n();
 
 function formatMoveScore(score) {
   if (score == null) return '?';
@@ -86,18 +90,21 @@ function scoreClass(score) {
 }
 
 function getMoveAriaLabel(move, i) {
-  const player = i % 2 === 0 ? 'Player 1' : 'Player 2';
+  const player = i % 2 === 0 ? t('moves.player_1') : t('moves.player_2');
   const optimality =
     i >= game.viewCursor
-      ? 'Future move'
+      ? t('moves.future')
       : game.moveOptimality[i] === true
-        ? 'Optimal move'
+        ? t('moves.optimal')
         : game.moveOptimality[i] === false
-          ? 'Suboptimal move'
-          : 'Unknown optimality';
+          ? t('moves.suboptimal')
+          : t('moves.unknown');
   const score = game.moveScores[i];
-  const scoreText = score != null ? `score ${score > 0 ? '+' : ''}${score}` : 'no score';
-  return `Move ${i + 1}: ${player} played column ${move}, ${optimality}, ${scoreText}`;
+  const scoreText =
+    score != null
+      ? t('moves.score_text', {score: `${score > 0 ? '+' : ''}${score}`})
+      : t('moves.no_score');
+  return t('moves.move_aria', {n: i + 1, player, move, optimality, scoreText});
 }
 </script>
 

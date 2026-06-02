@@ -21,30 +21,55 @@
 <template>
   <div class="settings-view">
     <header class="settings-header">
-      <h1>Customization <span class="subtitle">Settings</span></h1>
-      <p class="tagline">Toggle workspace elements to build your perfect Connect 4 interface.</p>
+      <h1>
+        {{ $t('settings.header.title') }}
+        <span class="subtitle">{{ $t('settings.header.subtitle') }}</span>
+      </h1>
+      <p class="tagline">{{ $t('settings.header.tagline') }}</p>
     </header>
 
     <div class="settings-layout">
       <!-- Controls column -->
       <section class="settings-controls-pane">
-        <section class="info-card quick-actions-card" aria-labelledby="quick-config-heading">
-          <h2 id="quick-config-heading" class="card-heading">Quick configurations</h2>
+        <!-- Language Selector Card -->
+        <section class="info-card language-card" aria-labelledby="language-heading">
+          <h2 id="language-heading" class="card-heading">{{ $t('settings.language.title') }}</h2>
           <div class="quick-btns">
-            <BaseButton class="action-btn" @click="showAll">Show everything</BaseButton>
+            <BaseButton
+              v-for="l in ['en', 'fr', 'de']"
+              :key="l"
+              class="action-btn"
+              :variant="locale === l ? 'accent' : 'default'"
+              @click="changeLocale(l)"
+            >
+              {{ l === 'en' ? 'English' : l === 'fr' ? 'Français' : 'Deutsch' }}
+            </BaseButton>
+          </div>
+        </section>
+
+        <section class="info-card quick-actions-card" aria-labelledby="quick-config-heading">
+          <h2 id="quick-config-heading" class="card-heading">
+            {{ $t('settings.quick_config.title') }}
+          </h2>
+          <div class="quick-btns">
+            <BaseButton class="action-btn" @click="showAll">{{
+              $t('settings.quick_config.show_all')
+            }}</BaseButton>
             <BaseButton class="action-btn" variant="danger" @click="hideAll">
-              Hide everything (Minimalist)
+              {{ $t('settings.quick_config.hide_all') }}
             </BaseButton>
             <BaseButton class="action-btn" variant="accent" @click="applyRecommended">
-              Recommended layout
+              {{ $t('settings.quick_config.recommended') }}
             </BaseButton>
           </div>
         </section>
 
         <section class="info-card" aria-labelledby="toggle-elements-heading">
-          <h2 id="toggle-elements-heading" class="card-heading">Toggle Elements</h2>
+          <h2 id="toggle-elements-heading" class="card-heading">
+            {{ $t('settings.toggle_elements.title') }}
+          </h2>
           <fieldset class="toggles-grid">
-            <legend class="sr-only">Toggle UI elements</legend>
+            <legend class="sr-only">{{ $t('settings.toggle_elements.title') }}</legend>
             <label
               v-for="item in settingsList"
               :key="item.key"
@@ -60,8 +85,8 @@
                 <span class="toggle-slider"></span>
               </div>
               <div class="toggle-info">
-                <span class="toggle-label">{{ item.label }}</span>
-                <span class="toggle-desc">{{ item.description }}</span>
+                <span class="toggle-label">{{ $t(`settings.items.${item.key}.label`) }}</span>
+                <span class="toggle-desc">{{ $t(`settings.items.${item.key}.desc`) }}</span>
               </div>
             </label>
           </fieldset>
@@ -69,11 +94,15 @@
 
         <section class="info-card aside-order-card" aria-labelledby="aside-order-heading">
           <div class="card-header-row">
-            <h2 id="aside-order-heading" class="card-heading">Sidebar Order</h2>
-            <button class="reset-order-btn" @click="game.resetAsideOrder">Reset order</button>
+            <h2 id="aside-order-heading" class="card-heading">
+              {{ $t('settings.aside_order.title') }}
+            </h2>
+            <button class="reset-order-btn" @click="game.resetAsideOrder">
+              {{ $t('settings.aside_order.reset') }}
+            </button>
           </div>
           <p class="card-desc">
-            Drag items or use the arrows to change the layout order of sidebar components.
+            {{ $t('settings.aside_order.desc') }}
           </p>
           <div class="reorder-list">
             <div
@@ -113,8 +142,8 @@
                   class="arrow-btn"
                   :disabled="index === 0"
                   @click="game.moveAsideItem(index, -1)"
-                  title="Move Up"
-                  aria-label="Move Up"
+                  :title="$t('settings.aside_order.move_up')"
+                  :aria-label="$t('settings.aside_order.move_up')"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -134,8 +163,8 @@
                   class="arrow-btn"
                   :disabled="index === game.asideOrder.length - 1"
                   @click="game.moveAsideItem(index, 1)"
-                  title="Move Down"
-                  aria-label="Move Down"
+                  :title="$t('settings.aside_order.move_down')"
+                  :aria-label="$t('settings.aside_order.move_down')"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -159,13 +188,17 @@
 
       <!-- App Mockup Preview column -->
       <section class="settings-preview-pane">
-        <span class="preview-explanation">Interactive App Preview</span>
+        <span class="preview-explanation">{{ $t('settings.preview.title') }}</span>
         <div class="mini-app-frame" :style="{'--p1-color': game.color1, '--p2-color': game.color2}">
           <!-- Header block -->
           <div class="mini-head-block" :class="{'is-disabled': game.hideHeader}">
-            <span class="mini-title">Connect 4 <span class="light">Solver</span></span>
-            <span class="mini-desc">Follow suggestions.</span>
-            <div v-if="game.hideHeader" class="mini-status-overlay">HIDDEN</div>
+            <span class="mini-title"
+              >{{ $t('header.title') }} <span class="light">{{ $t('header.subtitle') }}</span></span
+            >
+            <span class="mini-desc">{{ $t('header.tagline') }}</span>
+            <div v-if="game.hideHeader" class="mini-status-overlay">
+              {{ $t('settings.preview.hidden') }}
+            </div>
           </div>
 
           <!-- Main Layout emulation -->
@@ -174,7 +207,9 @@
             <div class="mini-board-column">
               <!-- Always open board grid -->
               <div class="mini-board-wrapper">
-                <span class="mini-badge-always-visible">always visible</span>
+                <span class="mini-badge-always-visible">{{
+                  $t('settings.preview.always_visible')
+                }}</span>
                 <div class="mini-board-columns-header">
                   <span
                     v-for="n in 7"
@@ -204,20 +239,22 @@
               <div class="mini-indicators" :class="{'is-disabled': game.hideAutoplay}">
                 <div class="mini-p-card">
                   <span class="p1">P1</span>
-                  <span class="mini-indicator-auto" :class="{'is-disabled': game.hideAutoplay}"
-                    >Auto</span
-                  >
+                  <span class="mini-indicator-auto" :class="{'is-disabled': game.hideAutoplay}">{{
+                    $t('board.auto')
+                  }}</span>
                 </div>
-                <span class="mini-indicator-both" :class="{'is-disabled': game.hideAutoplay}"
-                  >Auto both</span
-                >
+                <span class="mini-indicator-both" :class="{'is-disabled': game.hideAutoplay}">{{
+                  $t('board.auto_both')
+                }}</span>
                 <div class="mini-p-card">
-                  <span class="mini-indicator-auto" :class="{'is-disabled': game.hideAutoplay}"
-                    >Auto</span
-                  >
+                  <span class="mini-indicator-auto" :class="{'is-disabled': game.hideAutoplay}">{{
+                    $t('board.auto')
+                  }}</span>
                   <span class="p2">P2</span>
                 </div>
-                <div v-if="game.hideAutoplay" class="mini-status-overlay">HIDDEN</div>
+                <div v-if="game.hideAutoplay" class="mini-status-overlay">
+                  {{ $t('settings.preview.hidden') }}
+                </div>
               </div>
 
               <!-- Meter evaluation bar -->
@@ -228,7 +265,9 @@
                   <div class="tick"></div>
                 </div>
                 <div class="mini-meter-bar" />
-                <div v-if="game.hideEvalBar" class="mini-status-overlay">HIDDEN</div>
+                <div v-if="game.hideEvalBar" class="mini-status-overlay">
+                  {{ $t('settings.preview.hidden') }}
+                </div>
               </div>
             </div>
 
@@ -241,38 +280,48 @@
                   class="mini-section-card"
                   :class="{'is-disabled': game.hideMoveSequence}"
                 >
-                  <span class="mini-card-lbl">Move Sequence</span>
+                  <span class="mini-card-lbl">{{ $t('moves.title') }}</span>
                   <div class="mini-dots-row">
                     <span class="mini-p1-dot">1: 4</span>
                     <span class="mini-p2-dot">2: 3</span>
                   </div>
-                  <div v-if="game.hideMoveSequence" class="mini-status-overlay">HIDDEN</div>
+                  <div v-if="game.hideMoveSequence" class="mini-status-overlay">
+                    {{ $t('settings.preview.hidden') }}
+                  </div>
                 </div>
 
                 <!-- Game controls -->
                 <template v-if="item === 'game-controls'">
                   <!-- Reset box (Always visible) -->
                   <div class="mini-section-card mini-reset-card">
-                    <span class="mini-card-lbl">Controls</span>
+                    <span class="mini-card-lbl">{{
+                      $t('settings.aside.game-controls').split(' ')[0]
+                    }}</span>
                     <div class="mini-row-flex">
-                      <span class="mini-reset-pill">Reset</span>
-                      <span class="mini-badge-always-lbl">always visible</span>
+                      <span class="mini-reset-pill">{{ $t('controls.reset').split(' ')[0] }}</span>
+                      <span class="mini-badge-always-lbl">{{
+                        $t('settings.preview.always_visible')
+                      }}</span>
                     </div>
                   </div>
 
                   <!-- Navigation steps -->
                   <div class="mini-section-card" :class="{'is-disabled': game.hideNavigation}">
                     <div class="mini-row-flex">
-                      <span class="mini-pill">Back</span>
-                      <span class="mini-pill">Forward</span>
+                      <span class="mini-pill">{{ $t('controls.back') }}</span>
+                      <span class="mini-pill">{{ $t('controls.forward') }}</span>
                     </div>
-                    <div v-if="game.hideNavigation" class="mini-status-overlay">HIDDEN</div>
+                    <div v-if="game.hideNavigation" class="mini-status-overlay">
+                      {{ $t('settings.preview.hidden') }}
+                    </div>
                   </div>
 
                   <!-- Replay -->
                   <div class="mini-section-card" :class="{'is-disabled': game.hideReplay}">
-                    <span class="mini-pill accent">Replay</span>
-                    <div v-if="game.hideReplay" class="mini-status-overlay">HIDDEN</div>
+                    <span class="mini-pill accent">{{ $t('controls.replay') }}</span>
+                    <div v-if="game.hideReplay" class="mini-status-overlay">
+                      {{ $t('settings.preview.hidden') }}
+                    </div>
                   </div>
                 </template>
 
@@ -282,12 +331,16 @@
                   class="mini-section-card"
                   :class="{'is-disabled': game.hideExportImport}"
                 >
-                  <span class="mini-card-lbl">Export / Import</span>
+                  <span class="mini-card-lbl"
+                    >{{ $t('recap.tab_export') }} / {{ $t('recap.tab_import') }}</span
+                  >
                   <div class="mini-row-flex text-decor">
-                    <span>Export</span>
-                    <span>Import</span>
+                    <span>{{ $t('recap.tab_export') }}</span>
+                    <span>{{ $t('recap.tab_import') }}</span>
                   </div>
-                  <div v-if="game.hideExportImport" class="mini-status-overlay">HIDDEN</div>
+                  <div v-if="game.hideExportImport" class="mini-status-overlay">
+                    {{ $t('settings.preview.hidden') }}
+                  </div>
                 </div>
 
                 <!-- Colors -->
@@ -296,12 +349,14 @@
                   class="mini-section-card"
                   :class="{'is-disabled': game.hideColors}"
                 >
-                  <span class="mini-card-lbl">Colors</span>
+                  <span class="mini-card-lbl">{{ $t('colors.title') }}</span>
                   <div class="mini-row-flex swatches">
                     <span class="p1-swatch">P1</span>
                     <span class="p2-swatch">P2</span>
                   </div>
-                  <div v-if="game.hideColors" class="mini-status-overlay">HIDDEN</div>
+                  <div v-if="game.hideColors" class="mini-status-overlay">
+                    {{ $t('settings.preview.hidden') }}
+                  </div>
                 </div>
 
                 <!-- Solver ready indicator -->
@@ -310,9 +365,11 @@
                   class="mini-section-card"
                   :class="{'is-disabled': game.hideSolverStatus}"
                 >
-                  <span class="mini-card-lbl">Solver status</span>
-                  <span class="mini-solver-ready">Ready (with opening book)</span>
-                  <div v-if="game.hideSolverStatus" class="mini-status-overlay">HIDDEN</div>
+                  <span class="mini-card-lbl">{{ $t('solver.title') }}</span>
+                  <span class="mini-solver-ready">{{ $t('solver.status.ready_book') }}</span>
+                  <div v-if="game.hideSolverStatus" class="mini-status-overlay">
+                    {{ $t('settings.preview.hidden') }}
+                  </div>
                 </div>
               </template>
             </div>
@@ -320,8 +377,10 @@
 
           <!-- Footer block -->
           <div class="mini-foot-block" :class="{'is-disabled': game.hideFooter}">
-            <span class="mini-foot-txt">Solver by Pascal Pons · AGPL-3.0</span>
-            <div v-if="game.hideFooter" class="mini-status-overlay">HIDDEN</div>
+            <span class="mini-foot-txt">{{ $t('footer.solver_by') }} Pascal Pons · AGPL-3.0</span>
+            <div v-if="game.hideFooter" class="mini-status-overlay">
+              {{ $t('settings.preview.hidden') }}
+            </div>
           </div>
         </div>
       </section>
@@ -344,7 +403,7 @@
               <path d="M19 12H5" />
             </svg>
           </template>
-          Back to Solver
+          {{ $t('settings.back_btn') }}
         </BaseButton>
       </div>
     </div>
@@ -353,10 +412,21 @@
 
 <script setup>
 import {onMounted, ref} from 'vue';
+import {useI18n} from 'vue-i18n';
 import {useGameStore} from '@/stores/game';
 import BaseButton from '@/components/BaseButton.vue';
 
 const game = useGameStore();
+const {locale, t} = useI18n();
+
+function changeLocale(l) {
+  locale.value = l;
+  try {
+    localStorage.setItem('c4_locale', l);
+  } catch {
+    /* localStorage unavailable */
+  }
+}
 
 onMounted(() => {
   game.init();
@@ -390,14 +460,7 @@ function onDragEnd() {
 }
 
 function asideLabel(key) {
-  const labels = {
-    'move-sequence': 'Move Sequence',
-    'game-controls': 'Game Controls (Reset, navigation, replay)',
-    'export-import': 'Export & Import Recap',
-    colors: 'Color Editor & Presets',
-    'solver-status': 'WASM Solver Status',
-  };
-  return labels[key] || key;
+  return t(`settings.aside.${key}`) || key;
 }
 
 const settingsList = [

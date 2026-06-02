@@ -19,7 +19,7 @@
 -->
 
 <template>
-  <section class="board-area" aria-label="Game board and controls">
+  <section class="board-area" :aria-label="$t('board.aria')">
     <div class="board-grid">
       <div class="column-buttons">
         <div
@@ -58,7 +58,7 @@
         <div v-for="vr in game.ROWS" :key="vr" class="row-label">{{ game.ROWS - vr + 1 }}</div>
       </div>
 
-      <div class="board" role="grid" aria-label="Game board">
+      <div class="board" role="grid" :aria-label="$t('board.aria')">
         <div v-for="vr in game.ROWS" :key="vr" class="board-row" role="row">
           <div
             v-for="c in game.COLS"
@@ -86,7 +86,9 @@
       <div class="player-indicators">
         <div class="player-info-row">
           <div class="player-info">
-            <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">P1</span>
+            <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">{{
+              $t('board.p1')
+            }}</span>
             <span
               v-if="!game.hideEvalBar"
               class="eval-score"
@@ -108,9 +110,7 @@
             :disabled="isGameOver || isPlaceholder"
             :aria-label="statusAriaLabel"
             :title="
-              !isGameOver && statusLabel !== null
-                ? 'Click to toggle predictive future moves'
-                : undefined
+              !isGameOver && statusLabel !== null ? $t('board.toggle_predictions') : undefined
             "
             @click="handleStatusClick"
           >
@@ -125,7 +125,9 @@
             >
               {{ formatEval(game.positionEval?.second) }}
             </span>
-            <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">P2</span>
+            <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">{{
+              $t('board.p2')
+            }}</span>
           </div>
 
           <button
@@ -136,10 +138,10 @@
               '--player-accent': game.color1,
             }"
             :aria-pressed="game.autoP1"
-            title="Auto-play Player 1's moves"
+            :title="$t('board.auto_p1_title')"
             @click="game.toggleAutoP1()"
           >
-            Auto
+            {{ $t('board.auto') }}
           </button>
 
           <button
@@ -147,10 +149,10 @@
             class="auto-both-btn"
             :class="{active: game.autoP1 && game.autoP2}"
             :aria-pressed="game.autoP1 && game.autoP2"
-            title="Auto-play both players' moves"
+            :title="$t('board.auto_both_title')"
             @click="game.toggleAutoBoth()"
           >
-            Auto both
+            {{ $t('board.auto_both') }}
           </button>
 
           <button
@@ -161,10 +163,10 @@
               '--player-accent': game.color2,
             }"
             :aria-pressed="game.autoP2"
-            title="Auto-play Player 2's moves"
+            :title="$t('board.auto_p2_title')"
             @click="game.toggleAutoP2()"
           >
-            Auto
+            {{ $t('board.auto') }}
           </button>
         </div>
 
@@ -193,20 +195,24 @@
 
 <script setup>
 import {computed} from 'vue';
+import {useI18n} from 'vue-i18n';
 import {useGameStore} from '@/stores/game';
 
 const game = useGameStore();
+const {t} = useI18n();
 
 const statusLabel = computed(() => {
-  if (game.resignedPlayer !== 0) return `Player ${game.resignedPlayer} resigned`;
-  if (game.isDraw) return 'Draw';
+  if (game.resignedPlayer !== 0) {
+    return t('board.status.resigned', {player: game.resignedPlayer});
+  }
+  if (game.isDraw) return t('board.status.draw');
   const score = game.suggestion?.score;
   if (score == null) return null;
-  if (score === 0) return 'Draw';
+  if (score === 0) return t('board.status.draw');
   const k = game.viewCursor;
   const m = score > 0 ? 43 + (k % 2) - k - 2 * score : 44 - (k % 2) - k + 2 * score;
   const winner = score > 0 ? game.internalCurrentPlayer : game.internalCurrentPlayer === 1 ? 2 : 1;
-  return `P${winner} wins in ${m}`;
+  return t('board.status.wins_in', {winner, m});
 });
 
 const statusColor = computed(() => {
@@ -228,7 +234,7 @@ const isPlaceholder = computed(() => !game.winLine && statusLabel.value === null
 const displayLabel = computed(() => {
   if (game.winLine) {
     const winner = game.internalCurrentPlayer === 2 ? 1 : 2;
-    return `P${winner} Winner`;
+    return t('board.status.winner', {winner});
   }
   return statusLabel.value ?? ' ';
 });
@@ -320,25 +326,33 @@ function formatEval(score) {
 function getColumnAriaLabel(col) {
   const isFull = game.boardArr[game.ROWS - 1][col - 1] !== 0;
   if (isFull) {
-    return `Column ${col} (Full)`;
+    return t('board.col_btn_aria', {
+      col,
+      score: t('board.col_btn_full'),
+      optimal: '',
+    });
   }
   if (game.winLine) {
-    return `Column ${col} (Game over)`;
+    return t('board.col_btn_aria', {
+      col,
+      score: t('board.col_btn_game_over'),
+      optimal: '',
+    });
   }
   const score = game.solverScores?.[col - 1];
   let scoreText = '';
   if (score !== undefined && score !== null && score !== -1000) {
     if (score > 0) {
-      scoreText = `. Score +${score} (winning position)`;
+      scoreText = t('board.col_btn_score_win', {score});
     } else if (score < 0) {
-      scoreText = `. Score ${score} (losing position)`;
+      scoreText = t('board.col_btn_score_loss', {score});
     } else {
-      scoreText = `. Score 0 (draw position)`;
+      scoreText = t('board.col_btn_score_draw');
     }
   }
   const isOptimal = isSuggested(col);
-  const optimalText = isOptimal ? '. Recommended move' : '';
-  return `Column ${col}${scoreText}${optimalText}`;
+  const optimalText = isOptimal ? t('board.col_btn_optimal') : '';
+  return t('board.col_btn_aria', {col, score: scoreText, optimal: optimalText});
 }
 
 function getCellAriaLabel(row, col) {
@@ -346,33 +360,36 @@ function getCellAriaLabel(row, col) {
   const visualRow = row + 1;
   const colLabel = col + 1;
 
-  let contentText = 'Empty';
+  let contentText = t('board.content.empty');
   if (cellValue === 1) {
-    contentText = 'Player 1 checker';
+    contentText = t('board.content.p1_checker');
   } else if (cellValue === 2) {
-    contentText = 'Player 2 checker';
+    contentText = t('board.content.p2_checker');
   } else {
     const ghost = getGhost(row, col);
     if (ghost) {
-      contentText = `Ghost predictive move step ${ghost.step} for Player ${ghost.player}`;
+      contentText = t('board.content.ghost_move', {step: ghost.step, player: ghost.player});
     }
   }
 
   if (isWinningCell(row, col)) {
-    contentText += ' (Winning checker)';
+    contentText += t('board.content.winning');
   } else if (isLastMove(row, col)) {
-    contentText += ' (Last move)';
+    contentText += t('board.content.last');
   }
 
-  return `Row ${visualRow}, Column ${colLabel}: ${contentText}`;
+  return t('board.row_col_aria', {row: visualRow, col: colLabel, content: contentText});
 }
 
 const statusAriaLabel = computed(() => {
   if (isPlaceholder.value) return '';
   if (isGameOver.value) {
-    return `Game outcome: ${displayLabel.value}`;
+    return t('board.status.aria_outcome', {outcome: displayLabel.value});
   }
-  return `Game status: ${displayLabel.value}. Click to toggle predictive future moves. Currently ${game.showGhostMoves ? 'enabled' : 'disabled'}`;
+  const ghostState = game.showGhostMoves
+    ? t('board.status.ghost_enabled')
+    : t('board.status.ghost_disabled');
+  return t('board.status.aria_status', {status: displayLabel.value, ghostState});
 });
 </script>
 
@@ -639,9 +656,9 @@ const statusAriaLabel = computed(() => {
 }
 
 .cell {
+  flex-shrink: 0;
   inline-size: var(--cell-size);
   block-size: var(--cell-size);
-  flex-shrink: 0;
   border-radius: 50%;
   background-color: var(--color-empty);
   cursor: pointer;
@@ -715,8 +732,8 @@ const statusAriaLabel = computed(() => {
   font-weight: 700;
   font-size: 0.75rem;
   font-family: var(--font-mono);
-  user-select: none;
   pointer-events: none;
+  user-select: none;
 
   .next-ghost & {
     color: oklch(from var(--ghost-color) max(0.75, l) c h);
