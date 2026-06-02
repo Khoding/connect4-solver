@@ -4,11 +4,26 @@ import {defineConfig} from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
 import {VitePWA} from 'vite-plugin-pwa';
+import browserslist from 'browserslist';
+import {browserslistToTargets} from 'lightningcss';
 
 const staticAssetPathPattern = /\/[^/?]+\.[^/?]+(?:\?.*)?$/;
 
+// Browsers we transpile/polyfill CSS for. Covers older Android Chrome so
+// modern features (nesting, oklch, color-mix, logical properties) get fallbacks.
+const cssTargets = browserslistToTargets(browserslist('>= 0.5%, last 4 versions, not dead'));
+
 // https://vite.dev/config/
 export default defineConfig({
+  css: {
+    transformer: 'lightningcss',
+    lightningcss: {
+      targets: cssTargets,
+    },
+  },
+  build: {
+    cssMinify: 'lightningcss',
+  },
   plugins: [
     vue(),
     vueDevTools(),

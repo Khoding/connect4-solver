@@ -27,7 +27,7 @@
     :disabled="disabled"
   >
     <slot name="icon" />
-    <slot />
+    <span v-if="$slots.default" class="base-button-label"><slot /></span>
   </component>
 </template>
 
@@ -57,6 +57,7 @@ const variantClass = computed(() => {
 <style scoped>
 .base-button-wrapper {
   display: inline-flex;
+  align-items: center;
   justify-content: center;
   padding: 8px 12px;
   gap: 0.4rem;
@@ -89,6 +90,23 @@ const variantClass = computed(() => {
   flex-shrink: 0;
   width: 1.2em;
   height: 1.2em;
+}
+
+.base-button-label {
+  display: block;
+  margin-block-start: -0.1em;
+}
+
+/*
+  Trim the label's line box to its cap-height/alphabetic-baseline so the text
+  centers on its real glyph bounds, not on font-dependent ascent/descent.
+  This neutralises the desktop-font vs Android-Roboto vertical offset next to
+  the icon. Browsers without support fall back to `align-items: center`.
+*/
+@supports (text-box: trim-both cap alphabetic) {
+  .base-button-label {
+    text-box: trim-both cap alphabetic;
+  }
 }
 
 .variant-reset {
