@@ -50,15 +50,13 @@
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          height="1.2em"
-          viewBox="0 -960 960 960"
           width="1.2em"
+          height="1.2em"
+          viewBox="0 0 24 24"
           fill="currentColor"
           aria-hidden="true"
         >
-          <path
-            d="M280-120 80-320l200-200 57 56-104 104h607v80H233l104 104-57 56Zm400-320-57-56 104-104H120v-80h607L623-784l57-56 200 200-200 200Z"
-          />
+          <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3H6.99zM21 9l-3.99-4V8H10v2h7.01v3L21 9z" />
         </svg>
       </button>
 
@@ -104,13 +102,32 @@
         </button>
       </div>
     </div>
-    <button class="save-preset-btn" @click="savePreset">+ Save preset</button>
+    <BaseButton class="save-preset-btn" @click="savePreset">
+      <template #icon>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="1.2em"
+          height="1.2em"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+      </template>
+      Save preset
+    </BaseButton>
   </section>
 </template>
 
 <script setup>
 import {ref, useId} from 'vue';
 import {useGameStore} from '@/stores/game';
+import BaseButton from '@/components/BaseButton.vue';
 
 const game = useGameStore();
 
@@ -306,22 +323,8 @@ function updateColor2(value) {
 }
 
 .save-preset-btn {
+  inline-size: 100%;
   margin-block-start: 0.5rem;
-  padding: 6px 12px;
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-sm);
-  background-color: transparent;
-  color: var(--color-text-dim);
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition:
-    color 0.15s,
-    border-color 0.15s;
-
-  &:hover {
-    border-color: var(--color-accent);
-    color: var(--color-text);
-  }
 }
 
 .sr-only {

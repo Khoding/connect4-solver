@@ -123,7 +123,7 @@ function getMoveAriaLabel(move, i) {
   flex-wrap: wrap;
   margin: 0;
   padding: 0;
-  gap: 4px;
+  gap: 0.4rem;
   list-style: none;
 }
 

@@ -31,13 +31,13 @@
         <section class="info-card quick-actions-card" aria-labelledby="quick-config-heading">
           <h2 id="quick-config-heading" class="card-heading">Quick configurations</h2>
           <div class="quick-btns">
-            <button class="action-btn" @click="showAll">Show everything</button>
-            <button class="action-btn minimalist-btn" @click="hideAll">
+            <BaseButton class="action-btn" @click="showAll">Show everything</BaseButton>
+            <BaseButton class="action-btn" variant="danger" @click="hideAll">
               Hide everything (Minimalist)
-            </button>
-            <button class="action-btn recommended-btn" @click="applyRecommended">
+            </BaseButton>
+            <BaseButton class="action-btn" variant="accent" @click="applyRecommended">
               Recommended layout
-            </button>
+            </BaseButton>
           </div>
         </section>
 
@@ -90,12 +90,21 @@
               <div class="drag-handle" aria-hidden="true">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  height="1.2em"
-                  viewBox="0 -960 960 960"
                   width="1.2em"
-                  fill="currentColor"
+                  height="1.2em"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
                 >
-                  <path d="M360-240v-80h240v80H360Zm0-160v-80h240v80H360Zm0-160v-80h240v80H360Z" />
+                  <circle cx="9" cy="12" r="1" />
+                  <circle cx="9" cy="5" r="1" />
+                  <circle cx="9" cy="19" r="1" />
+                  <circle cx="15" cy="12" r="1" />
+                  <circle cx="15" cy="5" r="1" />
+                  <circle cx="15" cy="19" r="1" />
                 </svg>
               </div>
               <span class="reorder-label">{{ asideLabel(item) }}</span>
@@ -109,12 +118,16 @@
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    height="1.2em"
-                    viewBox="0 -960 960 960"
                     width="1.2em"
-                    fill="currentColor"
+                    height="1.2em"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
                   >
-                    <path d="M440-160v-487L216-424l-56-56 320-320 320 320-56 56-224-221v487h-80Z" />
+                    <path d="m18 15-6-6-6 6" />
                   </svg>
                 </button>
                 <button
@@ -126,33 +139,22 @@
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    height="1.2em"
-                    viewBox="0 -960 960 960"
                     width="1.2em"
-                    fill="currentColor"
+                    height="1.2em"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
                   >
-                    <path d="M440-800v487L216-536l-56 56 320 320 320-320-56-56-224 221v-487h-80Z" />
+                    <path d="m6 9 6 6 6-6" />
                   </svg>
                 </button>
               </div>
             </div>
           </div>
         </section>
-
-        <div class="back-navigation">
-          <RouterLink to="/" class="back-btn">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="1.2em"
-              viewBox="0 -960 960 960"
-              width="1.2em"
-              fill="currentColor"
-            >
-              <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
-            </svg>
-            Back to Solver
-          </RouterLink>
-        </div>
       </section>
 
       <!-- App Mockup Preview column -->
@@ -323,6 +325,28 @@
           </div>
         </div>
       </section>
+
+      <div class="back-navigation">
+        <BaseButton to="/" variant="win" class="back-btn">
+          <template #icon>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="1.2em"
+              height="1.2em"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m12 19-7-7 7-7" />
+              <path d="M19 12H5" />
+            </svg>
+          </template>
+          Back to Solver
+        </BaseButton>
+      </div>
     </div>
   </div>
 </template>
@@ -330,6 +354,7 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {useGameStore} from '@/stores/game';
+import BaseButton from '@/components/BaseButton.vue';
 
 const game = useGameStore();
 
@@ -502,8 +527,11 @@ function applyRecommended() {
 
 /* Controls column styling */
 .settings-controls-pane {
+  container-name: controls-pane;
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
+  min-inline-size: 0;
   gap: 1.2rem;
 }
 
@@ -518,7 +546,7 @@ function applyRecommended() {
   flex: 1;
   align-items: center;
   justify-content: center;
-  min-inline-size: 180px;
+  min-inline-size: min(180px, 100%);
   padding: 10px 16px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -676,7 +704,7 @@ input:focus-visible + .toggle-slider {
 
 .back-navigation {
   align-self: center;
-  margin-block-start: 1rem;
+  justify-self: center;
 }
 
 .back-btn {
@@ -708,6 +736,7 @@ input:focus-visible + .toggle-slider {
   position: sticky;
   top: 1.5rem;
   flex-direction: column;
+  min-inline-size: 0;
   gap: 0.5rem;
 }
 
@@ -722,10 +751,13 @@ input:focus-visible + .toggle-slider {
 
 /* Miniature app simulator frame */
 .mini-app-frame {
+  container-name: mini-app;
+  container-type: inline-size;
   display: flex;
   position: relative;
   flex-direction: column;
   aspect-ratio: 16 / 15;
+  min-block-size: 480px;
   padding: 12px;
   overflow: hidden;
   gap: 12px;
@@ -822,6 +854,7 @@ input:focus-visible + .toggle-slider {
   font-size: 0.5rem;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  white-space: nowrap;
   pointer-events: none;
 }
 
@@ -1218,6 +1251,35 @@ input:focus-visible + .toggle-slider {
   &:disabled {
     cursor: not-allowed;
     opacity: 0.25;
+  }
+}
+
+/* Mini app switches to mobile layout (sidebar below board) when frame is narrow */
+@container mini-app (max-width: 260px) {
+  .mini-main-block {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Reorder items go vertical (label below handle + actions) when controls pane is narrow */
+@container controls-pane (max-width: 480px) {
+  .reorder-item {
+    flex-wrap: wrap;
+  }
+
+  .drag-handle {
+    order: 1;
+  }
+
+  .reorder-actions {
+    order: 2;
+    margin-inline-start: auto;
+  }
+
+  .reorder-label {
+    flex-basis: 100%;
+    order: 3;
+    margin-inline-start: 0;
   }
 }
 </style>
