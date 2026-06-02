@@ -42,8 +42,39 @@
 </template>
 
 <script setup>
+import {onMounted, onUnmounted} from 'vue';
 import {useGameStore} from '@/stores/game';
 const game = useGameStore();
+
+/*
+ * Resolve --cell-size in JS rather than relying on a live `vmin` unit.
+ *
+ * On Android Chrome, after an in-place reload of the installed PWA, viewport
+ * units are re-resolved lazily per element as it repaints. Cells that get
+ * repainted (e.g. when the solver/ghost path gives them an inline style) pick
+ * up the post-reload viewport and shrink, while untouched cells keep their
+ * original size — so the board ends up with mismatched circles. Setting a
+ * concrete px value on the root makes every cell inherit the same number and
+ * recompute together whenever it changes, so they can never disagree.
+ *
+ * Mirrors the CSS fallback: clamp(40px, 10vmin, 104px).
+ */
+function updateCellSize() {
+  const vmin = Math.min(window.innerWidth, window.innerHeight);
+  const size = Math.min(104, Math.max(40, vmin * 0.1));
+  document.documentElement.style.setProperty('--cell-size', `${size}px`);
+}
+
+onMounted(() => {
+  updateCellSize();
+  window.addEventListener('resize', updateCellSize);
+  window.addEventListener('orientationchange', updateCellSize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateCellSize);
+  window.removeEventListener('orientationchange', updateCellSize);
+});
 </script>
 
 <style>
