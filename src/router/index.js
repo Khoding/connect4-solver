@@ -20,7 +20,6 @@
 
 import {createRouter, createWebHistory} from 'vue-router';
 import HomeView from '@/views/HomeView.vue';
-import RulesView from '@/views/RulesView.vue';
 import SettingsView from '@/views/SettingsView.vue';
 import NotFoundView from '@/views/Error/NotFoundView.vue';
 
@@ -41,11 +40,6 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-    },
-    {
-      path: '/rules',
-      name: 'rules',
-      component: RulesView,
     },
     {
       path: '/settings',

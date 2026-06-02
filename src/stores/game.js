@@ -18,12 +18,6 @@
  * along with Connect4 Game Solver. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * Copyright (C) 2swap (https://github.com/2swap/WeakC4)
- * Parts of this code are derived from WeakC4, originally licensed under the GNU General Public License v3.0.
- * It is distributed here under the overarching GNU Affero General Public License v3.0 of this project.
- */
-
 import {ref, computed, watch} from 'vue';
 import {defineStore} from 'pinia';
 

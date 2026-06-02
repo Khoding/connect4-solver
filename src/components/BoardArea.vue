@@ -79,87 +79,78 @@
 
       <div class="player-indicators">
         <div class="player-info-row">
-          <div class="player-container">
-            <div class="player-info">
-              <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">P1</span>
-              <span
-                v-if="!game.hideEvalBar"
-                class="eval-score"
-                :class="evalClass(game.positionEval?.first)"
-              >
-                {{ formatEval(game.positionEval?.first) }}
-              </span>
-            </div>
-            <button
-              v-if="!game.hideAutoplay"
-              class="auto-btn"
-              :class="{active: game.autoP1}"
-              :style="{
-                '--player-accent': game.color1,
-              }"
-              title="Auto-play Player 1's moves"
-              @click="game.toggleAutoP1()"
+          <div class="player-info">
+            <span :style="{color: `oklch(from ${game.color1} max(0.65, l) c h)`}">P1</span>
+            <span
+              v-if="!game.hideEvalBar"
+              class="eval-score"
+              :class="evalClass(game.positionEval?.first)"
             >
-              Auto
-            </button>
+              {{ formatEval(game.positionEval?.first) }}
+            </span>
           </div>
 
-          <div class="center-col">
-            <div
-              v-if="game.winLine"
-              class="winner-label"
-              :style="{
-                color: `oklch(from ${game.internalCurrentPlayer === 2 ? game.color1 : game.color2} max(0.65, l) c h)`,
-              }"
-            >
-              P{{ game.internalCurrentPlayer === 2 ? 1 : 2 }} Winner
-            </div>
-            <div
-              v-else-if="statusLabel !== null"
-              class="status-label"
-              :class="{active: game.showGhostMoves}"
-              :style="{color: statusColor}"
-              title="Click to toggle predictive future moves"
-              @click="game.toggleGhostMoves()"
-            >
-              {{ statusLabel }}
-            </div>
-            <div v-else class="status-label placeholder">&nbsp;</div>
-            <button
-              v-if="!game.hideAutoplay"
-              class="auto-both-btn"
-              :class="{active: game.autoP1 && game.autoP2}"
-              title="Auto-play both players' moves"
-              @click="game.toggleAutoBoth()"
-            >
-              Auto both
-            </button>
+          <div
+            class="status-label"
+            :class="{
+              active: game.showGhostMoves && !isGameOver,
+              placeholder: isPlaceholder,
+              'game-over': isGameOver,
+              'win-position': !!game.winLine,
+            }"
+            :style="{color: statusColor}"
+            :title="!isGameOver && statusLabel !== null ? 'Click to toggle predictive future moves' : undefined"
+            @click="handleStatusClick"
+          >
+            {{ displayLabel }}
           </div>
 
-          <div class="player-container">
-            <div class="player-info">
-              <span
-                v-if="!game.hideEvalBar"
-                class="eval-score"
-                :class="evalClass(game.positionEval?.second)"
-              >
-                {{ formatEval(game.positionEval?.second) }}
-              </span>
-              <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">P2</span>
-            </div>
-            <button
-              v-if="!game.hideAutoplay"
-              class="auto-btn"
-              :class="{active: game.autoP2}"
-              :style="{
-                '--player-accent': game.color2,
-              }"
-              title="Auto-play Player 2's moves"
-              @click="game.toggleAutoP2()"
+          <div class="player-info">
+            <span
+              v-if="!game.hideEvalBar"
+              class="eval-score"
+              :class="evalClass(game.positionEval?.second)"
             >
-              Auto
-            </button>
+              {{ formatEval(game.positionEval?.second) }}
+            </span>
+            <span :style="{color: `oklch(from ${game.color2} max(0.65, l) c h)`}">P2</span>
           </div>
+
+          <button
+            v-if="!game.hideAutoplay"
+            class="auto-btn"
+            :class="{active: game.autoP1}"
+            :style="{
+              '--player-accent': game.color1,
+            }"
+            title="Auto-play Player 1's moves"
+            @click="game.toggleAutoP1()"
+          >
+            Auto
+          </button>
+
+          <button
+            v-if="!game.hideAutoplay"
+            class="auto-both-btn"
+            :class="{active: game.autoP1 && game.autoP2}"
+            title="Auto-play both players' moves"
+            @click="game.toggleAutoBoth()"
+          >
+            Auto both
+          </button>
+
+          <button
+            v-if="!game.hideAutoplay"
+            class="auto-btn"
+            :class="{active: game.autoP2}"
+            :style="{
+              '--player-accent': game.color2,
+            }"
+            title="Auto-play Player 2's moves"
+            @click="game.toggleAutoP2()"
+          >
+            Auto
+          </button>
         </div>
 
         <meter
@@ -204,12 +195,32 @@ const statusLabel = computed(() => {
 });
 
 const statusColor = computed(() => {
+  if (game.winLine) {
+    const color = game.internalCurrentPlayer === 2 ? game.color1 : game.color2;
+    return `oklch(from ${color} max(0.65, l) c h)`;
+  }
   const score = game.suggestion?.score;
   if (score == null || score === 0) return 'var(--color-text-dim)';
   const winner = score > 0 ? game.internalCurrentPlayer : game.internalCurrentPlayer === 1 ? 2 : 1;
   const color = winner === 1 ? game.color1 : game.color2;
   return `oklch(from ${color} max(0.65, l) c h)`;
 });
+
+const isGameOver = computed(() => game.gameOver);
+
+const isPlaceholder = computed(() => !game.winLine && statusLabel.value === null);
+
+const displayLabel = computed(() => {
+  if (game.winLine) {
+    const winner = game.internalCurrentPlayer === 2 ? 1 : 2;
+    return `P${winner} Winner`;
+  }
+  return statusLabel.value ?? ' ';
+});
+
+function handleStatusClick() {
+  if (!isGameOver.value && statusLabel.value !== null) game.toggleGhostMoves();
+}
 
 const ghostCellsMap = computed(() => {
   const map = {};
@@ -356,24 +367,46 @@ function formatEval(score) {
 .player-info-row {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: auto auto;
   align-items: start;
+  row-gap: 4px;
   inline-size: 100%;
 }
 
-.player-container {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.player-container:first-child {
+.player-info-row > .player-info:first-child {
   grid-column: 1;
-  align-items: flex-start;
+  grid-row: 1;
+  justify-self: start;
 }
 
-.player-container:last-child {
+.player-info-row > .status-label {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+}
+
+.player-info-row > .player-info:nth-child(3) {
   grid-column: 3;
-  align-items: flex-end;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.player-info-row > button:first-of-type {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: start;
+}
+
+.player-info-row > button:nth-of-type(2) {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: center;
+}
+
+.player-info-row > button:last-of-type {
+  grid-column: 3;
+  grid-row: 2;
+  justify-self: end;
 }
 
 .player-info {
@@ -409,15 +442,8 @@ function formatEval(score) {
   }
 }
 
-.center-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
 .auto-both-btn {
-  padding: 2px 8px;
+  padding: 8px 16px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
@@ -443,11 +469,6 @@ function formatEval(score) {
   }
 }
 
-.winner-label {
-  font-weight: 700;
-  text-align: center;
-  text-transform: uppercase;
-}
 
 .status-label {
   padding: 4px 10px;
@@ -457,21 +478,29 @@ function formatEval(score) {
   font-size: 0.85rem;
   text-align: center;
   white-space: nowrap;
-  cursor: pointer;
   transition:
     background-color 0.15s,
     border-color 0.15s,
     color 0.15s;
 
-  &:hover {
-    border-color: currentColor;
-    background-color: var(--color-surface-alt);
+  &:not(.placeholder):not(.game-over) {
+    cursor: pointer;
+
+    &:hover {
+      border-color: currentColor;
+      background-color: var(--color-surface-alt);
+    }
+
+    &.active {
+      border-style: solid;
+      border-color: currentColor;
+      background-color: var(--color-surface-alt);
+    }
   }
 
-  &.active {
-    border-style: solid;
-    border-color: currentColor;
-    background-color: var(--color-surface-alt);
+  &.win-position {
+    font-weight: 700;
+    text-transform: uppercase;
   }
 
   &.placeholder {
