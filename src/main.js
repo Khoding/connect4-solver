@@ -38,3 +38,61 @@ router.isReady().then(async () => {
 
 app.use(createPinia());
 app.use(router);
+
+// --- DEBUGGER LOGIC START ---
+(() => {
+  const loadDebugger = async () => {
+    // 1. Load Eruda
+    const [eruda] = await Promise.all([import(/* @vite-ignore */ 'https://esm.sh/eruda')]);
+    eruda.default.init();
+
+    // 2. INJECT STYLES INTO SHADOW DOM
+    const erudaContainer = document.getElementById('eruda');
+    if (erudaContainer && erudaContainer.shadowRoot) {
+      const style = document.createElement('style');
+      style.innerHTML = `
+        .eruda-dev-tools .eruda-resizer {
+          block-size: 25px !important;
+          background: rgb(255 255 255 / 0.1) !important;
+          transform: translateY(-18px) !important;
+        }
+      `;
+      erudaContainer.shadowRoot.appendChild(style);
+    }
+
+    console.log('🐞 Eruda Loaded');
+  };
+
+  // 3. Activation Check
+  if (
+    new URLSearchParams(window.location.search).has('debug') ||
+    localStorage.getItem('debug_mode')
+  ) {
+    localStorage.setItem('debug_mode', 'true');
+    loadDebugger();
+  }
+
+  // 4. Secret Gesture: 50 taps logic
+  let tapCount = 0;
+  let tapTimer = null;
+
+  window.addEventListener('touchstart', () => {
+    tapCount++;
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(() => {
+      tapCount = 0;
+    }, 500);
+
+    if (tapCount >= 50) {
+      if (localStorage.getItem('debug_mode')) {
+        localStorage.removeItem('debug_mode');
+        alert('Debugger Disabled');
+      } else {
+        localStorage.setItem('debug_mode', 'true');
+        alert('Debugger Enabled');
+      }
+      window.location.reload();
+    }
+  });
+})();
+// --- DEBUGGER LOGIC END ---
