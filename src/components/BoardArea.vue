@@ -19,7 +19,7 @@
 -->
 
 <template>
-  <div class="board-area">
+  <section class="board-area" aria-label="Game board and controls">
     <div class="board-grid">
       <div class="column-buttons">
         <div
@@ -188,7 +188,7 @@
         ></meter>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>

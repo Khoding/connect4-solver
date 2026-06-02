@@ -28,8 +28,8 @@
     <div class="settings-layout">
       <!-- Controls column -->
       <section class="settings-controls-pane">
-        <div class="info-card quick-actions-card">
-          <h3>Quick configurations</h3>
+        <section class="info-card quick-actions-card" aria-labelledby="quick-config-heading">
+          <h2 id="quick-config-heading" class="card-heading">Quick configurations</h2>
           <div class="quick-btns">
             <button class="action-btn" @click="showAll">Show everything</button>
             <button class="action-btn minimalist-btn" @click="hideAll">
@@ -39,10 +39,10 @@
               Recommended layout
             </button>
           </div>
-        </div>
+        </section>
 
-        <div class="info-card">
-          <h3>Toggle Elements</h3>
+        <section class="info-card" aria-labelledby="toggle-elements-heading">
+          <h2 id="toggle-elements-heading" class="card-heading">Toggle Elements</h2>
           <fieldset class="toggles-grid">
             <legend class="sr-only">Toggle UI elements</legend>
             <label
@@ -65,11 +65,11 @@
               </div>
             </label>
           </fieldset>
-        </div>
+        </section>
 
-        <div class="info-card aside-order-card">
+        <section class="info-card aside-order-card" aria-labelledby="aside-order-heading">
           <div class="card-header-row">
-            <h3>Sidebar Order</h3>
+            <h2 id="aside-order-heading" class="card-heading">Sidebar Order</h2>
             <button class="reset-order-btn" @click="game.resetAsideOrder">Reset order</button>
           </div>
           <p class="card-desc">
@@ -137,7 +137,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         <div class="back-navigation">
           <RouterLink to="/" class="back-btn">

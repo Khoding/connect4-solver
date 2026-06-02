@@ -19,7 +19,7 @@
 -->
 
 <template>
-  <div class="controls-card-wrapper">
+  <section class="controls-card-wrapper" aria-label="Game navigation and playback controls">
     <!-- Board controls -->
     <div class="controls">
       <button
@@ -185,7 +185,7 @@
         Continue
       </button>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>

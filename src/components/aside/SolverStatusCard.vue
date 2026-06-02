@@ -42,12 +42,6 @@ const game = useGameStore();
   background-color: var(--color-surface);
 }
 
-.card-heading {
-  margin: 0 0 0.75rem 0;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
 .dim {
   margin: 0;
   color: var(--color-text-dim);

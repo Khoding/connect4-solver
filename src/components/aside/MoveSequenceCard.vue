@@ -109,12 +109,6 @@ function getMoveAriaLabel(move, i) {
   background-color: var(--color-surface);
 }
 
-.card-heading {
-  margin: 0 0 0.75rem 0;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
 .mono-wrapper {
   margin-block-end: 0.5rem;
   font-family: var(--font-mono);

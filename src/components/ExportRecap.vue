@@ -19,7 +19,7 @@
 -->
 
 <template>
-  <div class="info-card">
+  <section class="info-card" aria-label="Game recap export and import">
     <div class="card-tabs" role="tablist" aria-label="Recap options">
       <button
         role="tab"
@@ -93,7 +93,7 @@
         </button>
       </div>
     </div>
-  </div>
+  </section>
 
   <Teleport to="body">
     <div v-if="open" class="recap-backdrop" @click="close">

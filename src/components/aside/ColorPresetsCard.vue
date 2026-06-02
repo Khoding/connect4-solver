@@ -186,12 +186,6 @@ function updateColor2(value) {
   background-color: var(--color-surface);
 }
 
-.card-heading {
-  margin: 0 0 0.75rem 0;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
 .color-inputs {
   display: flex;
   align-items: center;
