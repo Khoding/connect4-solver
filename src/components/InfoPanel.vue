@@ -20,11 +20,13 @@
 
 <template>
   <aside class="info-panel">
-    <MoveSequenceCard />
-    <GameControlsCard />
-    <ExportRecap v-if="!game.hideExportImport" />
-    <ColorPresetsCard />
-    <SolverStatusCard />
+    <template v-for="item in game.asideOrder" :key="item">
+      <MoveSequenceCard v-if="item === 'move-sequence'" />
+      <GameControlsCard v-if="item === 'game-controls'" />
+      <ExportRecap v-if="item === 'export-import' && !game.hideExportImport" />
+      <ColorPresetsCard v-if="item === 'colors'" />
+      <SolverStatusCard v-if="item === 'solver-status'" />
+    </template>
   </aside>
 </template>
 

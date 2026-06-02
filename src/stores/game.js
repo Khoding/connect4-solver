@@ -91,6 +91,14 @@ function interpretScores(scores) {
 /* ── Store ──────────────────────────────────────────────── */
 
 export const useGameStore = defineStore('game', () => {
+  const DEFAULT_ASIDE_ORDER = [
+    'move-sequence',
+    'game-controls',
+    'export-import',
+    'colors',
+    'solver-status',
+  ];
+
   const userIsFirst = ref(true); // does the human play as the first mover?
   const color1 = ref('#e03030'); // display color for the first player
   const color2 = ref('#e8d020'); // display color for the second player
@@ -104,6 +112,7 @@ export const useGameStore = defineStore('game', () => {
   const hideSolverStatus = ref(false);
   const hideAutoplay = ref(false);
   const hideEvalBar = ref(false);
+  const asideOrder = ref([...DEFAULT_ASIDE_ORDER]);
   const autoP1 = ref(false);
   const autoP2 = ref(false);
   const replayActive = ref(false);
@@ -699,6 +708,42 @@ export const useGameStore = defineStore('game', () => {
     saveState();
   }
 
+  function moveAsideItem(index, direction) {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= asideOrder.value.length) return;
+    const temp = asideOrder.value[index];
+    asideOrder.value[index] = asideOrder.value[newIndex];
+    asideOrder.value[newIndex] = temp;
+    saveState();
+  }
+
+  function resetAsideOrder() {
+    asideOrder.value = [...DEFAULT_ASIDE_ORDER];
+    saveState();
+  }
+
+  function setAsideOrder(newOrder) {
+    asideOrder.value = [...newOrder];
+    saveState();
+  }
+
+  function applyRecommendedLayout() {
+    hideHeader.value = true;
+    hideReplay.value = true;
+    hideSolverStatus.value = true;
+    hideFooter.value = true;
+
+    hideMoveSequence.value = false;
+    hideAutoplay.value = false;
+    hideEvalBar.value = false;
+    hideNavigation.value = false;
+    hideExportImport.value = false;
+    hideColors.value = false;
+
+    asideOrder.value = [...DEFAULT_ASIDE_ORDER];
+    saveState();
+  }
+
   function swapColors() {
     const tmp = color1.value;
     color1.value = color2.value;
@@ -812,6 +857,7 @@ export const useGameStore = defineStore('game', () => {
           hideAutoplay: hideAutoplay.value,
           hideEvalBar: hideEvalBar.value,
           showGhostMoves: showGhostMoves.value,
+          asideOrder: asideOrder.value,
         }),
       );
     } catch {
@@ -877,6 +923,16 @@ export const useGameStore = defineStore('game', () => {
       if (typeof saved.hideAutoplay === 'boolean') hideAutoplay.value = saved.hideAutoplay;
       if (typeof saved.hideEvalBar === 'boolean') hideEvalBar.value = saved.hideEvalBar;
       if (typeof saved.showGhostMoves === 'boolean') showGhostMoves.value = saved.showGhostMoves;
+      if (Array.isArray(saved.asideOrder)) {
+        const isValid =
+          saved.asideOrder.every(item => DEFAULT_ASIDE_ORDER.includes(item)) &&
+          saved.asideOrder.length === DEFAULT_ASIDE_ORDER.length;
+        if (isValid) {
+          asideOrder.value = saved.asideOrder;
+        } else {
+          asideOrder.value = [...DEFAULT_ASIDE_ORDER];
+        }
+      }
       if (!urlPos && (saved.resignedPlayer === 1 || saved.resignedPlayer === 2))
         resignedPlayer.value = saved.resignedPlayer;
     }
@@ -928,6 +984,8 @@ export const useGameStore = defineStore('game', () => {
     hideEvalBar,
     autoP1,
     autoP2,
+    asideOrder,
+    DEFAULT_ASIDE_ORDER,
     replayActive,
     loading,
     moveHistory,
@@ -993,6 +1051,10 @@ export const useGameStore = defineStore('game', () => {
     setHideAutoplay,
     setHideEvalBar,
     swapColors,
+    moveAsideItem,
+    resetAsideOrder,
+    setAsideOrder,
+    applyRecommendedLayout,
     toggleAutoP1,
     toggleAutoP2,
     toggleAutoBoth,

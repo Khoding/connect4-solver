@@ -130,7 +130,7 @@
 
           <button
             v-if="!game.hideAutoplay"
-            class="auto-btn"
+            class="auto-btn auto-p1-btn"
             :class="{active: game.autoP1}"
             :style="{
               '--player-accent': game.color1,
@@ -155,7 +155,7 @@
 
           <button
             v-if="!game.hideAutoplay"
-            class="auto-btn"
+            class="auto-btn auto-p2-btn"
             :class="{active: game.autoP2}"
             :style="{
               '--player-accent': game.color2,
@@ -469,19 +469,19 @@ const statusAriaLabel = computed(() => {
   justify-self: end;
 }
 
-.player-info-row > button:first-of-type {
+.player-info-row > .auto-p1-btn {
   grid-row: 2;
   grid-column: 1;
   justify-self: start;
 }
 
-.player-info-row > button:nth-of-type(2) {
+.player-info-row > .auto-both-btn {
   grid-row: 2;
   grid-column: 2;
   justify-self: center;
 }
 
-.player-info-row > button:last-of-type {
+.player-info-row > .auto-p2-btn {
   grid-row: 2;
   grid-column: 3;
   justify-self: end;

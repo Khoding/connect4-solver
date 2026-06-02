@@ -35,6 +35,9 @@
             <button class="action-btn minimalist-btn" @click="hideAll">
               Hide everything (Minimalist)
             </button>
+            <button class="action-btn recommended-btn" @click="applyRecommended">
+              Recommended layout
+            </button>
           </div>
         </div>
 
@@ -62,6 +65,78 @@
               </div>
             </label>
           </fieldset>
+        </div>
+
+        <div class="info-card aside-order-card">
+          <div class="card-header-row">
+            <h3>Sidebar Order</h3>
+            <button class="reset-order-btn" @click="game.resetAsideOrder">Reset order</button>
+          </div>
+          <p class="card-desc">
+            Drag items or use the arrows to change the layout order of sidebar components.
+          </p>
+          <div class="reorder-list">
+            <div
+              v-for="(item, index) in game.asideOrder"
+              :key="item"
+              class="reorder-item"
+              draggable="true"
+              @dragstart="onDragStart(index, $event)"
+              @dragover.prevent="onDragOver(index, $event)"
+              @drop="onDrop(index, $event)"
+              @dragend="onDragEnd"
+              :class="{'is-dragging': draggingIndex === index}"
+            >
+              <div class="drag-handle" aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="1.2em"
+                  viewBox="0 -960 960 960"
+                  width="1.2em"
+                  fill="currentColor"
+                >
+                  <path d="M360-240v-80h240v80H360Zm0-160v-80h240v80H360Zm0-160v-80h240v80H360Z" />
+                </svg>
+              </div>
+              <span class="reorder-label">{{ asideLabel(item) }}</span>
+              <div class="reorder-actions">
+                <button
+                  class="arrow-btn"
+                  :disabled="index === 0"
+                  @click="game.moveAsideItem(index, -1)"
+                  title="Move Up"
+                  aria-label="Move Up"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="1.2em"
+                    viewBox="0 -960 960 960"
+                    width="1.2em"
+                    fill="currentColor"
+                  >
+                    <path d="M440-160v-487L216-424l-56-56 320-320 320 320-56 56-224-221v487h-80Z" />
+                  </svg>
+                </button>
+                <button
+                  class="arrow-btn"
+                  :disabled="index === game.asideOrder.length - 1"
+                  @click="game.moveAsideItem(index, 1)"
+                  title="Move Down"
+                  aria-label="Move Down"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="1.2em"
+                    viewBox="0 -960 960 960"
+                    width="1.2em"
+                    fill="currentColor"
+                  >
+                    <path d="M440-800v487L216-536l-56 56 320 320 320-320-56-56-224 221v-487h-80Z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="back-navigation">
@@ -157,66 +232,87 @@
 
             <!-- Sidebar elements -->
             <div class="mini-sidebar">
-              <!-- Move sequence -->
-              <div class="mini-section-card" :class="{'is-disabled': game.hideMoveSequence}">
-                <span class="mini-card-lbl">Move Sequence</span>
-                <div class="mini-dots-row">
-                  <span class="mini-p1-dot">1: 4</span>
-                  <span class="mini-p2-dot">2: 3</span>
+              <template v-for="item in game.asideOrder" :key="item">
+                <!-- Move sequence -->
+                <div
+                  v-if="item === 'move-sequence'"
+                  class="mini-section-card"
+                  :class="{'is-disabled': game.hideMoveSequence}"
+                >
+                  <span class="mini-card-lbl">Move Sequence</span>
+                  <div class="mini-dots-row">
+                    <span class="mini-p1-dot">1: 4</span>
+                    <span class="mini-p2-dot">2: 3</span>
+                  </div>
+                  <div v-if="game.hideMoveSequence" class="mini-status-overlay">HIDDEN</div>
                 </div>
-                <div v-if="game.hideMoveSequence" class="mini-status-overlay">HIDDEN</div>
-              </div>
 
-              <!-- Reset box (Always visible) -->
-              <div class="mini-section-card mini-reset-card">
-                <span class="mini-card-lbl">Controls</span>
-                <div class="mini-row-flex">
-                  <span class="mini-reset-pill">Reset</span>
-                  <span class="mini-badge-always-lbl">always visible</span>
+                <!-- Game controls -->
+                <template v-if="item === 'game-controls'">
+                  <!-- Reset box (Always visible) -->
+                  <div class="mini-section-card mini-reset-card">
+                    <span class="mini-card-lbl">Controls</span>
+                    <div class="mini-row-flex">
+                      <span class="mini-reset-pill">Reset</span>
+                      <span class="mini-badge-always-lbl">always visible</span>
+                    </div>
+                  </div>
+
+                  <!-- Navigation steps -->
+                  <div class="mini-section-card" :class="{'is-disabled': game.hideNavigation}">
+                    <div class="mini-row-flex">
+                      <span class="mini-pill">Back</span>
+                      <span class="mini-pill">Forward</span>
+                    </div>
+                    <div v-if="game.hideNavigation" class="mini-status-overlay">HIDDEN</div>
+                  </div>
+
+                  <!-- Replay -->
+                  <div class="mini-section-card" :class="{'is-disabled': game.hideReplay}">
+                    <span class="mini-pill accent">Replay</span>
+                    <div v-if="game.hideReplay" class="mini-status-overlay">HIDDEN</div>
+                  </div>
+                </template>
+
+                <!-- Export / import -->
+                <div
+                  v-if="item === 'export-import'"
+                  class="mini-section-card"
+                  :class="{'is-disabled': game.hideExportImport}"
+                >
+                  <span class="mini-card-lbl">Export / Import</span>
+                  <div class="mini-row-flex text-decor">
+                    <span>Export</span>
+                    <span>Import</span>
+                  </div>
+                  <div v-if="game.hideExportImport" class="mini-status-overlay">HIDDEN</div>
                 </div>
-              </div>
 
-              <!-- Navigation steps -->
-              <div class="mini-section-card" :class="{'is-disabled': game.hideNavigation}">
-                <div class="mini-row-flex">
-                  <span class="mini-pill">Back</span>
-                  <span class="mini-pill">Forward</span>
+                <!-- Colors -->
+                <div
+                  v-if="item === 'colors'"
+                  class="mini-section-card"
+                  :class="{'is-disabled': game.hideColors}"
+                >
+                  <span class="mini-card-lbl">Colors</span>
+                  <div class="mini-row-flex swatches">
+                    <span class="p1-swatch">P1</span>
+                    <span class="p2-swatch">P2</span>
+                  </div>
+                  <div v-if="game.hideColors" class="mini-status-overlay">HIDDEN</div>
                 </div>
-                <div v-if="game.hideNavigation" class="mini-status-overlay">HIDDEN</div>
-              </div>
 
-              <!-- Replay -->
-              <div class="mini-section-card" :class="{'is-disabled': game.hideReplay}">
-                <span class="mini-pill accent">Replay</span>
-                <div v-if="game.hideReplay" class="mini-status-overlay">HIDDEN</div>
-              </div>
-
-              <!-- Export / import -->
-              <div class="mini-section-card" :class="{'is-disabled': game.hideExportImport}">
-                <span class="mini-card-lbl">Export / Import</span>
-                <div class="mini-row-flex text-decor">
-                  <span>Export</span>
-                  <span>Import</span>
+                <!-- Solver ready indicator -->
+                <div
+                  v-if="item === 'solver-status'"
+                  class="mini-section-card"
+                  :class="{'is-disabled': game.hideSolverStatus}"
+                >
+                  <span class="mini-card-lbl">Solver status</span>
+                  <span class="mini-solver-ready">Ready (with opening book)</span>
+                  <div v-if="game.hideSolverStatus" class="mini-status-overlay">HIDDEN</div>
                 </div>
-                <div v-if="game.hideExportImport" class="mini-status-overlay">HIDDEN</div>
-              </div>
-
-              <!-- Colors -->
-              <div class="mini-section-card" :class="{'is-disabled': game.hideColors}">
-                <span class="mini-card-lbl">Colors</span>
-                <div class="mini-row-flex swatches">
-                  <span class="p1-swatch">P1</span>
-                  <span class="p2-swatch">P2</span>
-                </div>
-                <div v-if="game.hideColors" class="mini-status-overlay">HIDDEN</div>
-              </div>
-
-              <!-- Solver ready indicator -->
-              <div class="mini-section-card" :class="{'is-disabled': game.hideSolverStatus}">
-                <span class="mini-card-lbl">Solver status</span>
-                <span class="mini-solver-ready">Ready (with opening book)</span>
-                <div v-if="game.hideSolverStatus" class="mini-status-overlay">HIDDEN</div>
-              </div>
+              </template>
             </div>
           </div>
 
@@ -232,7 +328,7 @@
 </template>
 
 <script setup>
-import {onMounted} from 'vue';
+import {onMounted, ref} from 'vue';
 import {useGameStore} from '@/stores/game';
 
 const game = useGameStore();
@@ -240,6 +336,44 @@ const game = useGameStore();
 onMounted(() => {
   game.init();
 });
+
+const draggingIndex = ref(null);
+
+function onDragStart(index, event) {
+  draggingIndex.value = index;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', index);
+}
+
+function onDragOver(index, event) {
+  event.dataTransfer.dropEffect = 'move';
+}
+
+function onDrop(index, event) {
+  if (draggingIndex.value === null) return;
+  const fromIndex = draggingIndex.value;
+  if (fromIndex !== index) {
+    const list = [...game.asideOrder];
+    const [moved] = list.splice(fromIndex, 1);
+    list.splice(index, 0, moved);
+    game.setAsideOrder(list);
+  }
+}
+
+function onDragEnd() {
+  draggingIndex.value = null;
+}
+
+function asideLabel(key) {
+  const labels = {
+    'move-sequence': 'Move Sequence',
+    'game-controls': 'Game Controls (Reset, navigation, replay)',
+    'export-import': 'Export & Import Recap',
+    colors: 'Color Editor & Presets',
+    'solver-status': 'WASM Solver Status',
+  };
+  return labels[key] || key;
+}
 
 const settingsList = [
   {
@@ -316,6 +450,10 @@ function hideAll() {
   settingsList.forEach(s => {
     game[s.setter](true);
   });
+}
+
+function applyRecommended() {
+  game.applyRecommendedLayout();
 }
 </script>
 
@@ -411,6 +549,16 @@ function hideAll() {
     &:hover {
       border-color: oklch(0.65 0.2 25);
       background-color: oklch(0.65 0.2 25 / 0.1);
+    }
+  }
+
+  &.recommended-btn {
+    border-color: color-mix(in oklch, var(--color-border), var(--color-accent) 40%);
+    color: var(--color-accent);
+
+    &:hover {
+      border-color: var(--color-accent);
+      background-color: color-mix(in oklch, var(--color-accent), transparent 90%);
     }
   }
 }
@@ -961,5 +1109,121 @@ input:focus-visible + .toggle-slider {
 .mini-foot-txt {
   color: var(--color-text-dim);
   font-size: 0.5rem;
+}
+
+/* Sidebar Reordering UI styling */
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: 0.25rem;
+}
+
+.reset-order-btn {
+  padding: 4px 8px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  color: var(--color-text-dim);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+
+  &:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+  }
+}
+
+.card-desc {
+  margin-block-end: 0.75rem;
+  color: var(--color-text-dim);
+  font-size: 0.8rem;
+}
+
+.reorder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.reorder-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    border-color 0.2s,
+    background-color 0.2s;
+  user-select: none;
+
+  &:hover:not(.is-dragging) {
+    border-color: var(--color-accent);
+    background-color: var(--color-surface-alt);
+  }
+
+  &.is-dragging {
+    border-style: dashed;
+    border-color: var(--color-accent);
+    opacity: 0.5;
+  }
+}
+
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-end: 0.75rem;
+  color: var(--color-text-dim);
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.reorder-label {
+  flex: 1;
+  color: var(--color-text);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.reorder-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.arrow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text-dim);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-accent);
+    background-color: var(--color-surface-alt);
+    color: var(--color-text);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.25;
+  }
 }
 </style>

@@ -23,8 +23,8 @@
   <footer class="site-footer" v-if="!game.hideFooter">
     <div>
       Solver by
-      <a href="http://connect4.gamesolver.org" target="_blank" rel="noopener">Pascal Pons</a>.
-      Inspired by
+      <a href="https://github.com/PascalPons/connect4" target="_blank" rel="noopener">Pascal Pons</a
+      >. Inspired by
       <a href="https://2swap.github.io/WeakC4/" target="_blank" rel="noopener">2swap's WeakC4</a>.
     </div>
     <div>
