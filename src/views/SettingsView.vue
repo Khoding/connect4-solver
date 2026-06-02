@@ -507,12 +507,6 @@ function applyRecommended() {
   gap: 1.2rem;
 }
 
-.quick-actions-card {
-  & h3 {
-    margin-block-end: 0.75rem;
-  }
-}
-
 .quick-btns {
   display: flex;
   flex-wrap: wrap;

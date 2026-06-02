@@ -778,18 +778,6 @@ const statusAriaLabel = computed(() => {
   }
 }
 
-.eval-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 0;
-}
-
-.eval-label {
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
 .eval-score {
   font-weight: 600;
   font-size: 0.85rem;

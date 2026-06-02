@@ -347,12 +347,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   }
 }
 
-.import-note {
-  margin: 0;
-  color: var(--color-text-dim);
-  font-size: 0.8rem;
-}
-
 .recap-summary {
   margin-block: 0.25rem 0.5rem;
 }
