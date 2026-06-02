@@ -641,6 +641,7 @@ const statusAriaLabel = computed(() => {
 .cell {
   inline-size: var(--cell-size);
   block-size: var(--cell-size);
+  flex-shrink: 0;
   border-radius: 50%;
   background-color: var(--color-empty);
   cursor: pointer;
@@ -671,8 +672,7 @@ const statusAriaLabel = computed(() => {
   }
 
   &.ghost {
-    display: grid;
-    place-items: center;
+    position: relative;
     border: 2px dashed oklch(from var(--ghost-color) l c h / 0.4);
     background-color: oklch(from var(--ghost-color) l c h / 0.15);
     box-shadow: inset 0 0 8px oklch(from var(--ghost-color) l c h / 0.1);
@@ -707,11 +707,16 @@ const statusAriaLabel = computed(() => {
 }
 
 .ghost-step {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
   color: oklch(from var(--ghost-color) max(0.65, l) c h / 0.85);
   font-weight: 700;
   font-size: 0.75rem;
   font-family: var(--font-mono);
   user-select: none;
+  pointer-events: none;
 
   .next-ghost & {
     color: oklch(from var(--ghost-color) max(0.75, l) c h);
