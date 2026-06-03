@@ -249,6 +249,8 @@ function recapIn(loc) {
   return Recap.buildRecap({
     board: game.fullBoard,
     moves: game.moveHistory,
+    cols: game.COLS,
+    rows: game.ROWS,
     moveScores: game.moveScores,
     moveBestScores: game.moveBestScores,
     moveBestCols: game.moveBestCols,

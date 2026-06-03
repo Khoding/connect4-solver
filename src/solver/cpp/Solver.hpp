@@ -36,6 +36,7 @@ class Solver {
   TranspositionTable < uint_t < Position::WIDTH*(Position::HEIGHT + 1) - TABLE_SIZE >, Position::position_t, uint8_t, TABLE_SIZE > transTable;
   OpeningBook book{Position::WIDTH, Position::HEIGHT}; // opening book
   unsigned long long nodeCount; // counter of explored nodes.
+  unsigned long long maxNodeLimit; // limit of explored nodes.
   int columnOrder[Position::WIDTH]; // column exploration order
 
   /**
@@ -63,6 +64,10 @@ class Solver {
 
   unsigned long long getNodeCount() const {
     return nodeCount;
+  }
+
+  void setMaxNodeLimit(unsigned long long limit) {
+    maxNodeLimit = limit;
   }
 
   void reset() {

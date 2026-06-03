@@ -36,9 +36,6 @@ function translator(locale) {
   return (key, named) => i18n.global.t(key, named ?? {}, {locale});
 }
 
-const COLS = 7;
-const ROWS = 6;
-
 /* ── Move-quality tiers (chess-style, score-delta driven) ─────────────── */
 
 export const TIERS = ['best', 'good', 'inaccuracy', 'mistake', 'blunder', 'unknown'];
@@ -100,6 +97,8 @@ function accuracyOf(plies) {
 export function buildRecap({
   board,
   moves,
+  cols = 7,
+  rows = 6,
   moveScores = [],
   moveBestScores = [],
   moveBestCols = [],
@@ -132,7 +131,7 @@ export function buildRecap({
   const counts = Object.fromEntries(TIERS.map(t => [t, 0]));
   for (const p of plies) counts[p.quality]++;
 
-  const isDraw = winner === 0 && plies.length >= ROWS * COLS;
+  const isDraw = winner === 0 && plies.length >= rows * cols;
   let result = '';
   if (resignedPlayer === 1) {
     result = t('recap_file.outcome.p1_resigned');
@@ -151,6 +150,8 @@ export function buildRecap({
   return {
     plies,
     board,
+    cols,
+    rows,
     winningCells: normalizeWinningCells(winningCells),
     colors: {color1, color2},
     moveString: moves.join(''),
@@ -183,7 +184,7 @@ function pad(str, len, right = false) {
 }
 
 export function recapToText(recap) {
-  const {summary, plies, board, moveString, date, locale} = recap;
+  const {summary, plies, board, cols, rows, moveString, date, locale} = recap;
   const t = translator(locale);
   const lines = [];
 
@@ -218,8 +219,8 @@ export function recapToText(recap) {
 
   lines.push('');
   lines.push(t('recap_file.final_board'));
-  lines.push('1 2 3 4 5 6 7');
-  for (let r = ROWS - 1; r >= 0; r--) {
+  lines.push(Array.from({length: cols}, (_, i) => i + 1).join(' '));
+  for (let r = rows - 1; r >= 0; r--) {
     lines.push(board[r].map(v => (v === 0 ? '.' : v === 1 ? '1' : '2')).join(' '));
   }
   lines.push('');
@@ -278,21 +279,22 @@ function getContrastColor(colorStr, player) {
 
 /** Draw just the board diagram, translated to (ox, oy). Returns {svg, w, h}. */
 function boardGroup(recap, ox, oy) {
+  const {cols, rows} = recap;
   const cell = 52;
   const ipad = 12;
   const r = Math.round(cell * 0.4);
-  const w = COLS * cell + 2 * ipad;
-  const h = ROWS * cell + 2 * ipad;
+  const w = cols * cell + 2 * ipad;
+  const h = rows * cell + 2 * ipad;
   const {color1, color2} = recap.colors;
 
   // Track heights of columns to determine landing row for each ply (where row 0 is bottom row of board)
-  const stepNumbers = Array.from({length: ROWS}, () => Array.from({length: COLS}, () => 0));
-  const heights = Array(COLS).fill(0);
+  const stepNumbers = Array.from({length: rows}, () => Array.from({length: cols}, () => 0));
+  const heights = Array(cols).fill(0);
   for (let i = 0; i < recap.plies.length; i++) {
     const p = recap.plies[i];
     const colIdx = p.col - 1;
     const rowIdx = heights[colIdx];
-    if (rowIdx < ROWS) {
+    if (rowIdx < rows) {
       stepNumbers[rowIdx][colIdx] = p.n;
       heights[colIdx]++;
     }
@@ -301,11 +303,11 @@ function boardGroup(recap, ox, oy) {
   let s = `<g transform="translate(${ox},${oy})">`;
   s += `<rect width="${w}" height="${h}" rx="18" fill="${THEME.board}" stroke="${THEME.boardHi}" stroke-width="2"/>`;
 
-  for (let row = 0; row < ROWS; row++) {
-    for (let col = 0; col < COLS; col++) {
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
       const cx = ipad + col * cell + cell / 2;
       const cy = ipad + row * cell + cell / 2;
-      const y = ROWS - 1 - row; // board[0] is the bottom row; draw top-down
+      const y = rows - 1 - row; // board[0] is the bottom row; draw top-down
       const v = recap.board[y][col];
       const won = recap.winningCells.has(`${y},${col}`);
       if (v === 0) {
@@ -358,8 +360,8 @@ export function recapCardSvg(recap) {
   );
   y += 30;
 
-  /* Board */
-  const board = boardGroup(recap, (W - (COLS * 52 + 24)) / 2, y);
+  /* Board (cell 52 + 2×12 padding per boardGroup) */
+  const board = boardGroup(recap, (W - (recap.cols * 52 + 24)) / 2, y);
   parts.push(board.svg);
   y += board.h + 28;
 

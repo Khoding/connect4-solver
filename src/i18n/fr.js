@@ -159,6 +159,20 @@ export default {
     language: {
       title: 'Langue',
     },
+    board_size: {
+      title: 'Taille du plateau',
+      reset_warning:
+        'Changer la taille du plateau démarre une nouvelle partie — la partie en cours est effacée.',
+      notes: {
+        '5x4': 'Facile / découverte',
+        '6x5': 'Facile / découverte',
+        '7x6': 'Classique',
+        '8x7': 'Stratégie longue',
+        '9x7': 'Stratégie longue',
+        '10x7': 'Stratégie longue',
+        '8x8': 'Carré',
+      },
+    },
     aside: {
       'move-sequence': 'Séquence des coups',
       'game-controls': 'Contrôles du jeu (Réinitialisation, navigation, relecture)',

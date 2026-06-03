@@ -22,16 +22,32 @@ import {ref, computed, watch} from 'vue';
 import {defineStore} from 'pinia';
 import i18n from '@/i18n';
 
-const ROWS = 6;
-const COLS = 7;
+/* ── Board presets ──────────────────────────────────────── */
+
+/**
+ * Supported board sizes. Keep in sync with the WASM builds in public/wasm/
+ * (build-wasm-all.sh) — each preset has its own c4solver-{cols}x{rows} module.
+ * Win condition is always 4-in-a-row. (No 9x6 here — it arrives later with the
+ * 5-in-a-row feature.)
+ */
+const PRESETS = {
+  '5x4': {cols: 5, rows: 4},
+  '6x5': {cols: 6, rows: 5},
+  '7x6': {cols: 7, rows: 6},
+  '8x7': {cols: 8, rows: 7},
+  '9x7': {cols: 9, rows: 7},
+  '10x7': {cols: 10, rows: 7},
+  '8x8': {cols: 8, rows: 8},
+};
+const DEFAULT_PRESET = '7x6';
 
 /* ── Pure helpers ───────────────────────────────────────── */
 
-function constructBoardArr(moveString) {
-  const b = Array.from({length: ROWS}, () => Array.from({length: COLS}, () => 0));
+function constructBoardArr(moveString, cols, rows) {
+  const b = Array.from({length: rows}, () => Array.from({length: cols}, () => 0));
   for (let i = 0; i < moveString.length; i++) {
     const x = moveString.charCodeAt(i) - 49; // '1' = 49
-    for (let y = 0; y < ROWS; y++) {
+    for (let y = 0; y < rows; y++) {
       if (b[y][x] === 0) {
         b[y][x] = (i % 2) + 1; // 1=first mover, 2=second mover (matches dataset)
         break;
@@ -41,15 +57,15 @@ function constructBoardArr(moveString) {
   return b;
 }
 
-function checkForWin(board) {
+function checkForWin(board, cols, rows) {
   const dirs = [
     {dx: 1, dy: 0},
     {dx: 0, dy: 1},
     {dx: 1, dy: 1},
     {dx: 1, dy: -1},
   ];
-  for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
       const p = board[y][x];
       if (p === 0) continue;
       for (const {dx, dy} of dirs) {
@@ -57,7 +73,7 @@ function checkForWin(board) {
         for (let step = 1; step < 4; step++) {
           const nx = x + dx * step;
           const ny = y + dy * step;
-          if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS || board[ny][nx] !== p) break;
+          if (nx < 0 || nx >= cols || ny < 0 || ny >= rows || board[ny][nx] !== p) break;
           line.push([ny, nx]);
         }
         if (line.length === 4) return line;
@@ -74,7 +90,7 @@ import * as wasmSolver from '@/solver/index.js';
 function interpretScores(scores) {
   let bestCols = [];
   let bestScore = -Infinity;
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < scores.length; i++) {
     if (scores[i] === -1000) continue; // column not playable
     if (scores[i] > bestScore) {
       bestScore = scores[i];
@@ -100,6 +116,7 @@ export const useGameStore = defineStore('game', () => {
     'solver-status',
   ];
 
+  const boardPreset = ref(DEFAULT_PRESET); // active board-size preset key
   const userIsFirst = ref(true); // does the human play as the first mover?
   const color1 = ref('#e03030'); // display color for the first player
   const color2 = ref('#e8d020'); // display color for the second player
@@ -150,12 +167,25 @@ export const useGameStore = defineStore('game', () => {
 
   /* ── Derived ────────────────────────────────────────── */
 
+  /** Active board dimensions, derived reactively from the chosen preset. */
+  const COLS = computed(() => PRESETS[boardPreset.value]?.cols ?? PRESETS[DEFAULT_PRESET].cols);
+  const ROWS = computed(() => PRESETS[boardPreset.value]?.rows ?? PRESETS[DEFAULT_PRESET].rows);
+  const MAX_MOVES = computed(() => COLS.value * ROWS.value);
+
+  /** Selectable presets, for the settings UI. */
+  const boardPresets = Object.entries(PRESETS).map(([key, {cols, rows}]) => ({
+    key,
+    cols,
+    rows,
+    label: `${cols}×${rows}`,
+  }));
+
   /** The move string up to the current cursor position */
   const repstr = computed(() => moveHistory.value.slice(0, viewCursor.value).join(''));
 
-  const boardArr = computed(() => constructBoardArr(repstr.value));
+  const boardArr = computed(() => constructBoardArr(repstr.value, COLS.value, ROWS.value));
 
-  const winLine = computed(() => checkForWin(boardArr.value));
+  const winLine = computed(() => checkForWin(boardArr.value, COLS.value, ROWS.value));
 
   const turnLength = computed(() => repstr.value.length);
 
@@ -186,10 +216,12 @@ export const useGameStore = defineStore('game', () => {
     }
 
     const currentBoard = boardArr.value;
-    const heights = Array(COLS).fill(0);
-    for (let c = 0; c < COLS; c++) {
+    const cols = COLS.value;
+    const rows = ROWS.value;
+    const heights = Array(cols).fill(0);
+    for (let c = 0; c < cols; c++) {
       let h = 0;
-      while (h < ROWS && currentBoard[h][c] !== 0) {
+      while (h < rows && currentBoard[h][c] !== 0) {
         h++;
       }
       heights[c] = h;
@@ -202,7 +234,7 @@ export const useGameStore = defineStore('game', () => {
       const col = ghostPath.value[idx];
       const c = col - 1;
       const h = heights[c];
-      if (h < ROWS) {
+      if (h < rows) {
         cells.push({
           row: h,
           col: c,
@@ -282,15 +314,17 @@ export const useGameStore = defineStore('game', () => {
 
     let tempMoves = currentPos;
     const path = [];
-    const maxMoves = ROWS * COLS;
+    const cols = COLS.value;
+    const rows = ROWS.value;
+    const maxMoves = MAX_MOVES.value;
     const blockSize = 3;
 
     // Build the rest of the optimal game script step-by-step
     while (tempMoves.length < maxMoves) {
       if (currentId !== ghostPathId) return;
 
-      const tempBoard = constructBoardArr(tempMoves);
-      if (checkForWin(tempBoard)) {
+      const tempBoard = constructBoardArr(tempMoves, cols, rows);
+      if (checkForWin(tempBoard, cols, rows)) {
         break;
       }
 
@@ -306,7 +340,7 @@ export const useGameStore = defineStore('game', () => {
 
       let bestCols = [];
       let bestScore = -Infinity;
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < scores.length; i++) {
         if (scores[i] === -1000) continue;
         if (scores[i] > bestScore) {
           bestScore = scores[i];
@@ -404,7 +438,7 @@ export const useGameStore = defineStore('game', () => {
 
         let bestScore = -Infinity;
         let bestColIndex = -1;
-        for (let c = 0; c < 7; c++) {
+        for (let c = 0; c < scores.length; c++) {
           if (scores[c] !== -1000 && scores[c] > bestScore) {
             bestScore = scores[c];
             bestColIndex = c;
@@ -445,8 +479,10 @@ export const useGameStore = defineStore('game', () => {
   /* ── Full-game outcome (independent of the review cursor) ── */
 
   /** Board for the complete move history, ignoring the review cursor */
-  const fullBoard = computed(() => constructBoardArr(moveHistory.value.join('')));
-  const fullWinLine = computed(() => checkForWin(fullBoard.value));
+  const fullBoard = computed(() =>
+    constructBoardArr(moveHistory.value.join(''), COLS.value, ROWS.value),
+  );
+  const fullWinLine = computed(() => checkForWin(fullBoard.value, COLS.value, ROWS.value));
 
   /** Whether the full move history (regardless of viewCursor) contains a win */
   const gameHasWin = computed(() => fullWinLine.value !== null);
@@ -461,10 +497,12 @@ export const useGameStore = defineStore('game', () => {
     return fullBoard.value[y][x];
   });
 
-  const isDraw = computed(() => !fullWinLine.value && moveHistory.value.length >= ROWS * COLS);
+  const isDraw = computed(() => !fullWinLine.value && moveHistory.value.length >= MAX_MOVES.value);
   const gameOver = computed(
     () =>
-      !!fullWinLine.value || moveHistory.value.length >= ROWS * COLS || resignedPlayer.value !== 0,
+      !!fullWinLine.value ||
+      moveHistory.value.length >= MAX_MOVES.value ||
+      resignedPlayer.value !== 0,
   );
 
   // Watch if game is over to automatically deactivate autoplay
@@ -503,8 +541,8 @@ export const useGameStore = defineStore('game', () => {
   function makeMove(column, isManual = true) {
     if (winLine.value || resignedPlayer.value !== 0) return;
     const x = column - 1;
-    if (x < 0 || x >= COLS) return;
-    if (boardArr.value[ROWS - 1][x] !== 0) return;
+    if (x < 0 || x >= COLS.value) return;
+    if (boardArr.value[ROWS.value - 1][x] !== 0) return;
 
     if (
       isManual &&
@@ -604,6 +642,46 @@ export const useGameStore = defineStore('game', () => {
     resetPending.value = false;
   }
 
+  /**
+   * Switch the board size. Resets to a fresh game (the move history can't be
+   * reinterpreted across dimensions) and re-initializes the solver with the
+   * new dimensions.
+   */
+  function setBoardPreset(key) {
+    if (!PRESETS[key]) return;
+    boardPreset.value = key;
+
+    // Fresh game for the new dimensions.
+    deactivateAutoplay();
+    stopReplay();
+    moveHistory.value = [];
+    moveScores.value = [];
+    moveOptimality.value = [];
+    moveBestScores.value = [];
+    moveBestCols.value = [];
+    viewCursor.value = 0;
+    resetPending.value = false;
+    resignedPlayer.value = 0;
+    ghostPath.value = [];
+    ghostPathBasePos.value = null;
+
+    // Re-initialize the solver for the new board size.
+    solverStatus.value = wasmSolver.getStatus();
+    wasmSolver.init(COLS.value, ROWS.value).then(async () => {
+      solverStatus.value = wasmSolver.getStatus();
+      const isLarge = COLS.value > 7 || ROWS.value > 6;
+      const limit = isLarge ? 300000 : 0;
+      try {
+        await wasmSolver.setMaxNodes(limit);
+      } catch (err) {
+        console.error('Failed to set solver node limit:', err);
+      }
+    });
+
+    saveState();
+    syncUrl();
+  }
+
   function resign(player) {
     if (resignedPlayer.value || gameOver.value) return;
     resignedPlayer.value = player;
@@ -625,10 +703,13 @@ export const useGameStore = defineStore('game', () => {
 
     for (let i = 0; i < moveString.length; i++) {
       const col = parseInt(moveString[i]);
-      if (col >= 1 && col <= 7) {
-        const currentBoard = constructBoardArr(history.join(''));
+      if (col >= 1 && col <= COLS.value) {
+        const currentBoard = constructBoardArr(history.join(''), COLS.value, ROWS.value);
         const x = col - 1;
-        if (currentBoard[ROWS - 1][x] === 0 && !checkForWin(currentBoard)) {
+        if (
+          currentBoard[ROWS.value - 1][x] === 0 &&
+          !checkForWin(currentBoard, COLS.value, ROWS.value)
+        ) {
           history.push(col);
           scores.push(null);
           optimality.push(null);
@@ -862,7 +943,7 @@ export const useGameStore = defineStore('game', () => {
           } else if (internalCurrentPlayer.value === 2 && autoP2.value) {
             makeAutoMove();
           }
-        }, 750);
+        }, 250);
       }
     } else {
       clearInterval(autoInterval);
@@ -899,6 +980,7 @@ export const useGameStore = defineStore('game', () => {
       localStorage.setItem(
         'c4_state',
         JSON.stringify({
+          boardPreset: boardPreset.value,
           moves: moveHistory.value.join(''),
           optimality: moveOptimality.value.map(v => (v === true ? 1 : v === false ? 0 : null)),
           resignedPlayer: resignedPlayer.value || undefined,
@@ -969,6 +1051,9 @@ export const useGameStore = defineStore('game', () => {
     const restoreMoves = urlPos || saved?.moves || '';
 
     if (saved) {
+      // Restore the board size first so move replay validates against the
+      // correct dimensions below.
+      if (saved.boardPreset && PRESETS[saved.boardPreset]) boardPreset.value = saved.boardPreset;
       if (typeof saved.userIsFirst === 'boolean') userIsFirst.value = saved.userIsFirst;
       if (saved.color1) color1.value = saved.color1;
       if (saved.color2) color2.value = saved.color2;
@@ -1009,10 +1094,17 @@ export const useGameStore = defineStore('game', () => {
     if (restoreMoves) {
       for (let i = 0; i < restoreMoves.length; i++) {
         const col = parseInt(restoreMoves[i]);
-        if (col >= 1 && col <= 7) {
-          const currentBoard = constructBoardArr(moveHistory.value.join(''));
+        if (col >= 1 && col <= COLS.value) {
+          const currentBoard = constructBoardArr(
+            moveHistory.value.join(''),
+            COLS.value,
+            ROWS.value,
+          );
           const x = col - 1;
-          if (currentBoard[ROWS - 1][x] === 0 && !checkForWin(currentBoard)) {
+          if (
+            currentBoard[ROWS.value - 1][x] === 0 &&
+            !checkForWin(currentBoard, COLS.value, ROWS.value)
+          ) {
             moveHistory.value.push(col);
             moveOptimality.value.push(
               saved?.optimality?.[i] === 1 ? true : saved?.optimality?.[i] === 0 ? false : null,
@@ -1026,16 +1118,26 @@ export const useGameStore = defineStore('game', () => {
     syncUrl();
     loading.value = false;
 
-    // Start loading WASM solver + opening book in background
-    wasmSolver.warmup().then(() => {
+    // Start loading the size-specific WASM solver (+ opening book) in background
+    wasmSolver.init(COLS.value, ROWS.value).then(async () => {
       solverStatus.value = wasmSolver.getStatus();
+      const isLarge = COLS.value > 7 || ROWS.value > 6;
+      const limit = isLarge ? 300000 : 0;
+      try {
+        await wasmSolver.setMaxNodes(limit);
+      } catch (err) {
+        console.error('Failed to set solver node limit:', err);
+      }
     });
   }
 
   return {
-    // Constants
+    // Board dimensions (reactive, derived from the active preset)
     ROWS,
     COLS,
+    MAX_MOVES,
+    boardPreset,
+    boardPresets,
     // State
     userIsFirst,
     color1,
@@ -1106,6 +1208,7 @@ export const useGameStore = defineStore('game', () => {
     goToLatest,
     resetBoard,
     cancelReset,
+    setBoardPreset,
     resign,
     undoResign,
     loadMoves,

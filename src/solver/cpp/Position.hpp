@@ -83,10 +83,33 @@ namespace Connect4 {
  */
 
 
+/**
+ * Board dimensions are compile-time constants (a classic 7x6 board by
+ * default). They can be overridden at build time with -DWIDTH=<w> -DHEIGHT=<h>.
+ *
+ * We cannot let the preprocessor macros and the class members share the name
+ * `WIDTH`/`HEIGHT` (the macro would rewrite the member declaration), so we
+ * capture any override into namespace-scope constants and #undef the macros.
+ * The rest of the solver keeps using Position::WIDTH / Position::HEIGHT.
+ */
+#ifdef WIDTH
+static constexpr int kBoardWidth = WIDTH;
+#undef WIDTH
+#else
+static constexpr int kBoardWidth = 7;
+#endif
+
+#ifdef HEIGHT
+static constexpr int kBoardHeight = HEIGHT;
+#undef HEIGHT
+#else
+static constexpr int kBoardHeight = 6;
+#endif
+
 class Position {
  public:
-  static constexpr int WIDTH = 7;  // width of the board
-  static constexpr int HEIGHT = 6; // height of the board
+  static constexpr int WIDTH = kBoardWidth;   // width of the board
+  static constexpr int HEIGHT = kBoardHeight; // height of the board
 
   // Board size is 64bits or 128 bits depending on WIDTH and HEIGHT
   using position_t = typename std::conditional < WIDTH * (HEIGHT + 1) <= 64, uint64_t, __int128>::type;
@@ -96,7 +119,7 @@ class Position {
   static constexpr int MIN_SCORE = -(WIDTH*HEIGHT) / 2 + 3;
   static constexpr int MAX_SCORE = (WIDTH * HEIGHT + 1) / 2 - 3;
 
-  static_assert(WIDTH < 10, "Board's width must be less than 10");
+  static_assert(WIDTH <= 10, "Board's width must be 10 or less");
   static_assert(WIDTH * (HEIGHT + 1) <= sizeof(position_t)*8, "Board does not fit into position_t bitmask");
 
   /**
@@ -254,7 +277,7 @@ class Position {
     * Compute a partial base 3 key for a given column
     */
   void partialKey3(uint64_t &key, int col) const {
-    for(position_t pos = UINT64_C(1) << (col * (Position::HEIGHT + 1)); pos & mask; pos <<= 1) {
+    for(position_t pos = position_t(1) << (col * (Position::HEIGHT + 1)); pos & mask; pos <<= 1) {
       key *= 3;
       if(pos & current_position) key += 1;
       else key += 2;
@@ -338,19 +361,20 @@ class Position {
   static constexpr position_t board_mask = bottom_mask * ((1LL << HEIGHT) - 1);
 
   // return a bitmask containg a single 1 corresponding to the top cel of a given column
+  // (position_t(1), not UINT64_C(1), so the shift is valid on >64-bit boards)
   static constexpr position_t top_mask_col(int col) {
-    return UINT64_C(1) << ((HEIGHT - 1) + col * (HEIGHT + 1));
+    return position_t(1) << ((HEIGHT - 1) + col * (HEIGHT + 1));
   }
 
   // return a bitmask containg a single 1 corresponding to the bottom cell of a given column
   static constexpr position_t bottom_mask_col(int col) {
-    return UINT64_C(1) << col * (HEIGHT + 1);
+    return position_t(1) << col * (HEIGHT + 1);
   }
 
  public:
   // return a bitmask 1 on all the cells of a given column
   static constexpr position_t column_mask(int col) {
-    return ((UINT64_C(1) << HEIGHT) - 1) << col * (HEIGHT + 1);
+    return ((position_t(1) << HEIGHT) - 1) << col * (HEIGHT + 1);
   }
 };
 

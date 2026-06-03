@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import {onMounted, onUnmounted} from 'vue';
+import {onMounted, onUnmounted, watch} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {useGameStore} from '@/stores/game';
 
@@ -82,11 +82,26 @@ function changeLocale(l) {
  * concrete px value on the root makes every cell inherit the same number and
  * recompute together whenever it changes, so they can never disagree.
  *
- * Mirrors the CSS fallback: clamp(40px, 10vmin, 104px).
+ * Mirrors the CSS fallback: clamp(40px, 10vmin, 104px), then shrinks further
+ * if needed so the active board (which can be up to 10 columns wide) fits the
+ * viewport width without forcing horizontal scroll.
  */
 function updateCellSize() {
   const vmin = Math.min(window.innerWidth, window.innerHeight);
-  const size = Math.min(104, Math.max(40, vmin * 0.1));
+  let size = Math.min(104, Math.max(40, vmin * 0.1));
+
+  // Fit the whole board across the viewport. Reserve room for the row-label
+  // column, board padding, page gutters, and the inter-cell gap.
+  const cols = game.COLS;
+  const gap = 6; // matches --board-gap
+  const reserve = 64; // row labels + board padding + page gutters
+  const maxByWidth = (window.innerWidth - reserve) / cols - gap;
+  size = Math.min(size, maxByWidth);
+
+  // Keep cells tappable even on the widest board / narrowest viewport;
+  // .board-grid has overflow-x: auto as the ultimate fallback.
+  size = Math.max(28, size);
+
   document.documentElement.style.setProperty('--cell-size', `${size}px`);
 }
 
@@ -95,6 +110,9 @@ onMounted(() => {
   window.addEventListener('resize', updateCellSize);
   window.addEventListener('orientationchange', updateCellSize);
 });
+
+// Recompute when the board size preset changes (column count affects fit).
+watch(() => game.COLS, updateCellSize);
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateCellSize);

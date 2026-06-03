@@ -158,6 +158,19 @@ export default {
     language: {
       title: 'Language',
     },
+    board_size: {
+      title: 'Board size',
+      reset_warning: 'Changing the board size starts a new game — the current one is cleared.',
+      notes: {
+        '5x4': 'Easy / intro',
+        '6x5': 'Easy / intro',
+        '7x6': 'Classic',
+        '8x7': 'Long strategy',
+        '9x7': 'Long strategy',
+        '10x7': 'Long strategy',
+        '8x8': 'Square',
+      },
+    },
     aside: {
       'move-sequence': 'Move Sequence',
       'game-controls': 'Game Controls (Reset, navigation, replay)',

@@ -43,6 +43,9 @@ int Solver::negamax(const Position &P, int alpha, int beta) {
   assert(!P.canWinNext());
 
   nodeCount++; // increment counter of explored nodes
+  if(maxNodeLimit && nodeCount > maxNodeLimit) {
+    return 0; // early exit with draw score if node limit is exceeded
+  }
 
   Position::position_t possible = P.possibleNonLosingMoves();
   if(possible == 0)     // if no possible non losing move, opponent wins next move
@@ -117,6 +120,9 @@ int Solver::solve(const Position &P, bool weak) {
   }
 
   while(min < max) {                    // iteratively narrow the min-max exploration window
+    if(maxNodeLimit && nodeCount > maxNodeLimit) {
+      break;
+    }
     int med = min + (max - min) / 2;
     if(med <= 0 && min / 2 < med) med = min / 2;
     else if(med >= 0 && max / 2 > med) med = max / 2;
@@ -142,7 +148,7 @@ std::vector<int> Solver::analyze(const Position &P, bool weak) {
 }
 
 // Constructor
-Solver::Solver() : nodeCount{0} {
+Solver::Solver() : nodeCount{0}, maxNodeLimit{100000000ULL} {
   for(int i = 0; i < Position::WIDTH; i++) // initialize the column exploration order, starting with center columns
     columnOrder[i] = Position::WIDTH / 2 + (1 - 2 * (i % 2)) * (i + 1) / 2; // example for WIDTH=7: columnOrder = {3, 4, 2, 5, 1, 6, 0}
 }

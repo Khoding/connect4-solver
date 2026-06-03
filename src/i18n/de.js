@@ -159,6 +159,20 @@ export default {
     language: {
       title: 'Sprache',
     },
+    board_size: {
+      title: 'Brettgröße',
+      reset_warning:
+        'Das Ändern der Brettgröße startet ein neues Spiel — das aktuelle wird verworfen.',
+      notes: {
+        '5x4': 'Leicht / Einstieg',
+        '6x5': 'Leicht / Einstieg',
+        '7x6': 'Klassisch',
+        '8x7': 'Lange Strategie',
+        '9x7': 'Lange Strategie',
+        '10x7': 'Lange Strategie',
+        '8x8': 'Quadratisch',
+      },
+    },
     aside: {
       'move-sequence': 'Zugreihenfolge',
       'game-controls': 'Spielsteuerung (Zurücksetzen, Navigation, Wiederholung)',

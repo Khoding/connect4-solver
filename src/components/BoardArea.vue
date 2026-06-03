@@ -21,10 +21,13 @@
 <template>
   <section class="board-area" :aria-label="$t('board.aria')">
     <div class="board-grid">
-      <div class="column-buttons">
+      <div
+        class="column-buttons"
+        :style="{gridTemplateColumns: `repeat(${game.COLS}, var(--cell-size))`}"
+      >
         <template v-if="!game.hideScoreBar">
           <div
-            v-for="(s, i) in game.solverScores ?? Array(7).fill(-1000)"
+            v-for="(s, i) in game.solverScores ?? Array(game.COLS).fill(-1000)"
             :key="i"
             class="score-cell"
             :class="scoreClass(s)"
@@ -49,7 +52,10 @@
         </div>
       </div>
 
-      <div class="row-labels">
+      <div
+        class="row-labels"
+        :style="{gridTemplateRows: `repeat(${game.ROWS}, var(--cell-size))`}"
+      >
         <div v-for="vr in game.ROWS" :key="vr" class="row-label">{{ game.ROWS - vr + 1 }}</div>
       </div>
 
@@ -214,7 +220,10 @@ const statusLabel = computed(() => {
   if (score == null) return null;
   if (score === 0) return t('board.status.draw');
   const k = game.viewCursor;
-  const m = score > 0 ? 43 + (k % 2) - k - 2 * score : 44 - (k % 2) - k + 2 * score;
+  // Convert the solver score into "wins in m moves". The constants derive from
+  // the solver's scoring (total cells + 1 / + 2); 42-cell 7×6 → 43 / 44.
+  const total = game.COLS * game.ROWS;
+  const m = score > 0 ? total + 1 + (k % 2) - k - 2 * score : total + 2 - (k % 2) - k + 2 * score;
   const winner = score > 0 ? game.internalCurrentPlayer : game.internalCurrentPlayer === 1 ? 2 : 1;
   return t('board.status.wins_in', {winner, m});
 });
@@ -389,8 +398,8 @@ const statusAriaLabel = computed(() => {
 }
 
 .column-buttons {
+  /* grid-template-columns is bound inline to the active column count */
   display: grid;
-  grid-template-columns: repeat(7, var(--cell-size));
   grid-column: 2;
   padding-inline: var(--board-gap);
   gap: var(--board-gap);
@@ -398,8 +407,8 @@ const statusAriaLabel = computed(() => {
 }
 
 .row-labels {
+  /* grid-template-rows is bound inline to the active row count */
   display: grid;
-  grid-template-rows: repeat(6, var(--cell-size));
   grid-row: 2;
   grid-column: 1;
   align-items: center;

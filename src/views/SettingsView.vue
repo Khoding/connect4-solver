@@ -47,6 +47,31 @@
           </div>
         </section>
 
+        <!-- Board Size Card -->
+        <section class="info-card board-size-card" aria-labelledby="board-size-heading">
+          <h2 id="board-size-heading" class="card-heading">{{ $t('settings.board_size.title') }}</h2>
+          <div
+            class="board-size-options"
+            role="group"
+            :aria-label="$t('settings.board_size.title')"
+          >
+            <button
+              v-for="preset in game.boardPresets"
+              :key="preset.key"
+              class="board-size-btn"
+              :class="{active: game.boardPreset === preset.key}"
+              :aria-pressed="game.boardPreset === preset.key"
+              @click="game.setBoardPreset(preset.key)"
+            >
+              <span class="board-size-dims">{{ preset.label }}</span>
+              <span class="board-size-note">{{
+                $t(`settings.board_size.notes.${preset.key}`)
+              }}</span>
+            </button>
+          </div>
+          <p class="board-size-warning">{{ $t('settings.board_size.reset_warning') }}</p>
+        </section>
+
         <section class="info-card quick-actions-card" aria-labelledby="quick-config-heading">
           <h2 id="quick-config-heading" class="card-heading">
             {{ $t('settings.quick_config.title') }}
@@ -442,6 +467,62 @@ function applyNoHelp() {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+/* Board size preset selector */
+.board-size-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: 0.6rem;
+}
+
+.board-size-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px;
+  gap: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+
+  &:hover {
+    border-color: var(--color-accent);
+    background-color: var(--color-surface-alt);
+  }
+
+  &.active {
+    border-color: var(--color-accent);
+    background-color: color-mix(in oklch, var(--color-accent), transparent 85%);
+    color: var(--color-accent);
+  }
+}
+
+.board-size-dims {
+  font-weight: 700;
+  font-size: 1.05rem;
+  font-family: var(--font-mono);
+}
+
+.board-size-note {
+  color: var(--color-text-dim);
+  font-size: 0.75rem;
+}
+
+.board-size-btn.active .board-size-note {
+  color: inherit;
+}
+
+.board-size-warning {
+  margin-block-start: 0.75rem;
+  color: oklch(0.8 0.12 70);
+  font-size: 0.8rem;
 }
 
 .action-btn {

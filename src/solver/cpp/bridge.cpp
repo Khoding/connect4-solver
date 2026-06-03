@@ -29,8 +29,9 @@ using namespace GameSolver::Connect4;
 static Solver solver;
 static bool book_loaded = false;
 
-// Shared buffer for returning 7 scores to JS
-static int scores_buffer[7];
+// Shared buffer for returning one score per column to JS. Sized to the
+// compile-time board width so it works for every preset (up to 10 wide).
+static int scores_buffer[Position::WIDTH];
 
 extern "C" {
 
@@ -47,8 +48,8 @@ int load_book(const char* path) {
 
 /**
  * Analyze a position: compute the score of each possible move.
- * @param moves: string of digits 1-7 representing the move sequence
- * @return pointer to a static int[7] buffer with scores.
+ * @param moves: string of column digits representing the move sequence
+ * @return pointer to a static int[WIDTH] buffer with scores.
  *         Score > 0: current player wins in that many moves
  *         Score < 0: current player loses
  *         Score == 0: draw
@@ -63,12 +64,12 @@ int* analyze(const char* moves) {
 
   if (P.play(seq) != seq.size()) {
     // Invalid position — return all -1000
-    for (int i = 0; i < 7; i++) scores_buffer[i] = -1000;
+    for (int i = 0; i < Position::WIDTH; i++) scores_buffer[i] = -1000;
     return scores_buffer;
   }
 
   std::vector<int> result = solver.analyze(P, false); // strong solve
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < Position::WIDTH; i++) {
     scores_buffer[i] = result[i];
   }
   return scores_buffer;
@@ -100,6 +101,14 @@ int solve(const char* moves, int weak) {
 EMSCRIPTEN_KEEPALIVE
 unsigned long long get_node_count() {
   return solver.getNodeCount();
+}
+
+/**
+ * Set the maximum number of nodes allowed for a search.
+ */
+EMSCRIPTEN_KEEPALIVE
+void set_max_nodes(int limit) {
+  solver.setMaxNodeLimit(limit);
 }
 
 } // extern "C"
