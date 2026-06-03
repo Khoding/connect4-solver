@@ -65,6 +65,8 @@ export default {
     remove_preset: 'Voreinstellung {name} entfernen',
     save_preset: 'Voreinstellung speichern',
     preset_name: 'Voreinstellung {n}',
+    preset_red_yellow: 'Rot & Gelb',
+    preset_custom: 'EE6677 & 18BC9C',
   },
   moves: {
     title: 'Zugreihenfolge',

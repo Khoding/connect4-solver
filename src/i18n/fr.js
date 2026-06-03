@@ -65,6 +65,8 @@ export default {
     remove_preset: 'Supprimer le préréglage {name}',
     save_preset: 'Enregistrer le préréglage',
     preset_name: 'Préréglage {n}',
+    preset_red_yellow: 'Rouge & Jaune',
+    preset_custom: 'EE6677 & 18BC9C',
   },
   moves: {
     title: 'Séquence des coups',

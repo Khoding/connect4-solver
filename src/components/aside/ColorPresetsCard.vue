@@ -145,10 +145,24 @@ const PRESETS_KEY = 'c4_color_presets';
 function loadPresets() {
   try {
     const raw = localStorage.getItem(PRESETS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (raw !== null) {
+      return JSON.parse(raw);
+    }
   } catch {
-    return [];
+    // Ignore and fallback to defaults
   }
+  return [
+    {
+      name: t('colors.preset_red_yellow'),
+      color1: '#e03030',
+      color2: '#e8d020',
+    },
+    {
+      name: t('colors.preset_custom'),
+      color1: '#EE6677',
+      color2: '#18BC9C',
+    },
+  ];
 }
 
 function persistPresets() {

@@ -65,6 +65,8 @@ export default {
     remove_preset: 'Remove preset {name}',
     save_preset: 'Save preset',
     preset_name: 'Preset {n}',
+    preset_red_yellow: 'Red & Yellow',
+    preset_custom: 'EE6677 & 18BC9C',
   },
   moves: {
     title: 'Move sequence',
