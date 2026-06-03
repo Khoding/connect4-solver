@@ -138,6 +138,7 @@ export default {
       show_all: 'Alles anzeigen',
       hide_all: 'Alles ausblenden (Minimalistisch)',
       recommended: 'Empfohlenes Layout',
+      no_help: 'Layout ohne Hilfe',
     },
     toggle_elements: {
       title: 'Elemente umschalten',
@@ -217,6 +218,10 @@ export default {
       hideLangSelector: {
         label: 'Sprachauswahl ausblenden',
         desc: 'Blendet die EN/FR/DE-Sprachauswahl unabhängig vom Footer aus.',
+      },
+      lockPredictions: {
+        label: 'Vorhersagezüge sperren',
+        desc: 'Wandelt die "gewinnt in"-Anzeige in reinen Text um, sodass vorhergesagte zukünftige Züge nicht mehr per Klick eingeblendet werden können.',
       },
     },
   },

@@ -61,6 +61,9 @@
             <BaseButton class="action-btn" variant="accent" @click="applyRecommended">
               {{ $t('settings.quick_config.recommended') }}
             </BaseButton>
+            <BaseButton class="action-btn" @click="applyNoHelp">
+              {{ $t('settings.quick_config.no_help') }}
+            </BaseButton>
           </div>
         </section>
 
@@ -489,6 +492,13 @@ const settingsList = [
     description: 'Stops highlighting which column the solver recommends above the board.',
   },
   {
+    key: 'lockPredictions',
+    setter: 'setLockPredictions',
+    label: 'Lock predictive moves',
+    description:
+      'Turns the "wins in" status into plain text so predictive future moves can no longer be revealed.',
+  },
+  {
     key: 'hideAutoplay',
     setter: 'setHideAutoplay',
     label: 'Hide autoplayer buttons',
@@ -560,6 +570,10 @@ function hideAll() {
 
 function applyRecommended() {
   game.applyRecommendedLayout();
+}
+
+function applyNoHelp() {
+  game.applyNoHelpLayout();
 }
 </script>
 

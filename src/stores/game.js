@@ -116,6 +116,7 @@ export const useGameStore = defineStore('game', () => {
   const hideScoreBar = ref(false);
   const hideColumnHelp = ref(false);
   const hideLangSelector = ref(false);
+  const lockPredictions = ref(false); // status text only — disables tap-to-reveal predictive moves
   const asideOrder = ref([...DEFAULT_ASIDE_ORDER]);
   const autoP1 = ref(false);
   const autoP2 = ref(false);
@@ -729,6 +730,12 @@ export const useGameStore = defineStore('game', () => {
     saveState();
   }
 
+  function setLockPredictions(val) {
+    lockPredictions.value = val;
+    if (val) showGhostMoves.value = false; // collapse any revealed predictive moves
+    saveState();
+  }
+
   function moveAsideItem(index, direction) {
     const newIndex = index + direction;
     if (newIndex < 0 || newIndex >= asideOrder.value.length) return;
@@ -760,6 +767,37 @@ export const useGameStore = defineStore('game', () => {
     hideNavigation.value = false;
     hideExportImport.value = false;
     hideColors.value = false;
+    hideScoreBar.value = false;
+    hideColumnHelp.value = false;
+    lockPredictions.value = false;
+
+    asideOrder.value = [...DEFAULT_ASIDE_ORDER];
+    saveState();
+  }
+
+  /**
+   * "No help" layout: a clean playing surface with every solver aid stripped
+   * out. Frames the board like the recommended layout, then hides the score
+   * bar, column suggestions, autoplay, and evaluation bar, and locks the
+   * predictive moves. The "wins in" status text stays, as plain text.
+   */
+  function applyNoHelpLayout() {
+    hideHeader.value = true;
+    hideReplay.value = true;
+    hideSolverStatus.value = true;
+    hideFooter.value = true;
+
+    hideMoveSequence.value = false;
+    hideNavigation.value = false;
+    hideExportImport.value = false;
+    hideColors.value = false;
+
+    hideScoreBar.value = true;
+    hideColumnHelp.value = true;
+    hideAutoplay.value = true;
+    hideEvalBar.value = true;
+    lockPredictions.value = true;
+    showGhostMoves.value = false;
 
     asideOrder.value = [...DEFAULT_ASIDE_ORDER];
     saveState();
@@ -880,6 +918,7 @@ export const useGameStore = defineStore('game', () => {
           hideScoreBar: hideScoreBar.value,
           hideColumnHelp: hideColumnHelp.value,
           hideLangSelector: hideLangSelector.value,
+          lockPredictions: lockPredictions.value,
           showGhostMoves: showGhostMoves.value,
           asideOrder: asideOrder.value,
         }),
@@ -949,6 +988,7 @@ export const useGameStore = defineStore('game', () => {
       if (typeof saved.hideScoreBar === 'boolean') hideScoreBar.value = saved.hideScoreBar;
       if (typeof saved.hideColumnHelp === 'boolean') hideColumnHelp.value = saved.hideColumnHelp;
       if (typeof saved.hideLangSelector === 'boolean') hideLangSelector.value = saved.hideLangSelector;
+      if (typeof saved.lockPredictions === 'boolean') lockPredictions.value = saved.lockPredictions;
       if (typeof saved.showGhostMoves === 'boolean') showGhostMoves.value = saved.showGhostMoves;
       if (Array.isArray(saved.asideOrder)) {
         const isValid =
@@ -1012,6 +1052,7 @@ export const useGameStore = defineStore('game', () => {
     hideScoreBar,
     hideColumnHelp,
     hideLangSelector,
+    lockPredictions,
     autoP1,
     autoP2,
     asideOrder,
@@ -1083,11 +1124,13 @@ export const useGameStore = defineStore('game', () => {
     setHideScoreBar,
     setHideColumnHelp,
     setHideLangSelector,
+    setLockPredictions,
     swapColors,
     moveAsideItem,
     resetAsideOrder,
     setAsideOrder,
     applyRecommendedLayout,
+    applyNoHelpLayout,
     toggleAutoP1,
     toggleAutoP2,
     toggleAutoBoth,

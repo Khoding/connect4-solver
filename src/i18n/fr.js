@@ -138,6 +138,7 @@ export default {
       show_all: 'Tout afficher',
       hide_all: 'Tout masquer (Minimaliste)',
       recommended: 'Disposition recommandée',
+      no_help: 'Disposition sans aide',
     },
     toggle_elements: {
       title: 'Éléments de l’interface',
@@ -217,6 +218,10 @@ export default {
       hideLangSelector: {
         label: 'Masquer le sélecteur de langue',
         desc: 'Masque le sélecteur EN/FR/DE indépendamment du pied de page.',
+      },
+      lockPredictions: {
+        label: 'Verrouiller les coups prédictifs',
+        desc: 'Transforme le statut « gagne en » en simple texte afin que les coups futurs prédictifs ne puissent plus être révélés au clic.',
       },
     },
   },

@@ -137,6 +137,7 @@ export default {
       show_all: 'Show everything',
       hide_all: 'Hide everything (Minimalist)',
       recommended: 'Recommended layout',
+      no_help: 'No-help layout',
     },
     toggle_elements: {
       title: 'Toggle Elements',
@@ -216,6 +217,10 @@ export default {
       hideLangSelector: {
         label: 'Hide language selector',
         desc: 'Hides the EN/FR/DE language switcher independently of the footer.',
+      },
+      lockPredictions: {
+        label: 'Lock predictive moves',
+        desc: 'Turns the "wins in" status into plain text so predictive future moves can no longer be revealed by tapping it.',
       },
     },
   },

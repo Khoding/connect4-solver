@@ -39,15 +39,10 @@
           class="col-header"
           :class="{
             suggested: !game.hideColumnHelp && isSuggested(c),
+            'current-player': game.hideColumnHelp && !game.gameOver,
             disabled: game.boardArr[game.ROWS - 1][c - 1] !== 0 || !!game.winLine,
           }"
-          :style="
-            !game.hideColumnHelp && isSuggested(c)
-              ? {
-                  '--player-color': game.displayColorOf(game.internalCurrentPlayer),
-                }
-              : {}
-          "
+          :style="{'--player-color': game.displayColorOf(game.internalCurrentPlayer)}"
           aria-hidden="true"
         >
           {{ c }}
@@ -107,10 +102,12 @@
               'win-position': !!game.winLine,
             }"
             :style="{color: statusColor}"
-            :disabled="isGameOver || (isPlaceholder && !game.isReviewingHistory)"
+            :disabled="
+              isGameOver || game.lockPredictions || (isPlaceholder && !game.isReviewingHistory)
+            "
             :aria-label="statusAriaLabel"
             :title="
-              !isGameOver && (statusLabel !== null || game.isReviewingHistory)
+              !isGameOver && !game.lockPredictions && (statusLabel !== null || game.isReviewingHistory)
                 ? $t('board.toggle_predictions')
                 : undefined
             "
@@ -245,6 +242,7 @@ const displayLabel = computed(() => {
 });
 
 function handleStatusClick() {
+  if (game.lockPredictions) return;
   if (!isGameOver.value && (statusLabel.value !== null || game.isReviewingHistory))
     game.toggleGhostMoves();
 }
@@ -361,6 +359,7 @@ const statusAriaLabel = computed(() => {
   if (isGameOver.value) {
     return t('board.status.aria_outcome', {outcome: displayLabel.value});
   }
+  if (game.lockPredictions) return displayLabel.value;
   const ghostState = game.showGhostMoves
     ? t('board.status.ghost_enabled')
     : t('board.status.ghost_disabled');
@@ -598,6 +597,13 @@ const statusAriaLabel = computed(() => {
 
   &.disabled {
     opacity: 0.3;
+  }
+
+  /* With the suggestion highlight hidden, tint every header in the colour of
+     the player to move so it stays obvious whose turn it is. */
+  &.current-player {
+    background-color: oklch(from var(--player-color) l c h / 0.2);
+    color: oklch(from var(--player-color) max(0.7, l) c h);
   }
 
   &.suggested {
