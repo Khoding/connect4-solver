@@ -206,6 +206,18 @@ export default {
         label: 'Masquer le pied de page du site',
         desc: 'Supprime les citations, les licences et le lien GitHub en bas.',
       },
+      hideScoreBar: {
+        label: 'Masquer la barre de scores du résolveur',
+        desc: 'Supprime la ligne de scores (+/−) affichée au-dessus des en-têtes de colonnes.',
+      },
+      hideColumnHelp: {
+        label: 'Masquer les suggestions de colonnes',
+        desc: 'Désactive la mise en surbrillance de la colonne recommandée par le résolveur.',
+      },
+      hideLangSelector: {
+        label: 'Masquer le sélecteur de langue',
+        desc: 'Masque le sélecteur EN/FR/DE indépendamment du pied de page.',
+      },
     },
   },
   recap: {

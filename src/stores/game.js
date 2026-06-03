@@ -113,6 +113,9 @@ export const useGameStore = defineStore('game', () => {
   const hideSolverStatus = ref(false);
   const hideAutoplay = ref(false);
   const hideEvalBar = ref(false);
+  const hideScoreBar = ref(false);
+  const hideColumnHelp = ref(false);
+  const hideLangSelector = ref(false);
   const asideOrder = ref([...DEFAULT_ASIDE_ORDER]);
   const autoP1 = ref(false);
   const autoP2 = ref(false);
@@ -711,6 +714,21 @@ export const useGameStore = defineStore('game', () => {
     saveState();
   }
 
+  function setHideScoreBar(val) {
+    hideScoreBar.value = val;
+    saveState();
+  }
+
+  function setHideColumnHelp(val) {
+    hideColumnHelp.value = val;
+    saveState();
+  }
+
+  function setHideLangSelector(val) {
+    hideLangSelector.value = val;
+    saveState();
+  }
+
   function moveAsideItem(index, direction) {
     const newIndex = index + direction;
     if (newIndex < 0 || newIndex >= asideOrder.value.length) return;
@@ -859,6 +877,9 @@ export const useGameStore = defineStore('game', () => {
           hideSolverStatus: hideSolverStatus.value,
           hideAutoplay: hideAutoplay.value,
           hideEvalBar: hideEvalBar.value,
+          hideScoreBar: hideScoreBar.value,
+          hideColumnHelp: hideColumnHelp.value,
+          hideLangSelector: hideLangSelector.value,
           showGhostMoves: showGhostMoves.value,
           asideOrder: asideOrder.value,
         }),
@@ -925,6 +946,9 @@ export const useGameStore = defineStore('game', () => {
         hideSolverStatus.value = saved.hideSolverStatus;
       if (typeof saved.hideAutoplay === 'boolean') hideAutoplay.value = saved.hideAutoplay;
       if (typeof saved.hideEvalBar === 'boolean') hideEvalBar.value = saved.hideEvalBar;
+      if (typeof saved.hideScoreBar === 'boolean') hideScoreBar.value = saved.hideScoreBar;
+      if (typeof saved.hideColumnHelp === 'boolean') hideColumnHelp.value = saved.hideColumnHelp;
+      if (typeof saved.hideLangSelector === 'boolean') hideLangSelector.value = saved.hideLangSelector;
       if (typeof saved.showGhostMoves === 'boolean') showGhostMoves.value = saved.showGhostMoves;
       if (Array.isArray(saved.asideOrder)) {
         const isValid =
@@ -985,6 +1009,9 @@ export const useGameStore = defineStore('game', () => {
     hideSolverStatus,
     hideAutoplay,
     hideEvalBar,
+    hideScoreBar,
+    hideColumnHelp,
+    hideLangSelector,
     autoP1,
     autoP2,
     asideOrder,
@@ -1053,6 +1080,9 @@ export const useGameStore = defineStore('game', () => {
     setHideSolverStatus,
     setHideAutoplay,
     setHideEvalBar,
+    setHideScoreBar,
+    setHideColumnHelp,
+    setHideLangSelector,
     swapColors,
     moveAsideItem,
     resetAsideOrder,

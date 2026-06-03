@@ -205,6 +205,18 @@ export default {
         label: 'Hide website footer',
         desc: 'Removes citation details, licensing, and GitHub link sections from the bottom.',
       },
+      hideScoreBar: {
+        label: 'Hide solver score bar',
+        desc: 'Removes the solver score row (+/−) displayed above the column headers.',
+      },
+      hideColumnHelp: {
+        label: 'Hide column suggestion highlights',
+        desc: 'Stops highlighting which column the solver recommends above the board.',
+      },
+      hideLangSelector: {
+        label: 'Hide language selector',
+        desc: 'Hides the EN/FR/DE language switcher independently of the footer.',
+      },
     },
   },
   recap: {

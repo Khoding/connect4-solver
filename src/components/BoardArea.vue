@@ -22,36 +22,36 @@
   <section class="board-area" :aria-label="$t('board.aria')">
     <div class="board-grid">
       <div class="column-buttons">
-        <div
-          v-for="(s, i) in game.solverScores ?? Array(7).fill(-1000)"
-          :key="i"
-          class="score-cell"
-          :class="scoreClass(s)"
-        >
-          {{ s === -1000 ? '—' : s > 0 ? `+${s}` : s }}
-        </div>
+        <template v-if="!game.hideScoreBar">
+          <div
+            v-for="(s, i) in game.solverScores ?? Array(7).fill(-1000)"
+            :key="i"
+            class="score-cell"
+            :class="scoreClass(s)"
+          >
+            {{ s === -1000 ? '—' : s > 0 ? `+${s}` : s }}
+          </div>
+        </template>
 
-        <button
+        <div
           v-for="c in game.COLS"
           :key="c"
           class="col-header"
           :class="{
-            suggested: isSuggested(c),
+            suggested: !game.hideColumnHelp && isSuggested(c),
             disabled: game.boardArr[game.ROWS - 1][c - 1] !== 0 || !!game.winLine,
           }"
-          :disabled="game.boardArr[game.ROWS - 1][c - 1] !== 0 || !!game.winLine"
-          :aria-label="getColumnAriaLabel(c)"
           :style="
-            isSuggested(c)
+            !game.hideColumnHelp && isSuggested(c)
               ? {
                   '--player-color': game.displayColorOf(game.internalCurrentPlayer),
                 }
               : {}
           "
-          @click="game.makeMove(c)"
+          aria-hidden="true"
         >
           {{ c }}
-        </button>
+        </div>
       </div>
 
       <div class="row-labels">
@@ -329,37 +329,6 @@ function formatEval(score) {
   return `${score}`;
 }
 
-function getColumnAriaLabel(col) {
-  const isFull = game.boardArr[game.ROWS - 1][col - 1] !== 0;
-  if (isFull) {
-    return t('board.col_btn_aria', {
-      col,
-      score: t('board.col_btn_full'),
-      optimal: '',
-    });
-  }
-  if (game.winLine) {
-    return t('board.col_btn_aria', {
-      col,
-      score: t('board.col_btn_game_over'),
-      optimal: '',
-    });
-  }
-  const score = game.solverScores?.[col - 1];
-  let scoreText = '';
-  if (score !== undefined && score !== null && score !== -1000) {
-    if (score > 0) {
-      scoreText = t('board.col_btn_score_win', {score});
-    } else if (score < 0) {
-      scoreText = t('board.col_btn_score_loss', {score});
-    } else {
-      scoreText = t('board.col_btn_score_draw');
-    }
-  }
-  const isOptimal = isSuggested(col);
-  const optimalText = isOptimal ? t('board.col_btn_optimal') : '';
-  return t('board.col_btn_aria', {col, score: scoreText, optimal: optimalText});
-}
 
 function getCellAriaLabel(row, col) {
   const cellValue = game.boardArr[row][col];
@@ -620,17 +589,14 @@ const statusAriaLabel = computed(() => {
 
 .col-header {
   padding: 4px 2px;
-  border: none;
   border-radius: var(--radius-sm);
   background-color: var(--color-surface-alt);
   color: var(--color-text-dim);
-  font: inherit;
   font-weight: 600;
   text-align: center;
-  cursor: pointer;
+  user-select: none;
 
-  &:disabled {
-    cursor: not-allowed;
+  &.disabled {
     opacity: 0.3;
   }
 

@@ -206,6 +206,18 @@ export default {
         label: 'Website-Footer ausblenden',
         desc: 'Blendet Zitate, Lizenzen und den GitHub-Link unten aus.',
       },
+      hideScoreBar: {
+        label: 'Solver-Ergebnisleiste ausblenden',
+        desc: 'Entfernt die Solver-Ergebniszeile (+/−) oberhalb der Spalten-Header.',
+      },
+      hideColumnHelp: {
+        label: 'Spaltenvorschläge ausblenden',
+        desc: 'Deaktiviert die Hervorhebung der vom Solver empfohlenen Spalte.',
+      },
+      hideLangSelector: {
+        label: 'Sprachauswahl ausblenden',
+        desc: 'Blendet die EN/FR/DE-Sprachauswahl unabhängig vom Footer aus.',
+      },
     },
   },
   recap: {

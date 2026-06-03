@@ -477,6 +477,18 @@ const settingsList = [
     description: 'Removes the played column numbers log and the individual move scores.',
   },
   {
+    key: 'hideScoreBar',
+    setter: 'setHideScoreBar',
+    label: 'Hide solver score bar',
+    description: 'Removes the solver score row (+/−) displayed above the column buttons.',
+  },
+  {
+    key: 'hideColumnHelp',
+    setter: 'setHideColumnHelp',
+    label: 'Hide column suggestion highlights',
+    description: 'Stops highlighting which column the solver recommends above the board.',
+  },
+  {
     key: 'hideAutoplay',
     setter: 'setHideAutoplay',
     label: 'Hide autoplayer buttons',
@@ -525,6 +537,12 @@ const settingsList = [
     setter: 'setHideFooter',
     label: 'Hide website footer',
     description: 'Removes citation details, licensing, and GitHub link sections from the bottom.',
+  },
+  {
+    key: 'hideLangSelector',
+    setter: 'setHideLangSelector',
+    label: 'Hide language selector',
+    description: 'Hides the EN/FR/DE language switcher independently of the footer.',
   },
 ];
 

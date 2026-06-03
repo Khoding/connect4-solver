@@ -39,7 +39,7 @@
       >
     </div>
   </footer>
-  <div class="lang-selector-wrapper" v-if="!game.hideFooter">
+  <div class="lang-selector-wrapper" v-if="!game.hideLangSelector">
     <div class="lang-selector">
       <button
         v-for="l in ['en', 'fr', 'de']"
