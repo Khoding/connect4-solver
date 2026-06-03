@@ -602,8 +602,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
     border-radius: calc(var(--radius-sm) - 2px);
     background-color: transparent;
     color: var(--color-text-dim);
-    font-size: 0.8rem;
     font-weight: 600;
+    font-size: 0.8rem;
     cursor: pointer;
     transition:
       background-color 0.15s,

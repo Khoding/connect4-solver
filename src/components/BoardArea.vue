@@ -107,7 +107,9 @@
             "
             :aria-label="statusAriaLabel"
             :title="
-              !isGameOver && !game.lockPredictions && (statusLabel !== null || game.isReviewingHistory)
+              !isGameOver &&
+              !game.lockPredictions &&
+              (statusLabel !== null || game.isReviewingHistory)
                 ? $t('board.toggle_predictions')
                 : undefined
             "
@@ -326,7 +328,6 @@ function formatEval(score) {
   if (score === 0) return '0';
   return `${score}`;
 }
-
 
 function getCellAriaLabel(row, col) {
   const cellValue = game.boardArr[row][col];

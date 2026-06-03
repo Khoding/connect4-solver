@@ -987,7 +987,8 @@ export const useGameStore = defineStore('game', () => {
       if (typeof saved.hideEvalBar === 'boolean') hideEvalBar.value = saved.hideEvalBar;
       if (typeof saved.hideScoreBar === 'boolean') hideScoreBar.value = saved.hideScoreBar;
       if (typeof saved.hideColumnHelp === 'boolean') hideColumnHelp.value = saved.hideColumnHelp;
-      if (typeof saved.hideLangSelector === 'boolean') hideLangSelector.value = saved.hideLangSelector;
+      if (typeof saved.hideLangSelector === 'boolean')
+        hideLangSelector.value = saved.hideLangSelector;
       if (typeof saved.lockPredictions === 'boolean') lockPredictions.value = saved.lockPredictions;
       if (typeof saved.showGhostMoves === 'boolean') showGhostMoves.value = saved.showGhostMoves;
       if (Array.isArray(saved.asideOrder)) {
