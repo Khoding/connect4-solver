@@ -795,7 +795,7 @@ export const useGameStore = defineStore('game', () => {
     hideScoreBar.value = true;
     hideColumnHelp.value = true;
     hideAutoplay.value = true;
-    hideEvalBar.value = true;
+    hideEvalBar.value = false;
     lockPredictions.value = true;
     showGhostMoves.value = false;
 
