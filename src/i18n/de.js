@@ -75,6 +75,11 @@ export default {
     optimal: 'Optimaler Zug',
     suboptimal: 'Suboptimaler Zug',
     unknown: 'Unbekannt',
+    best: 'Bester',
+    good: 'Guter',
+    inaccuracy: 'Ungenauigkeit',
+    mistake: 'Fehler',
+    blunder: 'Patzer',
     move_aria: 'Zug {n}: {player} spielte Spalte {move}, {optimality}, {scoreText}',
     player_1: 'Spieler 1',
     player_2: 'Spieler 2',
@@ -149,7 +154,7 @@ export default {
     },
     back_btn: 'Zurück zum Solver',
     language: {
-      title: 'Language',
+      title: 'Sprache',
     },
     aside: {
       'move-sequence': 'Zugreihenfolge',
@@ -203,6 +208,8 @@ export default {
   },
   recap: {
     aria: 'Spiel-Zusammenfassung Export und Import',
+    plies: 'Züge',
+    accuracy: 'Genauigkeit',
     tablist_aria: 'Optionen der Zusammenfassung',
     tab_export: 'Exportieren',
     tab_import: 'Importieren',
@@ -226,6 +233,7 @@ export default {
     modal_title: 'Spiel-Zusammenfassung',
     close_title: 'Schließen (Esc)',
     modal_tablist_aria: 'Zusammenfassungsformat',
+    export_language: 'Exportsprache',
     tab_image: 'Bild',
     tab_text: 'Text',
     image_panel_aria: 'Bild-Zusammenfassung',
@@ -237,7 +245,7 @@ export default {
       'Kopieren fehlgeschlagen — Ihr Browser hat den Zugriff auf die Zwischenablage blockiert.',
     image_copy_unsupported:
       'Bildkopie hier nicht unterstützt — stattdessen Herunterladen verwenden.',
-    export_failed: 'Export failed.',
+    export_failed: 'Export fehlgeschlagen.',
   },
   not_found: {
     title: '404 — Seite nicht gefunden',

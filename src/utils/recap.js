@@ -24,7 +24,17 @@ import i18n from '@/i18n';
   Game recap: builds a shareable summary of a finished game from raw store
   state. Pure, dependency-free — image output is hand-written SVG, optionally
   rasterised to PNG/JPEG through a <canvas>. Uses the term "ply" throughout.
+
+  All exports are localised. The recap can be rendered in a language that
+  differs from the live UI: buildRecap() resolves and records the export
+  locale, and the text/SVG renderers translate against that recorded locale
+  rather than the global one.
 */
+
+/** A translator bound to a specific locale (falls back to the global one). */
+function translator(locale) {
+  return (key, named) => i18n.global.t(key, named ?? {}, {locale});
+}
 
 const COLS = 7;
 const ROWS = 6;
@@ -99,7 +109,9 @@ export function buildRecap({
   color1,
   color2,
   date = new Date(),
+  locale = i18n.global.locale.value,
 }) {
+  const t = translator(locale);
   const plies = moves.map((col, i) => {
     const score = moveScores[i] ?? null;
     const bestScore = moveBestScores[i] ?? null;
@@ -123,17 +135,17 @@ export function buildRecap({
   const isDraw = winner === 0 && plies.length >= ROWS * COLS;
   let result = '';
   if (resignedPlayer === 1) {
-    result = i18n.global.t('recap_file.outcome.p1_resigned');
+    result = t('recap_file.outcome.p1_resigned');
   } else if (resignedPlayer === 2) {
-    result = i18n.global.t('recap_file.outcome.p2_resigned');
+    result = t('recap_file.outcome.p2_resigned');
   } else if (winner === 1) {
-    result = i18n.global.t('recap_file.outcome.p1_wins');
+    result = t('recap_file.outcome.p1_wins');
   } else if (winner === 2) {
-    result = i18n.global.t('recap_file.outcome.p2_wins');
+    result = t('recap_file.outcome.p2_wins');
   } else if (isDraw) {
-    result = i18n.global.t('recap_file.outcome.draw');
+    result = t('recap_file.outcome.draw');
   } else {
-    result = i18n.global.t('recap_file.outcome.in_progress');
+    result = t('recap_file.outcome.in_progress');
   }
 
   return {
@@ -143,6 +155,7 @@ export function buildRecap({
     colors: {color1, color2},
     moveString: moves.join(''),
     date,
+    locale,
     summary: {
       totalPlies: plies.length,
       winner,
@@ -170,35 +183,32 @@ function pad(str, len, right = false) {
 }
 
 export function recapToText(recap) {
-  const {summary, plies, board, moveString, date} = recap;
+  const {summary, plies, board, moveString, date, locale} = recap;
+  const t = translator(locale);
   const lines = [];
 
-  lines.push(i18n.global.t('recap_file.title'));
-  lines.push(date.toLocaleString(i18n.global.locale.value));
+  lines.push(t('recap_file.title'));
+  lines.push(date.toLocaleString(locale));
   lines.push('');
-  lines.push(
-    i18n.global.t('recap_file.result', {result: summary.result, plies: summary.totalPlies}),
-  );
-  lines.push(
-    i18n.global.t('recap_file.moves', {moves: moveString || i18n.global.t('recap_file.none')}),
-  );
+  lines.push(t('recap_file.result', {result: summary.result, plies: summary.totalPlies}));
+  lines.push(t('recap_file.moves', {moves: moveString || t('recap_file.none')}));
 
   const acc = summary.accuracy == null ? '—' : `${summary.accuracy}%`;
   const p1 = summary.accuracyP1 == null ? '—' : `${summary.accuracyP1}%`;
   const p2 = summary.accuracyP2 == null ? '—' : `${summary.accuracyP2}%`;
-  lines.push(i18n.global.t('recap_file.accuracy', {acc, p1, p2}));
+  lines.push(t('recap_file.accuracy', {acc, p1, p2}));
 
   const q = summary.counts;
-  lines.push(i18n.global.t('recap_file.quality', q));
+  lines.push(t('recap_file.quality', q));
   lines.push('');
 
-  lines.push(i18n.global.t('recap_file.headers'));
+  lines.push(t('recap_file.headers'));
   for (const p of plies) {
     const best =
       p.quality === 'best'
         ? fmtScore(p.bestScore)
         : `${fmtScore(p.bestScore)}→c${p.bestCol ?? '?'}`;
-    const label = i18n.global.t(`moves.${p.quality}`);
+    const label = t(`moves.${p.quality}`);
     const meta = TIER_META[p.quality];
     const tier = `${label}${meta.symbol ? ' ' + meta.symbol : ''}`;
     lines.push(
@@ -207,13 +217,13 @@ export function recapToText(recap) {
   }
 
   lines.push('');
-  lines.push(i18n.global.t('recap_file.final_board'));
+  lines.push(t('recap_file.final_board'));
   lines.push('1 2 3 4 5 6 7');
   for (let r = ROWS - 1; r >= 0; r--) {
     lines.push(board[r].map(v => (v === 0 ? '.' : v === 1 ? '1' : '2')).join(' '));
   }
   lines.push('');
-  lines.push(i18n.global.t('recap_file.generated_by'));
+  lines.push(t('recap_file.generated_by'));
 
   return lines.join('\n');
 }
@@ -323,16 +333,17 @@ function boardGroup(recap, ox, oy) {
 export function recapCardSvg(recap) {
   const W = 660;
   const P = 32;
-  const {summary, plies, colors} = recap;
+  const {summary, plies, colors, locale} = recap;
+  const t = translator(locale);
   const parts = [];
   let y = P;
 
   /* Header */
   parts.push(
-    `<text x="${P}" y="${y + 26}" font-family="${FONT}" font-size="26" font-weight="700" fill="${THEME.text}">${esc(i18n.global.t('recap_file.title'))}</text>`,
+    `<text x="${P}" y="${y + 26}" font-family="${FONT}" font-size="26" font-weight="700" fill="${THEME.text}">${esc(t('recap_file.title'))}</text>`,
   );
   parts.push(
-    `<text x="${W - P}" y="${y + 12}" text-anchor="end" font-family="${FONT}" font-size="13" fill="${THEME.dim}">${esc(recap.date.toLocaleDateString(i18n.global.locale.value))}</text>`,
+    `<text x="${W - P}" y="${y + 12}" text-anchor="end" font-family="${FONT}" font-size="13" fill="${THEME.dim}">${esc(recap.date.toLocaleDateString(locale))}</text>`,
   );
   y += 44;
 
@@ -343,7 +354,7 @@ export function recapCardSvg(recap) {
     `<text x="${P + 46}" y="${y + 11}" font-family="${FONT}" font-size="17" font-weight="600" fill="${THEME.accent}">${esc(summary.result)}</text>`,
   );
   parts.push(
-    `<text x="${W - P}" y="${y + 11}" text-anchor="end" font-family="${FONT}" font-size="14" fill="${THEME.dim}">${summary.totalPlies} ${esc(i18n.global.t('recap.plies'))}</text>`,
+    `<text x="${W - P}" y="${y + 11}" text-anchor="end" font-family="${FONT}" font-size="14" fill="${THEME.dim}">${summary.totalPlies} ${esc(t('recap.plies'))}</text>`,
   );
   y += 30;
 
@@ -355,7 +366,7 @@ export function recapCardSvg(recap) {
   /* Accuracy + tier legend */
   const accLabel = summary.accuracy == null ? '—' : `${summary.accuracy}%`;
   parts.push(
-    `<text x="${P}" y="${y + 14}" font-family="${FONT}" font-size="13" fill="${THEME.dim}">${esc(i18n.global.t('recap_file.accuracy_svg'))}</text>`,
+    `<text x="${P}" y="${y + 14}" font-family="${FONT}" font-size="13" fill="${THEME.dim}">${esc(t('recap_file.accuracy_svg'))}</text>`,
   );
   parts.push(
     `<text x="${P}" y="${y + 56}" font-family="${FONT}" font-size="44" font-weight="800" fill="${THEME.text}">${accLabel}</text>`,
@@ -363,21 +374,21 @@ export function recapCardSvg(recap) {
   const p1 = summary.accuracyP1 == null ? '—' : `${summary.accuracyP1}%`;
   const p2 = summary.accuracyP2 == null ? '—' : `${summary.accuracyP2}%`;
   parts.push(
-    `<text x="${P}" y="${y + 78}" font-family="${FONT}" font-size="13" fill="${THEME.dim}">${esc(i18n.global.t('board.p1'))} ${p1}  ·  ${esc(i18n.global.t('board.p2'))} ${p2}</text>`,
+    `<text x="${P}" y="${y + 78}" font-family="${FONT}" font-size="13" fill="${THEME.dim}">${esc(t('board.p1'))} ${p1}  ·  ${esc(t('board.p2'))} ${p2}</text>`,
   );
 
   /* Tier counts (right column) */
   const legendX = W - P - 200;
   let ly = y + 6;
-  for (const t of TIERS) {
-    if (t === 'unknown' && summary.counts.unknown === 0) continue;
-    const meta = TIER_META[t];
+  for (const tier of TIERS) {
+    if (tier === 'unknown' && summary.counts.unknown === 0) continue;
+    const meta = TIER_META[tier];
     parts.push(`<circle cx="${legendX + 6}" cy="${ly + 8}" r="6" fill="${meta.color}"/>`);
     parts.push(
-      `<text x="${legendX + 20}" y="${ly + 13}" font-family="${FONT}" font-size="14" fill="${THEME.text}">${esc(i18n.global.t(`moves.${t}`))}</text>`,
+      `<text x="${legendX + 20}" y="${ly + 13}" font-family="${FONT}" font-size="14" fill="${THEME.text}">${esc(t(`moves.${tier}`))}</text>`,
     );
     parts.push(
-      `<text x="${W - P}" y="${ly + 13}" text-anchor="end" font-family="${MONO}" font-size="14" fill="${THEME.dim}">${summary.counts[t]}</text>`,
+      `<text x="${W - P}" y="${ly + 13}" text-anchor="end" font-family="${MONO}" font-size="14" fill="${THEME.dim}">${summary.counts[tier]}</text>`,
     );
     ly += 22;
   }
@@ -385,7 +396,7 @@ export function recapCardSvg(recap) {
 
   /* Quality timeline */
   parts.push(
-    `<text x="${P}" y="${y + 12}" font-family="${FONT}" font-size="13" fill="${THEME.dim}">${esc(i18n.global.t('recap_file.quality_by_ply_svg'))}</text>`,
+    `<text x="${P}" y="${y + 12}" font-family="${FONT}" font-size="13" fill="${THEME.dim}">${esc(t('recap_file.quality_by_ply_svg'))}</text>`,
   );
   y += 22;
   const barW = W - 2 * P;
@@ -405,7 +416,7 @@ export function recapCardSvg(recap) {
   const colW = (W - 2 * P) / ncols;
   const rowH = 22;
   parts.push(
-    `<text x="${P}" y="${y + 12}" font-family="${FONT}" font-size="13" fill="${THEME.dim}">${esc(i18n.global.t('recap_file.moves_svg'))}</text>`,
+    `<text x="${P}" y="${y + 12}" font-family="${FONT}" font-size="13" fill="${THEME.dim}">${esc(t('recap_file.moves_svg'))}</text>`,
   );
   y += 24;
   plies.forEach((p, i) => {

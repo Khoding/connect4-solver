@@ -112,25 +112,45 @@
           <button class="recap-close" :title="$t('recap.close_title')" @click="close">×</button>
         </header>
 
-        <div class="recap-tabs" role="tablist" :aria-label="$t('recap.modal_tablist_aria')">
-          <button
-            role="tab"
-            :aria-selected="mode === 'image'"
-            aria-controls="image-recap-panel"
-            :class="{active: mode === 'image'}"
-            @click="mode = 'image'"
+        <div class="recap-controls">
+          <div class="recap-tabs" role="tablist" :aria-label="$t('recap.modal_tablist_aria')">
+            <button
+              role="tab"
+              :aria-selected="mode === 'image'"
+              aria-controls="image-recap-panel"
+              :class="{active: mode === 'image'}"
+              @click="mode = 'image'"
+            >
+              {{ $t('recap.tab_image') }}
+            </button>
+            <button
+              role="tab"
+              :aria-selected="mode === 'text'"
+              aria-controls="text-recap-panel"
+              :class="{active: mode === 'text'}"
+              @click="mode = 'text'"
+            >
+              {{ $t('recap.tab_text') }}
+            </button>
+          </div>
+
+          <div
+            class="recap-lang"
+            role="group"
+            :aria-label="$t('recap.export_language')"
+            :title="$t('recap.export_language')"
           >
-            {{ $t('recap.tab_image') }}
-          </button>
-          <button
-            role="tab"
-            :aria-selected="mode === 'text'"
-            aria-controls="text-recap-panel"
-            :class="{active: mode === 'text'}"
-            @click="mode = 'text'"
-          >
-            {{ $t('recap.tab_text') }}
-          </button>
+            <button
+              v-for="l in LOCALES"
+              :key="l"
+              :class="{active: exportLocale === l}"
+              :aria-pressed="exportLocale === l"
+              :aria-label="`${$t('recap.export_language')}: ${l.toUpperCase()}`"
+              @click="exportLocale = l"
+            >
+              {{ l.toUpperCase() }}
+            </button>
+          </div>
         </div>
 
         <div class="recap-preview" :class="{'is-text': mode === 'text'}">
@@ -190,7 +210,13 @@ import {useGameStore} from '@/stores/game';
 import * as Recap from '@/utils/recap';
 
 const game = useGameStore();
-const {t} = useI18n();
+const {t, locale} = useI18n();
+
+/* Language the recap is rendered/exported in — independent of the live UI so
+   users can share a recap in a language other than the one they browse in.
+   Defaults to the current UI locale and resets to it each time the modal opens. */
+const LOCALES = ['en', 'fr', 'de'];
+const exportLocale = ref(locale.value);
 
 const open = ref(false);
 const mode = ref('image');
@@ -217,8 +243,10 @@ function doImport() {
   window.location.assign(url.toString());
 }
 
-const recap = computed(() =>
-  Recap.buildRecap({
+/* Build a recap in the given language from the current store state. The modal
+   renders in `exportLocale`; the inline quick-copy uses the live UI locale. */
+function recapIn(loc) {
+  return Recap.buildRecap({
     board: game.fullBoard,
     moves: game.moveHistory,
     moveScores: game.moveScores,
@@ -229,8 +257,11 @@ const recap = computed(() =>
     resignedPlayer: game.resignedPlayer,
     color1: game.color1,
     color2: game.color2,
-  }),
-);
+    locale: loc,
+  });
+}
+
+const recap = computed(() => recapIn(exportLocale.value));
 
 const card = computed(() => Recap.recapCardSvg(recap.value));
 const cardSvg = computed(() => card.value.svg);
@@ -248,7 +279,7 @@ function close() {
 
 async function quickCopyText() {
   try {
-    await Recap.copyText(Recap.recapToText(recap.value));
+    await Recap.copyText(Recap.recapToText(recapIn(locale.value)));
     flash(quickCopied);
   } catch {
     /* clipboard unavailable */
@@ -303,8 +334,10 @@ function onKey(e) {
   if (e.key === 'Escape') close();
 }
 watch(open, isOpen => {
-  if (isOpen) window.addEventListener('keydown', onKey);
-  else window.removeEventListener('keydown', onKey);
+  if (isOpen) {
+    exportLocale.value = locale.value;
+    window.addEventListener('keydown', onKey);
+  } else window.removeEventListener('keydown', onKey);
 });
 onUnmounted(() => window.removeEventListener('keydown', onKey));
 </script>
@@ -520,8 +553,17 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   }
 }
 
+.recap-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
 .recap-tabs {
   display: flex;
+  flex: 1;
+  min-inline-size: 12rem;
   padding: 3px;
   gap: 0.25rem;
   border-radius: var(--radius-sm);
@@ -543,6 +585,37 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
     &.active {
       background-color: var(--color-surface-alt);
       color: var(--color-text);
+    }
+  }
+}
+
+.recap-lang {
+  display: inline-flex;
+  padding: 3px;
+  gap: 0.25rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+
+  & button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: calc(var(--radius-sm) - 2px);
+    background-color: transparent;
+    color: var(--color-text-dim);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+
+    &:hover {
+      color: var(--color-text);
+    }
+
+    &.active {
+      background-color: var(--color-surface-alt);
+      color: var(--color-accent);
     }
   }
 }
