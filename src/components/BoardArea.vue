@@ -107,10 +107,12 @@
               'win-position': !!game.winLine,
             }"
             :style="{color: statusColor}"
-            :disabled="isGameOver || isPlaceholder"
+            :disabled="isGameOver || (isPlaceholder && !game.isReviewingHistory)"
             :aria-label="statusAriaLabel"
             :title="
-              !isGameOver && statusLabel !== null ? $t('board.toggle_predictions') : undefined
+              !isGameOver && (statusLabel !== null || game.isReviewingHistory)
+                ? $t('board.toggle_predictions')
+                : undefined
             "
             @click="handleStatusClick"
           >
@@ -137,6 +139,7 @@
             :style="{
               '--player-accent': game.color1,
             }"
+            :disabled="isGameOver"
             :aria-pressed="game.autoP1"
             :title="$t('board.auto_p1_title')"
             @click="game.toggleAutoP1()"
@@ -148,6 +151,7 @@
             v-if="!game.hideAutoplay"
             class="auto-both-btn"
             :class="{active: game.autoP1 && game.autoP2}"
+            :disabled="isGameOver"
             :aria-pressed="game.autoP1 && game.autoP2"
             :title="$t('board.auto_both_title')"
             @click="game.toggleAutoBoth()"
@@ -162,6 +166,7 @@
             :style="{
               '--player-accent': game.color2,
             }"
+            :disabled="isGameOver"
             :aria-pressed="game.autoP2"
             :title="$t('board.auto_p2_title')"
             @click="game.toggleAutoP2()"
@@ -240,7 +245,8 @@ const displayLabel = computed(() => {
 });
 
 function handleStatusClick() {
-  if (!isGameOver.value && statusLabel.value !== null) game.toggleGhostMoves();
+  if (!isGameOver.value && (statusLabel.value !== null || game.isReviewingHistory))
+    game.toggleGhostMoves();
 }
 
 const ghostCellsMap = computed(() => {

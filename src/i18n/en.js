@@ -5,7 +5,7 @@ export default {
     tagline: "Pick your color, then follow the solver's suggestions.",
   },
   footer: {
-    solver_by: 'Solver by',
+    solver_by: 'Solver code by',
     inspired_by: 'Inspired by',
     github_repo: 'GitHub Repository',
     licensed_under: 'Licensed under',

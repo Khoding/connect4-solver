@@ -173,7 +173,7 @@ export const useGameStore = defineStore('game', () => {
   const ghostCells = computed(() => {
     if (
       !showGhostMoves.value ||
-      isReviewingHistory.value ||
+      (isReviewingHistory.value && gameOver.value) ||
       replayActive.value ||
       !ghostPath.value ||
       ghostPath.value.length === 0
@@ -248,7 +248,7 @@ export const useGameStore = defineStore('game', () => {
   async function calculateGhostPath() {
     if (
       !showGhostMoves.value ||
-      isReviewingHistory.value ||
+      (isReviewingHistory.value && gameOver.value) ||
       replayActive.value ||
       loading.value ||
       winLine.value

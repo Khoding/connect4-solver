@@ -5,7 +5,7 @@ export default {
     tagline: 'Wählen Sie Ihre Farbe und folgen Sie den Empfehlungen des Solvers.',
   },
   footer: {
-    solver_by: 'Solver von',
+    solver_by: 'Solver-Code von',
     inspired_by: 'Inspiriert von',
     github_repo: 'GitHub-Repository',
     licensed_under: 'Lizenziert unter',
