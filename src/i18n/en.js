@@ -30,6 +30,7 @@ export default {
     mode_solver: 'Solver',
     mode_learn: 'Learn',
     thinking: 'Reading the position…',
+    game_over: 'Game over — reset the board to keep practising.',
     hint_intro: 'Best idea here:',
     glyph_note: 'The markers on the board point to the squares that fit. Still stuck?',
     exact_move: 'Best move: column {col}.',
@@ -42,15 +43,19 @@ export default {
       },
       block: {
         label: 'a block',
-        hint: 'Your opponent threatens four in a row next turn. Take that square to deny it.',
+        hint: 'Your opponent threatens four in a row next turn — the red line shows it. Take that square to deny it.',
       },
-      claimeven: {
-        label: 'a claimeven',
-        hint: 'Take an even square (counting up from the bottom). Owning the even rows is the backbone of a first-player win.',
+      odd_threat: {
+        label: 'an odd threat',
+        hint: 'This sets up a winning square on an odd row. Odd threats are the first mover’s weapon — they decide the endgame zugzwang.',
       },
-      claimodd: {
-        label: 'a claimodd',
-        hint: 'Take an odd square (counting up from the bottom) to seize the key threat.',
+      even_threat: {
+        label: 'an even threat',
+        hint: 'This sets up a winning square on an even row. Even threats are the second mover’s weapon — the basis of the claimeven strategy.',
+      },
+      develop: {
+        label: 'a developing move',
+        hint: 'No immediate threat yet — this is the strongest building move. Watch the marked squares for where threats are forming.',
       },
     },
   },

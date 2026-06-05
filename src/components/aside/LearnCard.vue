@@ -41,7 +41,8 @@
     </div>
 
     <div v-if="game.learnActive" class="hint" aria-live="polite">
-      <p v-if="!hint" class="dim">{{ $t('learn.thinking') }}</p>
+      <p v-if="game.gameOver" class="dim">{{ $t('learn.game_over') }}</p>
+      <p v-else-if="!hint" class="dim">{{ $t('learn.thinking') }}</p>
 
       <template v-else>
         <p class="concept">
@@ -140,9 +141,13 @@ const hint = computed(() => game.learnHint);
   color: oklch(0.78 0.16 25);
 }
 
-.concept-claimeven,
-.concept-claimodd {
+.concept-odd_threat,
+.concept-even_threat {
   color: oklch(0.78 0.14 255);
+}
+
+.concept-develop {
+  color: var(--color-text);
 }
 
 .dim {

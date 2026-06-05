@@ -30,6 +30,7 @@ export default {
     mode_solver: 'Solver',
     mode_learn: 'Lernen',
     thinking: 'Stellung wird gelesen…',
+    game_over: 'Spiel vorbei — setze das Brett zurück, um weiter zu üben.',
     hint_intro: 'Die beste Idee hier:',
     glyph_note: 'Die Markierungen auf dem Brett zeigen die passenden Felder. Immer noch unklar?',
     exact_move: 'Bester Zug: Spalte {col}.',
@@ -42,15 +43,19 @@ export default {
       },
       block: {
         label: 'eine Blockade',
-        hint: 'Dein Gegner droht im nächsten Zug mit vier in einer Reihe. Nimm dieses Feld, um es zu verhindern.',
+        hint: 'Dein Gegner droht im nächsten Zug mit vier in einer Reihe — die rote Linie zeigt es. Nimm dieses Feld, um es zu verhindern.',
       },
-      claimeven: {
-        label: 'ein Claimeven',
-        hint: 'Nimm ein gerades Feld (von unten gezählt). Die geraden Reihen zu kontrollieren ist das Rückgrat eines Siegs des ersten Spielers.',
+      odd_threat: {
+        label: 'eine ungerade Drohung',
+        hint: 'Das schafft ein Gewinnfeld in einer ungeraden Reihe. Ungerade Drohungen sind die Waffe des ersten Spielers — sie entscheiden den End-Zugzwang.',
       },
-      claimodd: {
-        label: 'ein Claimodd',
-        hint: 'Nimm ein ungerades Feld (von unten gezählt), um die entscheidende Drohung zu sichern.',
+      even_threat: {
+        label: 'eine gerade Drohung',
+        hint: 'Das schafft ein Gewinnfeld in einer geraden Reihe. Gerade Drohungen sind die Waffe des zweiten Spielers — die Grundlage der Claimeven-Strategie.',
+      },
+      develop: {
+        label: 'ein Entwicklungszug',
+        hint: 'Noch keine unmittelbare Drohung — dies ist der stärkste Aufbauzug. Achte auf die markierten Felder, wo Drohungen entstehen.',
       },
     },
   },

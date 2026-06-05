@@ -30,6 +30,7 @@ export default {
     mode_solver: 'Résolveur',
     mode_learn: 'Apprendre',
     thinking: 'Lecture de la position…',
+    game_over: 'Partie terminée — réinitialise le plateau pour continuer à t’entraîner.',
     hint_intro: 'La meilleure idée ici :',
     glyph_note: 'Les marqueurs sur le plateau indiquent les cases qui conviennent. Toujours bloqué ?',
     exact_move: 'Meilleur coup : colonne {col}.',
@@ -42,15 +43,19 @@ export default {
       },
       block: {
         label: 'un blocage',
-        hint: "L'adversaire menace d'aligner quatre pions au prochain tour. Prends cette case pour l'en empêcher.",
+        hint: "L'adversaire menace d'aligner quatre pions au prochain tour — la ligne rouge le montre. Prends cette case pour l'en empêcher.",
       },
-      claimeven: {
-        label: 'un claimeven',
-        hint: "Prends une case paire (en comptant depuis le bas). Maîtriser les rangées paires est la clé d'une victoire du premier joueur.",
+      odd_threat: {
+        label: 'une menace impaire',
+        hint: "Cela installe une case gagnante sur une rangée impaire. Les menaces impaires sont l'arme du premier joueur — elles décident le zugzwang final.",
       },
-      claimodd: {
-        label: 'un claimodd',
-        hint: 'Prends une case impaire (en comptant depuis le bas) pour saisir la menace décisive.',
+      even_threat: {
+        label: 'une menace paire',
+        hint: "Cela installe une case gagnante sur une rangée paire. Les menaces paires sont l'arme du second joueur — la base de la stratégie claimeven.",
+      },
+      develop: {
+        label: 'un coup de développement',
+        hint: 'Pas encore de menace immédiate — voici le meilleur coup de construction. Surveille les cases marquées pour voir où les menaces se forment.',
       },
     },
   },

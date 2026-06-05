@@ -18,73 +18,37 @@
  */
 
 /**
- * Learn-mode "starter vocabulary" classifier.
+ * Learn-mode classifier (Tier A).
  *
- * The strong WASM solver tells us *which* column is best for the player to
- * move, for both sides, in any position. It does not tell us *why*. This
- * module names the reason in plain steady-state language so Learn mode can
- * give a conceptual hint ("play a claimeven") instead of the raw column.
+ * The strong WASM solver chooses *which* column is best, for either player, in
+ * any position — including positions reached by mistakes, since it re-evaluates
+ * the board from scratch every move. This module names *why* in steady-state
+ * language, grounded in real odd/even threat analysis (see threats.js) rather
+ * than the v1 landing-row parity guess.
  *
- * This is the deliberately small v1 vocabulary:
- *   - win       : the move completes four in a row now
- *   - block     : the move denies the opponent's immediate four in a row
- *   - claimeven : the move takes an even square (1-indexed from the bottom)
- *   - claimodd  : the move takes an odd square
- *   - best      : fallback when none of the above apply
+ * Concepts emitted (the move-to-play's reason):
+ *   - win        : completes four now
+ *   - block      : denies the opponent's immediate four
+ *   - odd_threat : creates a new threat on an odd row (the first mover's weapon)
+ *   - even_threat: creates a new threat on an even row (the second mover's weapon)
+ *   - develop    : best move with no new immediate threat to name (positional)
  *
- * Parity (claimeven/claimodd) is a heuristic here — true claimeven/claimodd
- * are threat-pairing strategies, not merely the parity of the square played.
- * A later "vocabulary" layer can refine these without changing this contract.
+ * Later tiers (Allis rules: claimeven, aftereven, …) refine `develop` and
+ * `*_threat` without changing this contract or the solver-driven move choice.
  */
 
-const ROWS = 6;
-const COLS = 7;
-
-/** Lowest empty row (0-indexed from the bottom) for a column, or -1 if full. */
-function landingRow(board, col) {
-  for (let r = 0; r < ROWS; r++) {
-    if (board[r][col] === 0) return r;
-  }
-  return -1;
-}
-
-/** Would `player` make four in a row by dropping into `col`? */
-function wouldWin(board, col, player) {
-  const r = landingRow(board, col);
-  if (r === -1) return false;
-  board[r][col] = player;
-  const won = fourFrom(board, r, col, player);
-  board[r][col] = 0;
-  return won;
-}
-
-/** Is there a four in a row through cell (r, c) for `player`? */
-function fourFrom(board, r, c, player) {
-  const dirs = [
-    [0, 1], // horizontal
-    [1, 0], // vertical
-    [1, 1], // diagonal /
-    [1, -1], // diagonal \
-  ];
-  for (const [dr, dc] of dirs) {
-    let count = 1;
-    for (let sign = -1; sign <= 1; sign += 2) {
-      for (let step = 1; step < 4; step++) {
-        const nr = r + dr * step * sign;
-        const nc = c + dc * step * sign;
-        if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) break;
-        if (board[nr][nc] !== player) break;
-        count++;
-      }
-    }
-    if (count >= 4) return true;
-  }
-  return false;
-}
+import {
+  findThreats,
+  findThreatLines,
+  wouldWin,
+  dropInto,
+  landingRow,
+  favouredParity,
+  COLS,
+} from './threats.js';
 
 /**
  * Pick the best column(s) from the solver's per-column scores.
- * Mirrors the store's interpretScores but returns 0-indexed helpers too.
  * @returns {{bestCols: number[], bestScore: number}|null} cols are 1-indexed
  */
 function pickBest(scores) {
@@ -102,16 +66,21 @@ function pickBest(scores) {
   return bestCols.length ? {bestCols, bestScore} : null;
 }
 
+/** Threats in `after` keyed by square that were not present in `before`. */
+function newThreats(before, after) {
+  const had = new Set(before.map(t => t.key));
+  return after.filter(t => !had.has(t.key));
+}
+
 /**
- * Classify the best move into starter-vocabulary terms and build the per-cell
- * glyph overlay used by Hint 2.
+ * Classify the best move into Tier-A vocabulary and build the board overlay.
  *
  * @param {number[][]} board - ROWS x COLS, 0 empty / 1 first mover / 2 second
  * @param {number[]} scores - 7 solver scores for the player to move
  * @param {number} player - internal player to move (1 or 2)
- * @returns {{concept: string, bestCol: number, bestCols: number[], cells: Array}|null}
- *   cells: {row, col, kind} where kind is one of
- *   'win' | 'block' | 'even' | 'odd' | 'best' | 'danger'
+ * @returns {{concept, bestCol, bestCols, parity, cells}|null}
+ *   cells: {row, col, kind} where kind is
+ *   'win' | 'block' | 'play' | 'opportunity' | 'danger'
  */
 export function classifyHint(board, scores, player) {
   if (!scores) return null;
@@ -120,43 +89,59 @@ export function classifyHint(board, scores, player) {
 
   const opponent = player === 1 ? 2 : 1;
   const {bestCols} = best;
-  // Deterministic representative best column (lowest index) for the text hint.
-  const bestCol = bestCols[0];
+  const bestCol = bestCols[0]; // deterministic representative for the text hint
   const bestIdx = bestCol - 1;
 
-  // Concept of the recommended move.
+  // ── Name the recommended move ──────────────────────────────
   let concept;
+  let parity = null;
+
   if (wouldWin(board, bestIdx, player)) {
     concept = 'win';
   } else if (wouldWin(board, bestIdx, opponent)) {
-    // Playing where the opponent would otherwise complete four = a block.
     concept = 'block';
   } else {
-    const r = landingRow(board, bestIdx);
-    const rowFromBottom = r + 1; // 1-indexed
-    concept = rowFromBottom % 2 === 0 ? 'claimeven' : 'claimodd';
-  }
-
-  // Per-cell glyphs for the whole board (Hint 2).
-  const cells = [];
-  for (let c = 0; c < COLS; c++) {
-    const r = landingRow(board, c);
-    if (r === -1) continue; // full column
-    const isBest = bestCols.includes(c + 1);
-
-    let kind;
-    if (wouldWin(board, c, player)) {
-      kind = 'win';
-    } else if (wouldWin(board, c, opponent)) {
-      // The opponent could win here next turn — a square worth noticing.
-      kind = isBest ? 'block' : 'danger';
-    } else if (isBest) {
-      kind = (r + 1) % 2 === 0 ? 'even' : 'odd';
+    // Does playing the recommended column create a new threat for the mover?
+    const before = findThreats(board, player);
+    const next = dropInto(board, bestIdx, player);
+    const created = next ? newThreats(before, findThreats(next, player)) : [];
+    if (created.length) {
+      // Prefer to name the parity that actually helps this mover.
+      const favour = favouredParity(player);
+      const pick = created.find(t => t.parity === favour) ?? created[0];
+      parity = pick.parity;
+      concept = pick.parity === 'odd' ? 'odd_threat' : 'even_threat';
     } else {
-      continue; // unremarkable square, leave it unmarked
+      concept = 'develop';
     }
-    cells.push({row: r, col: c, kind});
   }
 
-  return {concept, bestCol, bestCols, cells};
+  // ── Board overlay (Hint 2) ─────────────────────────────────
+  const cells = [];
+  const mark = (row, col, kind) => cells.push({row, col, kind});
+
+  // Threat squares for both sides — the heart of what Tier A teaches.
+  for (const t of findThreats(board, player)) mark(t.row, t.col, 'opportunity');
+  for (const t of findThreats(board, opponent)) mark(t.row, t.col, 'danger');
+
+  // The recommended landing square(s), drawn on top of the threat map.
+  for (const col of bestCols) {
+    const r = landingRow(board, col - 1);
+    if (r === -1) continue;
+    let kind = 'play';
+    if (wouldWin(board, col - 1, player)) kind = 'win';
+    else if (wouldWin(board, col - 1, opponent)) kind = 'block';
+    // Overwrite any threat marker on the very square we recommend playing.
+    const existing = cells.find(c => c.row === r && c.col === col - 1);
+    if (existing) existing.kind = kind;
+    else mark(r, col - 1, kind);
+  }
+
+  // Full threatening lines (three discs + the completing square) so the board
+  // can show *why* a square matters — the heart of making blocks legible.
+  const lines = [];
+  for (const l of findThreatLines(board, opponent)) lines.push({kind: 'danger', cells: l.cells});
+  for (const l of findThreatLines(board, player)) lines.push({kind: 'opportunity', cells: l.cells});
+
+  return {concept, bestCol, bestCols, parity, cells, lines};
 }

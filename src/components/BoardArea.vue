@@ -66,6 +66,9 @@
               'last-move': isLastMove(game.ROWS - vr, c - 1),
               ghost: !!getGhost(game.ROWS - vr, c - 1),
               'next-ghost': getGhost(game.ROWS - vr, c - 1)?.step === 1,
+              'threat-line': !!threatLineAt(game.ROWS - vr, c - 1),
+              'threat-danger': threatLineAt(game.ROWS - vr, c - 1) === 'danger',
+              'threat-opportunity': threatLineAt(game.ROWS - vr, c - 1) === 'opportunity',
             }"
             :aria-label="getCellAriaLabel(game.ROWS - vr, c - 1)"
             tabindex="-1"
@@ -271,8 +274,8 @@ function getGhost(row, col) {
   return ghostCellsMap.value[`${row}-${col}`] || null;
 }
 
-// Learn-mode board markers (Hint 2): char + kind per recommended/danger cell.
-const GLYPH_CHARS = {win: '✦', block: '✦', danger: '!', even: '●', odd: '●'};
+// Learn-mode board markers (Hint 2): char + kind per recommended/threat cell.
+const GLYPH_CHARS = {win: '✦', block: '✦', play: '◎', opportunity: '○', danger: '✕'};
 
 const learnGlyphMap = computed(() => {
   const map = {};
@@ -287,6 +290,27 @@ const learnGlyphMap = computed(() => {
 
 function learnGlyphAt(row, col) {
   return learnGlyphMap.value[`${row}-${col}`] || null;
+}
+
+// Threat lines (Hint 2): ring every cell of a threatening four so the player
+// can see the line behind a "block" or "opportunity". Danger takes precedence
+// when a square belongs to both sides' lines.
+const threatLineMap = computed(() => {
+  const map = {};
+  if (!game.learnActive || game.learnRevealLevel < 1) return map;
+  const lines = game.learnHint?.lines;
+  if (!lines) return map;
+  for (const line of lines) {
+    for (const [r, c] of line.cells) {
+      const key = `${r}-${c}`;
+      if (line.kind === 'danger' || !map[key]) map[key] = line.kind;
+    }
+  }
+  return map;
+});
+
+function threatLineAt(row, col) {
+  return threatLineMap.value[`${row}-${col}`] || null;
 }
 
 function isSuggested(col) {
@@ -731,6 +755,31 @@ const statusAriaLabel = computed(() => {
   }
 }
 
+/* Ring drawn around every cell of a threatening four (Hint 2). Uses ::before so
+   it respects the round cells and survives the inline box-shadow on filled discs. */
+.cell.threat-line::before {
+  position: absolute;
+  inset: 0;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  pointer-events: none;
+  content: '';
+}
+
+.cell.threat-danger::before {
+  border-color: oklch(0.72 0.2 25 / 0.95);
+  box-shadow:
+    0 0 8px oklch(0.72 0.2 25 / 0.55),
+    inset 0 0 6px oklch(0.72 0.2 25 / 0.45);
+}
+
+.cell.threat-opportunity::before {
+  border-color: oklch(0.8 0.17 145 / 0.9);
+  box-shadow:
+    0 0 8px oklch(0.8 0.17 145 / 0.45),
+    inset 0 0 6px oklch(0.8 0.17 145 / 0.35);
+}
+
 .learn-glyph {
   position: absolute;
   display: grid;
@@ -752,11 +801,18 @@ const statusAriaLabel = computed(() => {
     text-shadow: 0 0 8px oklch(0.82 0.17 255 / 0.6);
   }
 
-  &.glyph-even,
-  &.glyph-odd {
-    color: oklch(0.82 0.14 255 / 0.85);
+  /* Recommended developing/threat move. */
+  &.glyph-play {
+    color: oklch(0.88 0.14 255);
+    text-shadow: 0 0 8px oklch(0.88 0.14 255 / 0.55);
   }
 
+  /* A square where the mover can complete four (their threat). */
+  &.glyph-opportunity {
+    color: oklch(0.82 0.16 145 / 0.85);
+  }
+
+  /* A square where the opponent threatens four. */
   &.glyph-danger {
     color: oklch(0.8 0.18 25);
     text-shadow: 0 0 6px oklch(0.8 0.18 25 / 0.5);
