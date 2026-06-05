@@ -24,6 +24,36 @@ export default {
       error: 'Solver error: {error}',
     },
   },
+  learn: {
+    title: 'Learn mode',
+    mode_aria: 'Choose between solver and learn mode',
+    mode_solver: 'Solver',
+    mode_learn: 'Learn',
+    thinking: 'Reading the position…',
+    hint_intro: 'Best idea here:',
+    glyph_note: 'The markers on the board point to the squares that fit. Still stuck?',
+    exact_move: 'Best move: column {col}.',
+    show_board: 'Show me on the board',
+    reveal_move: 'Just tell me the move',
+    concept: {
+      win: {
+        label: 'a winning move',
+        hint: 'You can complete four in a row right now — take it.',
+      },
+      block: {
+        label: 'a block',
+        hint: 'Your opponent threatens four in a row next turn. Take that square to deny it.',
+      },
+      claimeven: {
+        label: 'a claimeven',
+        hint: 'Take an even square (counting up from the bottom). Owning the even rows is the backbone of a first-player win.',
+      },
+      claimodd: {
+        label: 'a claimodd',
+        hint: 'Take an odd square (counting up from the bottom) to seize the key threat.',
+      },
+    },
+  },
   controls: {
     reset_title: 'Reset board (R)',
     reset_aria: 'Reset board',
@@ -159,6 +189,7 @@ export default {
       title: 'Language',
     },
     aside: {
+      learn: 'Learn Mode (hints & teaching)',
       'move-sequence': 'Move Sequence',
       'game-controls': 'Game Controls (Reset, navigation, replay)',
       'export-import': 'Export & Import Recap',

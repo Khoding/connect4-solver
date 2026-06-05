@@ -24,6 +24,36 @@ export default {
       error: 'Solver-Fehler: {error}',
     },
   },
+  learn: {
+    title: 'Lernmodus',
+    mode_aria: 'Zwischen Solver- und Lernmodus wählen',
+    mode_solver: 'Solver',
+    mode_learn: 'Lernen',
+    thinking: 'Stellung wird gelesen…',
+    hint_intro: 'Die beste Idee hier:',
+    glyph_note: 'Die Markierungen auf dem Brett zeigen die passenden Felder. Immer noch unklar?',
+    exact_move: 'Bester Zug: Spalte {col}.',
+    show_board: 'Zeig es mir auf dem Brett',
+    reveal_move: 'Sag mir einfach den Zug',
+    concept: {
+      win: {
+        label: 'ein Gewinnzug',
+        hint: 'Du kannst jetzt vier in eine Reihe bringen — mach es.',
+      },
+      block: {
+        label: 'eine Blockade',
+        hint: 'Dein Gegner droht im nächsten Zug mit vier in einer Reihe. Nimm dieses Feld, um es zu verhindern.',
+      },
+      claimeven: {
+        label: 'ein Claimeven',
+        hint: 'Nimm ein gerades Feld (von unten gezählt). Die geraden Reihen zu kontrollieren ist das Rückgrat eines Siegs des ersten Spielers.',
+      },
+      claimodd: {
+        label: 'ein Claimodd',
+        hint: 'Nimm ein ungerades Feld (von unten gezählt), um die entscheidende Drohung zu sichern.',
+      },
+    },
+  },
   controls: {
     reset_title: 'Spielfeld zurücksetzen (R)',
     reset_aria: 'Spielfeld zurücksetzen',
@@ -160,6 +190,7 @@ export default {
       title: 'Sprache',
     },
     aside: {
+      learn: 'Lernmodus (Tipps & Lehre)',
       'move-sequence': 'Zugreihenfolge',
       'game-controls': 'Spielsteuerung (Zurücksetzen, Navigation, Wiederholung)',
       'export-import': 'Export & Import Zusammenfassung',

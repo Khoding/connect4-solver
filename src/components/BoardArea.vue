@@ -22,7 +22,7 @@
   <section class="board-area" :aria-label="$t('board.aria')">
     <div class="board-grid">
       <div class="column-buttons">
-        <template v-if="!game.hideScoreBar">
+        <template v-if="!game.hideScoreBar && game.cheatVisible">
           <div
             v-for="(s, i) in game.solverScores ?? Array(7).fill(-1000)"
             :key="i"
@@ -38,8 +38,8 @@
           :key="c"
           class="col-header"
           :class="{
-            suggested: !game.hideColumnHelp && isSuggested(c),
-            'current-player': game.hideColumnHelp && !game.gameOver,
+            suggested: !game.hideColumnHelp && game.cheatVisible && isSuggested(c),
+            'current-player': (game.hideColumnHelp || !game.cheatVisible) && !game.gameOver,
             disabled: game.boardArr[game.ROWS - 1][c - 1] !== 0 || !!game.winLine,
           }"
           :style="{'--player-color': game.displayColorOf(game.internalCurrentPlayer)}"
@@ -74,6 +74,14 @@
             <span v-if="getGhost(game.ROWS - vr, c - 1)" class="ghost-step" aria-hidden="true">
               {{ getGhost(game.ROWS - vr, c - 1).step }}
             </span>
+            <span
+              v-if="learnGlyphAt(game.ROWS - vr, c - 1)"
+              class="learn-glyph"
+              :class="`glyph-${learnGlyphAt(game.ROWS - vr, c - 1).kind}`"
+              aria-hidden="true"
+            >
+              {{ learnGlyphAt(game.ROWS - vr, c - 1).char }}
+            </span>
           </div>
         </div>
       </div>
@@ -85,7 +93,7 @@
               $t('board.p1')
             }}</span>
             <span
-              v-if="!game.hideEvalBar"
+              v-if="!game.hideEvalBar && game.cheatVisible"
               class="eval-score"
               :class="evalClass(game.positionEval?.first)"
             >
@@ -120,7 +128,7 @@
 
           <div class="player-info">
             <span
-              v-if="!game.hideEvalBar"
+              v-if="!game.hideEvalBar && game.cheatVisible"
               class="eval-score"
               :class="evalClass(game.positionEval?.second)"
             >
@@ -175,7 +183,7 @@
         </div>
 
         <meter
-          v-if="!game.hideEvalBar"
+          v-if="!game.hideEvalBar && game.cheatVisible"
           class="eval-meter"
           :style="{
             '--winning-color':
@@ -210,6 +218,8 @@ const statusLabel = computed(() => {
     return t('board.status.resigned', {player: game.resignedPlayer});
   }
   if (game.isDraw) return t('board.status.draw');
+  // In Learn mode the win-distance readout is a spoiler — hide it until reveal.
+  if (!game.cheatVisible) return null;
   const score = game.suggestion?.score;
   if (score == null) return null;
   if (score === 0) return t('board.status.draw');
@@ -259,6 +269,24 @@ const ghostCellsMap = computed(() => {
 
 function getGhost(row, col) {
   return ghostCellsMap.value[`${row}-${col}`] || null;
+}
+
+// Learn-mode board markers (Hint 2): char + kind per recommended/danger cell.
+const GLYPH_CHARS = {win: '✦', block: '✦', danger: '!', even: '●', odd: '●'};
+
+const learnGlyphMap = computed(() => {
+  const map = {};
+  if (!game.learnActive || game.learnRevealLevel < 1) return map;
+  const hint = game.learnHint;
+  if (!hint) return map;
+  for (const cell of hint.cells) {
+    map[`${cell.row}-${cell.col}`] = {kind: cell.kind, char: GLYPH_CHARS[cell.kind] ?? '•'};
+  }
+  return map;
+});
+
+function learnGlyphAt(row, col) {
+  return learnGlyphMap.value[`${row}-${col}`] || null;
 }
 
 function isSuggested(col) {
@@ -635,6 +663,7 @@ const statusAriaLabel = computed(() => {
 }
 
 .cell {
+  position: relative;
   flex-shrink: 0;
   inline-size: var(--cell-size);
   block-size: var(--cell-size);
@@ -699,6 +728,38 @@ const statusAriaLabel = computed(() => {
           0 0 16px oklch(from var(--ghost-color) l c h / 0.6);
       }
     }
+  }
+}
+
+.learn-glyph {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  inset: 0;
+  font-weight: 700;
+  font-size: clamp(0.9rem, calc(var(--cell-size) * 0.5), 1.6rem);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+
+  &.glyph-win {
+    color: oklch(0.85 0.18 145);
+    text-shadow: 0 0 8px oklch(0.85 0.18 145 / 0.6);
+  }
+
+  &.glyph-block {
+    color: oklch(0.82 0.17 255);
+    text-shadow: 0 0 8px oklch(0.82 0.17 255 / 0.6);
+  }
+
+  &.glyph-even,
+  &.glyph-odd {
+    color: oklch(0.82 0.14 255 / 0.85);
+  }
+
+  &.glyph-danger {
+    color: oklch(0.8 0.18 25);
+    text-shadow: 0 0 6px oklch(0.8 0.18 25 / 0.5);
   }
 }
 

@@ -24,6 +24,36 @@ export default {
       error: 'Erreur du résolveur: {error}',
     },
   },
+  learn: {
+    title: 'Mode apprentissage',
+    mode_aria: 'Choisir entre le mode résolveur et apprentissage',
+    mode_solver: 'Résolveur',
+    mode_learn: 'Apprendre',
+    thinking: 'Lecture de la position…',
+    hint_intro: 'La meilleure idée ici :',
+    glyph_note: 'Les marqueurs sur le plateau indiquent les cases qui conviennent. Toujours bloqué ?',
+    exact_move: 'Meilleur coup : colonne {col}.',
+    show_board: 'Montre-moi sur le plateau',
+    reveal_move: 'Dis-moi juste le coup',
+    concept: {
+      win: {
+        label: 'un coup gagnant',
+        hint: 'Tu peux aligner quatre pions tout de suite — fais-le.',
+      },
+      block: {
+        label: 'un blocage',
+        hint: "L'adversaire menace d'aligner quatre pions au prochain tour. Prends cette case pour l'en empêcher.",
+      },
+      claimeven: {
+        label: 'un claimeven',
+        hint: "Prends une case paire (en comptant depuis le bas). Maîtriser les rangées paires est la clé d'une victoire du premier joueur.",
+      },
+      claimodd: {
+        label: 'un claimodd',
+        hint: 'Prends une case impaire (en comptant depuis le bas) pour saisir la menace décisive.',
+      },
+    },
+  },
   controls: {
     reset_title: 'Réinitialiser le plateau (R)',
     reset_aria: 'Réinitialiser le plateau',
@@ -160,6 +190,7 @@ export default {
       title: 'Langue',
     },
     aside: {
+      learn: "Mode apprentissage (conseils & pédagogie)",
       'move-sequence': 'Séquence des coups',
       'game-controls': 'Contrôles du jeu (Réinitialisation, navigation, relecture)',
       'export-import': 'Export & Import du résumé',

@@ -21,6 +21,7 @@
 import {ref, computed, watch} from 'vue';
 import {defineStore} from 'pinia';
 import i18n from '@/i18n';
+import {classifyHint} from '@/learn/classifier';
 
 const ROWS = 6;
 const COLS = 7;
@@ -93,6 +94,7 @@ function interpretScores(scores) {
 
 export const useGameStore = defineStore('game', () => {
   const DEFAULT_ASIDE_ORDER = [
+    'learn',
     'move-sequence',
     'game-controls',
     'export-import',
@@ -118,6 +120,13 @@ export const useGameStore = defineStore('game', () => {
   const hideLangSelector = ref(false);
   const lockPredictions = ref(false); // status text only — disables tap-to-reveal predictive moves
   const asideOrder = ref([...DEFAULT_ASIDE_ORDER]);
+
+  // Learn mode: a teaching layer on top of the solver. 'solver' = full cheat,
+  // 'learn' = progressive hints. learnRevealLevel escalates within a single
+  // turn: 0 = concept text only, 1 = + board glyphs, 2 = + the exact move.
+  const mode = ref('solver'); // 'solver' | 'learn'
+  const learnRevealLevel = ref(0);
+
   const autoP1 = ref(false);
   const autoP2 = ref(false);
   const replayActive = ref(false);
@@ -488,6 +497,20 @@ export const useGameStore = defineStore('game', () => {
       first: currentIsFirst ? currentScore : -currentScore,
       second: currentIsFirst ? -currentScore : currentScore,
     };
+  });
+
+  /* ── Learn mode ─────────────────────────────────────── */
+
+  const learnActive = computed(() => mode.value === 'learn');
+
+  /** In Learn mode the raw solver answer stays hidden until the final hint. */
+  const cheatVisible = computed(() => mode.value !== 'learn' || learnRevealLevel.value >= 2);
+
+  /** Conceptual hint for the side to move, derived from the solver scores. */
+  const learnHint = computed(() => {
+    if (mode.value !== 'learn' || winLine.value || gameOver.value) return null;
+    if (!solverScores.value) return null;
+    return classifyHint(boardArr.value, solverScores.value, internalCurrentPlayer.value);
   });
 
   /* ── Display color mapping ──────────────────────────── */
@@ -892,6 +915,22 @@ export const useGameStore = defineStore('game', () => {
     saveState();
   }
 
+  function setMode(val) {
+    mode.value = val === 'learn' ? 'learn' : 'solver';
+    learnRevealLevel.value = 0;
+    saveState();
+  }
+
+  /** Escalate the current turn's hint: concept → glyphs → exact move. */
+  function revealMoreHint() {
+    if (learnRevealLevel.value < 2) learnRevealLevel.value++;
+  }
+
+  // Each new position starts the learner back at the conceptual hint.
+  watch(repstr, () => {
+    learnRevealLevel.value = 0;
+  });
+
   /* ── Persistence ────────────────────────────────────── */
 
   function saveState() {
@@ -921,6 +960,7 @@ export const useGameStore = defineStore('game', () => {
           lockPredictions: lockPredictions.value,
           showGhostMoves: showGhostMoves.value,
           asideOrder: asideOrder.value,
+          mode: mode.value,
         }),
       );
     } catch {
@@ -991,6 +1031,7 @@ export const useGameStore = defineStore('game', () => {
         hideLangSelector.value = saved.hideLangSelector;
       if (typeof saved.lockPredictions === 'boolean') lockPredictions.value = saved.lockPredictions;
       if (typeof saved.showGhostMoves === 'boolean') showGhostMoves.value = saved.showGhostMoves;
+      if (saved.mode === 'learn') mode.value = 'learn';
       if (Array.isArray(saved.asideOrder)) {
         const isValid =
           saved.asideOrder.every(item => DEFAULT_ASIDE_ORDER.includes(item)) &&
@@ -1054,6 +1095,8 @@ export const useGameStore = defineStore('game', () => {
     hideColumnHelp,
     hideLangSelector,
     lockPredictions,
+    mode,
+    learnRevealLevel,
     autoP1,
     autoP2,
     asideOrder,
@@ -1096,6 +1139,9 @@ export const useGameStore = defineStore('game', () => {
     gameOver,
     positionEval,
     ghostCells,
+    learnActive,
+    cheatVisible,
+    learnHint,
     // Helpers
     displayColorOf,
     // Actions
@@ -1126,6 +1172,8 @@ export const useGameStore = defineStore('game', () => {
     setHideColumnHelp,
     setHideLangSelector,
     setLockPredictions,
+    setMode,
+    revealMoreHint,
     swapColors,
     moveAsideItem,
     resetAsideOrder,
