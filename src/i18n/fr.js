@@ -173,7 +173,6 @@ export default {
       show_all: 'Tout afficher',
       hide_all: 'Tout masquer (Minimaliste)',
       recommended: 'Disposition recommandée',
-      no_help: 'Disposition sans aide',
     },
     toggle_elements: {
       title: 'Éléments de l’interface',
@@ -203,6 +202,10 @@ export default {
       'solver-status': 'Statut du résolveur WASM',
     },
     items: {
+      hideLearn: {
+        label: 'Masquer la carte Mode apprentissage',
+        desc: "Retire la carte Mode apprentissage et ses conseils. Masque-la en mode apprentissage pour un plateau vraiment sans aide.",
+      },
       hideHeader: {
         label: 'Masquer l’en-tête du site',
         desc: 'Supprime le logo du haut, le titre et le slogan d’aide.',

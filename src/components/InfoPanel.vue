@@ -21,7 +21,7 @@
 <template>
   <aside class="info-panel">
     <template v-for="item in game.asideOrder" :key="item">
-      <LearnCard v-if="item === 'learn'" />
+      <LearnCard v-if="item === 'learn' && !game.hideLearn" />
       <MoveSequenceCard v-if="item === 'move-sequence'" />
       <GameControlsCard v-if="item === 'game-controls'" />
       <ExportRecap v-if="item === 'export-import' && !game.hideExportImport" />

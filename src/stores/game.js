@@ -126,6 +126,7 @@ export const useGameStore = defineStore('game', () => {
   // turn: 0 = concept text only, 1 = + board glyphs, 2 = + the exact move.
   const mode = ref('solver'); // 'solver' | 'learn'
   const learnRevealLevel = ref(0);
+  const hideLearn = ref(false); // hide the Learn-mode card entirely (true "no help")
 
   const autoP1 = ref(false);
   const autoP2 = ref(false);
@@ -759,6 +760,11 @@ export const useGameStore = defineStore('game', () => {
     saveState();
   }
 
+  function setHideLearn(val) {
+    hideLearn.value = val;
+    saveState();
+  }
+
   function moveAsideItem(index, direction) {
     const newIndex = index + direction;
     if (newIndex < 0 || newIndex >= asideOrder.value.length) return;
@@ -783,6 +789,7 @@ export const useGameStore = defineStore('game', () => {
     hideReplay.value = true;
     hideSolverStatus.value = true;
     hideFooter.value = true;
+    hideLangSelector.value = true;
 
     hideMoveSequence.value = false;
     hideAutoplay.value = false;
@@ -792,35 +799,8 @@ export const useGameStore = defineStore('game', () => {
     hideColors.value = false;
     hideScoreBar.value = false;
     hideColumnHelp.value = false;
+    hideLearn.value = false;
     lockPredictions.value = false;
-
-    asideOrder.value = [...DEFAULT_ASIDE_ORDER];
-    saveState();
-  }
-
-  /**
-   * "No help" layout: a clean playing surface with every solver aid stripped
-   * out. Frames the board like the recommended layout, then hides the score
-   * bar, column suggestions, autoplay, and evaluation bar, and locks the
-   * predictive moves. The "wins in" status text stays, as plain text.
-   */
-  function applyNoHelpLayout() {
-    hideHeader.value = true;
-    hideReplay.value = true;
-    hideSolverStatus.value = true;
-    hideFooter.value = true;
-
-    hideMoveSequence.value = false;
-    hideNavigation.value = false;
-    hideExportImport.value = false;
-    hideColors.value = false;
-
-    hideScoreBar.value = true;
-    hideColumnHelp.value = true;
-    hideAutoplay.value = true;
-    hideEvalBar.value = false;
-    lockPredictions.value = true;
-    showGhostMoves.value = false;
 
     asideOrder.value = [...DEFAULT_ASIDE_ORDER];
     saveState();
@@ -918,6 +898,7 @@ export const useGameStore = defineStore('game', () => {
   function setMode(val) {
     mode.value = val === 'learn' ? 'learn' : 'solver';
     learnRevealLevel.value = 0;
+    if (mode.value === 'learn') showGhostMoves.value = false;
     saveState();
   }
 
@@ -961,6 +942,7 @@ export const useGameStore = defineStore('game', () => {
           showGhostMoves: showGhostMoves.value,
           asideOrder: asideOrder.value,
           mode: mode.value,
+          hideLearn: hideLearn.value,
         }),
       );
     } catch {
@@ -1032,6 +1014,7 @@ export const useGameStore = defineStore('game', () => {
       if (typeof saved.lockPredictions === 'boolean') lockPredictions.value = saved.lockPredictions;
       if (typeof saved.showGhostMoves === 'boolean') showGhostMoves.value = saved.showGhostMoves;
       if (saved.mode === 'learn') mode.value = 'learn';
+      if (typeof saved.hideLearn === 'boolean') hideLearn.value = saved.hideLearn;
       if (Array.isArray(saved.asideOrder)) {
         const isValid =
           saved.asideOrder.every(item => DEFAULT_ASIDE_ORDER.includes(item)) &&
@@ -1097,6 +1080,7 @@ export const useGameStore = defineStore('game', () => {
     lockPredictions,
     mode,
     learnRevealLevel,
+    hideLearn,
     autoP1,
     autoP2,
     asideOrder,
@@ -1172,6 +1156,7 @@ export const useGameStore = defineStore('game', () => {
     setHideColumnHelp,
     setHideLangSelector,
     setLockPredictions,
+    setHideLearn,
     setMode,
     revealMoreHint,
     swapColors,
@@ -1179,7 +1164,6 @@ export const useGameStore = defineStore('game', () => {
     resetAsideOrder,
     setAsideOrder,
     applyRecommendedLayout,
-    applyNoHelpLayout,
     toggleAutoP1,
     toggleAutoP2,
     toggleAutoBoth,

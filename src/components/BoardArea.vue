@@ -96,7 +96,7 @@
               $t('board.p1')
             }}</span>
             <span
-              v-if="!game.hideEvalBar && game.cheatVisible"
+              v-if="!game.hideEvalBar"
               class="eval-score"
               :class="evalClass(game.positionEval?.first)"
             >
@@ -114,7 +114,10 @@
             }"
             :style="{color: statusColor}"
             :disabled="
-              isGameOver || game.lockPredictions || (isPlaceholder && !game.isReviewingHistory)
+              isGameOver ||
+              game.lockPredictions ||
+              !game.cheatVisible ||
+              (isPlaceholder && !game.isReviewingHistory)
             "
             :aria-label="statusAriaLabel"
             :title="
@@ -131,7 +134,7 @@
 
           <div class="player-info">
             <span
-              v-if="!game.hideEvalBar && game.cheatVisible"
+              v-if="!game.hideEvalBar"
               class="eval-score"
               :class="evalClass(game.positionEval?.second)"
             >
@@ -186,7 +189,7 @@
         </div>
 
         <meter
-          v-if="!game.hideEvalBar && game.cheatVisible"
+          v-if="!game.hideEvalBar"
           class="eval-meter"
           :style="{
             '--winning-color':
@@ -204,6 +207,53 @@
           :value="50 - ((game.positionEval?.first ?? 0) / 21) * 50"
         ></meter>
       </div>
+
+      <div v-if="!game.hideNavigation" class="board-nav">
+        <BaseButton
+          :title="$t('controls.back_title')"
+          :aria-label="$t('controls.back_aria')"
+          :disabled="!game.canStepBack"
+          @click="game.stepBack()"
+        >
+          <template #icon>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </template>
+          {{ $t('controls.back') }}
+        </BaseButton>
+        <BaseButton
+          :title="$t('controls.forward_title')"
+          :aria-label="$t('controls.forward_aria')"
+          :disabled="!game.canStepForward"
+          @click="game.stepForward()"
+        >
+          <template #icon>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </template>
+          {{ $t('controls.forward') }}
+        </BaseButton>
+      </div>
     </div>
   </section>
 </template>
@@ -212,6 +262,7 @@
 import {computed} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {useGameStore} from '@/stores/game';
+import BaseButton from '@/components/BaseButton.vue';
 
 const game = useGameStore();
 const {t} = useI18n();
@@ -221,8 +272,6 @@ const statusLabel = computed(() => {
     return t('board.status.resigned', {player: game.resignedPlayer});
   }
   if (game.isDraw) return t('board.status.draw');
-  // In Learn mode the win-distance readout is a spoiler — hide it until reveal.
-  if (!game.cheatVisible) return null;
   const score = game.suggestion?.score;
   if (score == null) return null;
   if (score === 0) return t('board.status.draw');
@@ -475,6 +524,18 @@ const statusAriaLabel = computed(() => {
   display: flex;
   flex-direction: row;
   gap: var(--board-gap);
+}
+
+.board-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-column: 2;
+  gap: var(--board-gap);
+
+  & :deep(.base-button-wrapper) {
+    inline-size: 100%;
+    justify-content: center;
+  }
 }
 
 .player-indicators {

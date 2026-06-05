@@ -61,9 +61,6 @@
             <BaseButton class="action-btn" variant="accent" @click="applyRecommended">
               {{ $t('settings.quick_config.recommended') }}
             </BaseButton>
-            <BaseButton class="action-btn" @click="applyNoHelp">
-              {{ $t('settings.quick_config.no_help') }}
-            </BaseButton>
           </div>
         </section>
 
@@ -276,6 +273,13 @@ function asideLabel(key) {
 
 const settingsList = [
   {
+    key: 'hideLearn',
+    setter: 'setHideLearn',
+    label: 'Hide Learn mode card',
+    description:
+      'Removes the Learn-mode card and its hints. Hide it while in Learn mode for a true no-help board.',
+  },
+  {
     key: 'hideHeader',
     setter: 'setHideHeader',
     label: 'Hide website header',
@@ -378,10 +382,6 @@ function hideAll() {
 
 function applyRecommended() {
   game.applyRecommendedLayout();
-}
-
-function applyNoHelp() {
-  game.applyNoHelpLayout();
 }
 </script>
 

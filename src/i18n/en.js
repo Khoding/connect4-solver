@@ -172,7 +172,6 @@ export default {
       show_all: 'Show everything',
       hide_all: 'Hide everything (Minimalist)',
       recommended: 'Recommended layout',
-      no_help: 'No-help layout',
     },
     toggle_elements: {
       title: 'Toggle Elements',
@@ -202,6 +201,10 @@ export default {
       'solver-status': 'WASM Solver Status',
     },
     items: {
+      hideLearn: {
+        label: 'Hide Learn mode card',
+        desc: 'Removes the Learn-mode card and its hints. Hide it while in Learn mode for a true no-help board.',
+      },
       hideHeader: {
         label: 'Hide website header',
         desc: 'Removes the top logo, title, and follow suggestions tagline.',

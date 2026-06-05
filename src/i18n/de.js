@@ -173,7 +173,6 @@ export default {
       show_all: 'Alles anzeigen',
       hide_all: 'Alles ausblenden (Minimalistisch)',
       recommended: 'Empfohlenes Layout',
-      no_help: 'Layout ohne Hilfe',
     },
     toggle_elements: {
       title: 'Elemente umschalten',
@@ -203,6 +202,10 @@ export default {
       'solver-status': 'WASM-Solver-Status',
     },
     items: {
+      hideLearn: {
+        label: 'Lernmodus-Karte ausblenden',
+        desc: 'Entfernt die Lernmodus-Karte und ihre Tipps. Blende sie im Lernmodus aus für ein Brett ganz ohne Hilfe.',
+      },
       hideHeader: {
         label: 'Website-Header ausblenden',
         desc: 'Entfernt das obere Logo, den Titel und den Untertitel mit den Empfehlungen.',

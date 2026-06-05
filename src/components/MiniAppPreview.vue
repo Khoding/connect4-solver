@@ -126,11 +126,35 @@
             <div class="mini-meter-bar" />
           </div>
         </div>
+
+        <!-- Back / Forward nav buttons below the meter -->
+        <div v-if="!game.hideNavigation" class="mini-nav-row">
+          <div class="mini-nav-btn" />
+          <div class="mini-nav-btn" />
+        </div>
       </div>
 
       <!-- Sidebar elements reordered -->
       <div class="mini-sidebar">
         <template v-for="item in game.asideOrder" :key="item">
+          <!-- Learn mode card -->
+          <div
+            v-if="item === 'learn'"
+            class="mini-card"
+            :class="{'is-disabled': game.hideLearn}"
+          >
+            <span class="mini-card-title">{{ $t('learn.title') }}</span>
+            <div class="mini-learn-toggle">
+              <div class="mini-toggle-pill active" />
+              <div class="mini-toggle-pill" />
+            </div>
+            <div class="mini-hint-lines">
+              <div class="mini-hint-line" />
+              <div class="mini-hint-line short" />
+            </div>
+            <div class="mini-escalate-btn" />
+          </div>
+
           <!-- Move sequence card -->
           <div
             v-if="item === 'move-sequence'"
@@ -145,11 +169,11 @@
             </div>
           </div>
 
-          <!-- Game controls card (reset + navigation + replay) -->
+          <!-- Game controls card (reset + latest + replay) -->
           <div
             v-if="item === 'game-controls'"
             class="mini-card"
-            :class="{'is-disabled': game.hideNavigation && game.hideReplay}"
+            :class="{'is-disabled': game.hideReplay}"
           >
             <span class="mini-card-title">{{
               $t('settings.aside.game-controls').split(' ')[0]
@@ -157,12 +181,6 @@
             <div class="mini-controls-content">
               <!-- Always visible reset button -->
               <div class="mini-button reset" />
-
-              <!-- Navigation buttons (Back, Forward) -->
-              <div v-if="!game.hideNavigation" class="mini-buttons-row">
-                <div class="mini-button" />
-                <div class="mini-button" />
-              </div>
 
               <!-- Replay button -->
               <div v-if="!game.hideReplay" class="mini-button replay" />
@@ -436,6 +454,20 @@ const game = useGameStore();
   font-family: var(--font-mono);
 }
 
+/* Back / Forward nav buttons under the board */
+.mini-nav-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1cqw;
+}
+
+.mini-nav-btn {
+  height: 3cqw;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6cqw;
+  background-color: var(--color-surface-alt);
+}
+
 /* Indicators block styling */
 .mini-indicators-area {
   display: flex;
@@ -694,6 +726,47 @@ const game = useGameStore();
   &.p2 {
     background-color: var(--p2-color);
   }
+}
+
+/* Learn mode card */
+.mini-learn-toggle {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6cqw;
+}
+
+.mini-toggle-pill {
+  flex: 1;
+  height: 3cqw;
+  background-color: transparent;
+
+  &.active {
+    background-color: var(--color-accent, oklch(0.65 0.18 255));
+  }
+}
+
+.mini-hint-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 1cqw;
+}
+
+.mini-hint-line {
+  height: 1.6cqw;
+  border-radius: 0.4cqw;
+  background-color: var(--color-surface-alt);
+
+  &.short {
+    inline-size: 65%;
+  }
+}
+
+.mini-escalate-btn {
+  height: 3cqw;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6cqw;
+  background-color: var(--color-surface-alt);
 }
 
 /* WASM solver compiler indicators */
