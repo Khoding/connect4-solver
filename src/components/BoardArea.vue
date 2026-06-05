@@ -533,8 +533,8 @@ const statusAriaLabel = computed(() => {
   gap: var(--board-gap);
 
   & :deep(.base-button-wrapper) {
-    inline-size: 100%;
     justify-content: center;
+    inline-size: 100%;
   }
 }
 
@@ -823,8 +823,8 @@ const statusAriaLabel = computed(() => {
   inset: 0;
   border: 3px solid transparent;
   border-radius: 50%;
-  pointer-events: none;
   content: '';
+  pointer-events: none;
 }
 
 .cell.threat-danger::before {
@@ -842,8 +842,8 @@ const statusAriaLabel = computed(() => {
 }
 
 .learn-glyph {
-  position: absolute;
   display: grid;
+  position: absolute;
   place-items: center;
   inset: 0;
   font-weight: 700;

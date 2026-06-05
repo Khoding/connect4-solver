@@ -59,6 +59,16 @@ export default {
       },
     },
   },
+  steady: {
+    title: 'Steady-State-Diagramm',
+    aria: 'Prioritätskarte der aktuellen Stellung',
+    empty: 'Noch keine Prioritäten — warte auf den Solver oder das Spiel ist vorbei.',
+    legend: {
+      play: 'bester Zug',
+      opportunity: 'deine Drohung',
+      danger: 'ihre Drohung',
+    },
+  },
   controls: {
     reset_title: 'Spielfeld zurücksetzen (R)',
     reset_aria: 'Spielfeld zurücksetzen',
@@ -195,6 +205,7 @@ export default {
     },
     aside: {
       learn: 'Lernmodus (Tipps & Lehre)',
+      'steady-state': 'Steady-State-Diagramm',
       'move-sequence': 'Zugreihenfolge',
       'game-controls': 'Spielsteuerung (Zurücksetzen, Navigation, Wiederholung)',
       'export-import': 'Export & Import Zusammenfassung',

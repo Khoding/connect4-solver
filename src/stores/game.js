@@ -95,6 +95,7 @@ function interpretScores(scores) {
 export const useGameStore = defineStore('game', () => {
   const DEFAULT_ASIDE_ORDER = [
     'learn',
+    'steady-state',
     'move-sequence',
     'game-controls',
     'export-import',
@@ -510,6 +511,17 @@ export const useGameStore = defineStore('game', () => {
   /** Conceptual hint for the side to move, derived from the solver scores. */
   const learnHint = computed(() => {
     if (mode.value !== 'learn' || winLine.value || gameOver.value) return null;
+    if (!solverScores.value) return null;
+    return classifyHint(boardArr.value, solverScores.value, internalCurrentPlayer.value);
+  });
+
+  /**
+   * Threat/priority overlay for the steady-state diagram. Unlike learnHint it
+   * is computed regardless of mode, so the aside diagram is always populated.
+   * Still null once the game is decided or before the solver has answered.
+   */
+  const steadyOverlay = computed(() => {
+    if (winLine.value || gameOver.value) return null;
     if (!solverScores.value) return null;
     return classifyHint(boardArr.value, solverScores.value, internalCurrentPlayer.value);
   });
@@ -1126,6 +1138,7 @@ export const useGameStore = defineStore('game', () => {
     learnActive,
     cheatVisible,
     learnHint,
+    steadyOverlay,
     // Helpers
     displayColorOf,
     // Actions

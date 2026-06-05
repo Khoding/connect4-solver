@@ -47,7 +47,9 @@
       <template v-else>
         <p class="concept">
           {{ $t('learn.hint_intro') }}
-          <strong :class="`concept-${hint.concept}`">{{ $t(`learn.concept.${hint.concept}.label`) }}</strong>
+          <strong :class="`concept-${hint.concept}`">{{
+            $t(`learn.concept.${hint.concept}.label`)
+          }}</strong>
         </p>
         <p class="dim explain">{{ $t(`learn.concept.${hint.concept}.hint`) }}</p>
 
@@ -91,9 +93,9 @@ const hint = computed(() => game.learnHint);
 .mode-switch {
   display: flex;
   margin-block-start: 0.75rem;
+  overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  overflow: hidden;
 
   & button {
     flex: 1;

@@ -32,7 +32,8 @@ export default {
     thinking: 'Lecture de la position…',
     game_over: 'Partie terminée — réinitialise le plateau pour continuer à t’entraîner.',
     hint_intro: 'La meilleure idée ici :',
-    glyph_note: 'Les marqueurs sur le plateau indiquent les cases qui conviennent. Toujours bloqué ?',
+    glyph_note:
+      'Les marqueurs sur le plateau indiquent les cases qui conviennent. Toujours bloqué ?',
     exact_move: 'Meilleur coup : colonne {col}.',
     show_board: 'Montre-moi sur le plateau',
     reveal_move: 'Dis-moi juste le coup',
@@ -57,6 +58,16 @@ export default {
         label: 'un coup de développement',
         hint: 'Pas encore de menace immédiate — voici le meilleur coup de construction. Surveille les cases marquées pour voir où les menaces se forment.',
       },
+    },
+  },
+  steady: {
+    title: 'Diagramme de régime permanent',
+    aria: 'Carte des priorités de la position actuelle',
+    empty: 'Pas encore de priorités — en attente du solveur ou la partie est terminée.',
+    legend: {
+      play: 'meilleur coup',
+      opportunity: 'votre menace',
+      danger: 'leur menace',
     },
   },
   controls: {
@@ -194,7 +205,8 @@ export default {
       title: 'Langue',
     },
     aside: {
-      learn: "Mode apprentissage (conseils & pédagogie)",
+      learn: 'Mode apprentissage (conseils & pédagogie)',
+      'steady-state': 'Diagramme de régime permanent',
       'move-sequence': 'Séquence des coups',
       'game-controls': 'Contrôles du jeu (Réinitialisation, navigation, relecture)',
       'export-import': 'Export & Import du résumé',
@@ -204,7 +216,7 @@ export default {
     items: {
       hideLearn: {
         label: 'Masquer la carte Mode apprentissage',
-        desc: "Retire la carte Mode apprentissage et ses conseils. Masque-la en mode apprentissage pour un plateau vraiment sans aide.",
+        desc: 'Retire la carte Mode apprentissage et ses conseils. Masque-la en mode apprentissage pour un plateau vraiment sans aide.',
       },
       hideHeader: {
         label: 'Masquer l’en-tête du site',

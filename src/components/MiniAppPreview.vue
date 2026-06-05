@@ -138,11 +138,7 @@
       <div class="mini-sidebar">
         <template v-for="item in game.asideOrder" :key="item">
           <!-- Learn mode card -->
-          <div
-            v-if="item === 'learn'"
-            class="mini-card"
-            :class="{'is-disabled': game.hideLearn}"
-          >
+          <div v-if="item === 'learn'" class="mini-card" :class="{'is-disabled': game.hideLearn}">
             <span class="mini-card-title">{{ $t('learn.title') }}</span>
             <div class="mini-learn-toggle">
               <div class="mini-toggle-pill active" />
@@ -153,6 +149,14 @@
               <div class="mini-hint-line short" />
             </div>
             <div class="mini-escalate-btn" />
+          </div>
+
+          <!-- Steady-state diagram card -->
+          <div v-if="item === 'steady-state'" class="mini-card">
+            <span class="mini-card-title">{{ $t('steady.title') }}</span>
+            <div class="mini-ss-grid">
+              <div v-for="n in 21" :key="n" class="mini-ss-cell" :class="ssCellKind(n)" />
+            </div>
           </div>
 
           <!-- Move sequence card -->
@@ -247,6 +251,20 @@
 import {useGameStore} from '@/stores/game';
 
 const game = useGameStore();
+
+// Static representative pattern for the mini steady-state diagram (7 cols x 3 rows).
+// Index 0 = top-left. Just enough to read as a priority map in the preview.
+const SS_PATTERN = {
+  9: 'play',
+  11: 'danger',
+  15: 'p1',
+  16: 'p2',
+  17: 'opportunity',
+};
+
+function ssCellKind(n) {
+  return SS_PATTERN[n - 1] ?? null;
+}
 </script>
 
 <style scoped>
@@ -767,6 +785,38 @@ const game = useGameStore();
   border: 1px solid var(--color-border);
   border-radius: 0.6cqw;
   background-color: var(--color-surface-alt);
+}
+
+/* Steady-state diagram mini grid */
+.mini-ss-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 1cqw;
+  gap: 0.6cqw;
+  border-radius: 0.6cqw;
+  background-color: var(--color-surface-alt);
+}
+
+.mini-ss-cell {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+
+  &.p1 {
+    background-color: var(--p1-color);
+  }
+  &.p2 {
+    background-color: var(--p2-color);
+  }
+  &.play {
+    background-color: oklch(0.88 0.14 255);
+  }
+  &.opportunity {
+    background-color: oklch(0.82 0.16 145 / 0.85);
+  }
+  &.danger {
+    background-color: oklch(0.8 0.18 25);
+  }
 }
 
 /* WASM solver compiler indicators */

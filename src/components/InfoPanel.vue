@@ -22,6 +22,7 @@
   <aside class="info-panel">
     <template v-for="item in game.asideOrder" :key="item">
       <LearnCard v-if="item === 'learn' && !game.hideLearn" />
+      <SteadyStateCard v-if="item === 'steady-state'" />
       <MoveSequenceCard v-if="item === 'move-sequence'" />
       <GameControlsCard v-if="item === 'game-controls'" />
       <ExportRecap v-if="item === 'export-import' && !game.hideExportImport" />
@@ -34,6 +35,7 @@
 <script setup>
 import {useGameStore} from '@/stores/game';
 import LearnCard from './aside/LearnCard.vue';
+import SteadyStateCard from './aside/SteadyStateCard.vue';
 import MoveSequenceCard from './aside/MoveSequenceCard.vue';
 import GameControlsCard from './aside/GameControlsCard.vue';
 import ExportRecap from './ExportRecap.vue';

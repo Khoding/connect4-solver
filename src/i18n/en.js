@@ -59,6 +59,16 @@ export default {
       },
     },
   },
+  steady: {
+    title: 'Steady-state diagram',
+    aria: 'Priority map of the current position',
+    empty: 'No priorities yet — waiting on the solver or the game is over.',
+    legend: {
+      play: 'best move',
+      opportunity: 'your threat',
+      danger: 'their threat',
+    },
+  },
   controls: {
     reset_title: 'Reset board (R)',
     reset_aria: 'Reset board',
@@ -194,6 +204,7 @@ export default {
     },
     aside: {
       learn: 'Learn Mode (hints & teaching)',
+      'steady-state': 'Steady-state Diagram',
       'move-sequence': 'Move Sequence',
       'game-controls': 'Game Controls (Reset, navigation, replay)',
       'export-import': 'Export & Import Recap',
