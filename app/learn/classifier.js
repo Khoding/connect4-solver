@@ -31,10 +31,13 @@
  *   - block      : denies the opponent's immediate four
  *   - odd_threat : creates a new threat on an odd row (the first mover's weapon)
  *   - even_threat: creates a new threat on an even row (the second mover's weapon)
+ *   - claimeven  : the second player claims an even square above the opponent's
+ *                  (Allis's claimeven rule — see claimeven.js); a refinement of
+ *                  `develop` for the second player's quiet even-control moves
  *   - develop    : best move with no new immediate threat to name (positional)
  *
- * Later tiers (Allis rules: claimeven, aftereven, …) refine `develop` and
- * `*_threat` without changing this contract or the solver-driven move choice.
+ * Later Allis rules (aftereven, baseinverse, …) refine `develop` and `*_threat`
+ * further without changing this contract or the solver-driven move choice.
  */
 
 import {
@@ -46,6 +49,8 @@ import {
   favouredParity,
   COLS,
 } from './threats.js';
+import {isClaimevenMove, claimevenControlledThreats} from './claimeven.js';
+import {baseinverseForks} from './baseinverse.js';
 
 /**
  * Pick the best column(s) from the solver's per-column scores.
@@ -80,7 +85,9 @@ function newThreats(before, after) {
  * @param {number} player - internal player to move (1 or 2)
  * @returns {{concept, bestCol, bestCols, parity, cells}|null}
  *   cells: {row, col, kind} where kind is
- *   'win' | 'block' | 'play' | 'opportunity' | 'danger'
+ *   'win' | 'block' | 'play' | 'opportunity' | 'danger' | 'controlled'
+ *   ('controlled' = an opponent threat a Tier-B rule refutes, e.g. a claimeven-
+ *   controlled even threat — shown calmly rather than as red danger.)
  */
 export function classifyHint(board, scores, player) {
   if (!scores) return null;
@@ -111,6 +118,10 @@ export function classifyHint(board, scores, player) {
       const pick = created.find(t => t.parity === favour) ?? created[0];
       parity = pick.parity;
       concept = pick.parity === 'odd' ? 'odd_threat' : 'even_threat';
+    } else if (isClaimevenMove(board, bestIdx, player)) {
+      // No new threat, but the second player is claiming an even square right
+      // above the opponent's — the claimeven, their core defensive move.
+      concept = 'claimeven';
     } else {
       concept = 'develop';
     }
@@ -120,9 +131,19 @@ export function classifyHint(board, scores, player) {
   const cells = [];
   const mark = (row, col, kind) => cells.push({row, col, kind});
 
+  // Opponent threats the second player refutes via claimeven (an even square it
+  // controls): shown 'controlled' instead of 'danger'. Tier B only — claimeven
+  // is the second player's tool, so this applies when player 2 is to move.
+  const controlledKeys = new Set();
+  if (player === 2) {
+    for (const t of claimevenControlledThreats(board)) controlledKeys.add(`${t.row}-${t.col}`);
+  }
+
   // Threat squares for both sides — the heart of what Tier A teaches.
   for (const t of findThreats(board, player)) mark(t.row, t.col, 'opportunity');
-  for (const t of findThreats(board, opponent)) mark(t.row, t.col, 'danger');
+  for (const t of findThreats(board, opponent)) {
+    mark(t.row, t.col, controlledKeys.has(t.key) ? 'controlled' : 'danger');
+  }
 
   // The recommended landing square(s), drawn on top of the threat map.
   for (const col of bestCols) {
@@ -137,11 +158,28 @@ export function classifyHint(board, scores, player) {
     else mark(r, col - 1, kind);
   }
 
+  // Baseinverse: opponent forks the mover holds in check — a group with two
+  // opponent discs and two directly-playable empties. Mark the open squares
+  // 'controlled' (calm): once the opponent commits to one, the mover blocks the
+  // other, since the two squares are always in different columns. Low priority —
+  // never override a sharper mark (play/win/block/threat).
+  const oppForks = baseinverseForks(board, opponent);
+  for (const fork of oppForks) {
+    for (const [r, c] of fork.empties) {
+      if (!cells.some(cell => cell.row === r && cell.col === c)) mark(r, c, 'controlled');
+    }
+  }
+
   // Full threatening lines (three discs + the completing square) so the board
   // can show *why* a square matters — the heart of making blocks legible.
   const lines = [];
-  for (const l of findThreatLines(board, opponent)) lines.push({kind: 'danger', cells: l.cells});
+  for (const l of findThreatLines(board, opponent)) {
+    const kind = controlledKeys.has(`${l.row}-${l.col}`) ? 'controlled' : 'danger';
+    lines.push({kind, cells: l.cells});
+  }
   for (const l of findThreatLines(board, player)) lines.push({kind: 'opportunity', cells: l.cells});
+  // Ring each controlled fork so the two discs + two open squares read as a unit.
+  for (const fork of oppForks) lines.push({kind: 'controlled', cells: fork.cells});
 
   return {concept, bestCol, bestCols, parity, cells, lines};
 }

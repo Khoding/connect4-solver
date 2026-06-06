@@ -69,6 +69,7 @@
               'threat-line': !!threatLineAt(game.ROWS - vr, c - 1),
               'threat-danger': threatLineAt(game.ROWS - vr, c - 1) === 'danger',
               'threat-opportunity': threatLineAt(game.ROWS - vr, c - 1) === 'opportunity',
+              'threat-controlled': threatLineAt(game.ROWS - vr, c - 1) === 'controlled',
             }"
             :aria-label="getCellAriaLabel(game.ROWS - vr, c - 1)"
             tabindex="-1"
@@ -324,7 +325,7 @@ function getGhost(row, col) {
 }
 
 // Learn-mode board markers (Hint 2): char + kind per recommended/threat cell.
-const GLYPH_CHARS = {win: '✦', block: '✦', play: '◎', opportunity: '○', danger: '✕'};
+const GLYPH_CHARS = {win: '✦', block: '✦', play: '◎', opportunity: '○', danger: '✕', controlled: '◌'};
 
 const learnGlyphMap = computed(() => {
   const map = {};
@@ -841,6 +842,12 @@ const statusAriaLabel = computed(() => {
     inset 0 0 6px oklch(0.8 0.17 145 / 0.35);
 }
 
+/* A claimeven-controlled opponent threat: a calm dashed ring, not red alarm. */
+.cell.threat-controlled::before {
+  border-style: dashed;
+  border-color: oklch(0.8 0.13 195 / 0.8);
+}
+
 .learn-glyph {
   display: grid;
   position: absolute;
@@ -877,6 +884,11 @@ const statusAriaLabel = computed(() => {
   &.glyph-danger {
     color: oklch(0.8 0.18 25);
     text-shadow: 0 0 6px oklch(0.8 0.18 25 / 0.5);
+  }
+
+  /* An opponent threat you control via claimeven — calm, not alarming. */
+  &.glyph-controlled {
+    color: oklch(0.8 0.13 195 / 0.85);
   }
 }
 

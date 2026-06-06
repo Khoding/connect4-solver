@@ -65,6 +65,10 @@ export default {
         label: 'an even threat',
         hint: 'This sets up a winning square on an even row. Even threats are the second mover’s weapon — the basis of the claimeven strategy.',
       },
+      claimeven: {
+        label: 'a claimeven',
+        hint: 'You took an even square (row 2, 4, or 6) directly above your opponent’s. As the second player, the even squares are your territory — for every square they take below, you can take the one above. This claimeven is the backbone of the second player’s defence.',
+      },
       develop: {
         label: 'a developing move',
         hint: 'No immediate threat yet — this is the strongest building move. Watch the marked squares for where threats are forming.',
@@ -79,6 +83,7 @@ export default {
       play: 'best move',
       opportunity: 'your threat',
       danger: 'their threat',
+      controlled: 'controlled',
     },
   },
   controls: {

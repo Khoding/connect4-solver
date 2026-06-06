@@ -66,6 +66,10 @@ export default {
         label: 'une menace paire',
         hint: "Cela installe une case gagnante sur une rangée paire. Les menaces paires sont l'arme du second joueur — la base de la stratégie claimeven.",
       },
+      claimeven: {
+        label: 'un claimeven',
+        hint: 'Tu as pris une case paire (rangée 2, 4 ou 6) juste au-dessus de celle de l’adversaire. En tant que second joueur, les cases paires sont ton territoire — pour chaque case qu’il prend en dessous, tu peux prendre celle du dessus. Ce claimeven est la colonne vertébrale de la défense du second joueur.',
+      },
       develop: {
         label: 'un coup de développement',
         hint: 'Pas encore de menace immédiate — voici le meilleur coup de construction. Surveille les cases marquées pour voir où les menaces se forment.',
@@ -80,6 +84,7 @@ export default {
       play: 'meilleur coup',
       opportunity: 'votre menace',
       danger: 'leur menace',
+      controlled: 'contrôlée',
     },
   },
   controls: {

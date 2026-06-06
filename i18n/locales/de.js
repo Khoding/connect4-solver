@@ -65,6 +65,10 @@ export default {
         label: 'eine gerade Drohung',
         hint: 'Das schafft ein Gewinnfeld in einer geraden Reihe. Gerade Drohungen sind die Waffe des zweiten Spielers — die Grundlage der Claimeven-Strategie.',
       },
+      claimeven: {
+        label: 'ein Claimeven',
+        hint: 'Du hast ein gerades Feld (Reihe 2, 4 oder 6) direkt über dem deines Gegners genommen. Als zweiter Spieler sind die geraden Felder dein Revier — für jedes Feld, das er darunter nimmt, kannst du das darüber nehmen. Dieses Claimeven ist das Rückgrat der Verteidigung des zweiten Spielers.',
+      },
       develop: {
         label: 'ein Entwicklungszug',
         hint: 'Noch keine unmittelbare Drohung — dies ist der stärkste Aufbauzug. Achte auf die markierten Felder, wo Drohungen entstehen.',
@@ -79,6 +83,7 @@ export default {
       play: 'bester Zug',
       opportunity: 'deine Drohung',
       danger: 'ihre Drohung',
+      controlled: 'kontrolliert',
     },
   },
   controls: {

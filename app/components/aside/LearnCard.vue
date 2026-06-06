@@ -148,6 +148,10 @@ const hint = computed(() => game.learnHint);
   color: oklch(0.78 0.14 255);
 }
 
+.concept-claimeven {
+  color: oklch(0.8 0.13 195);
+}
+
 .concept-develop {
   color: var(--color-text);
 }

@@ -52,6 +52,9 @@
         <span class="ss-glyph glyph-opportunity">○</span>{{ $t('steady.legend.opportunity') }}
       </li>
       <li><span class="ss-glyph glyph-danger">✕</span>{{ $t('steady.legend.danger') }}</li>
+      <li>
+        <span class="ss-glyph glyph-controlled">◌</span>{{ $t('steady.legend.controlled') }}
+      </li>
     </ul>
   </section>
 </template>
@@ -63,7 +66,7 @@ import {useGameStore} from '@/stores/game';
 const game = useGameStore();
 
 // Mirror BoardArea's glyph vocabulary so the diagram reads the same as the board.
-const GLYPH_CHARS = {win: '✦', block: '✦', play: '◎', opportunity: '○', danger: '✕'};
+const GLYPH_CHARS = {win: '✦', block: '✦', play: '◎', opportunity: '○', danger: '✕', controlled: '◌'};
 
 const glyphMap = computed(() => {
   const map = {};
@@ -142,6 +145,10 @@ function glyphAt(row, col) {
 
   &.glyph-danger {
     color: oklch(0.8 0.18 25);
+  }
+
+  &.glyph-controlled {
+    color: oklch(0.8 0.13 195 / 0.85);
   }
 }
 
