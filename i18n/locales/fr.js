@@ -75,6 +75,32 @@ export default {
         hint: 'Pas encore de menace immédiate — voici le meilleur coup de construction. Surveille les cases marquées pour voir où les menaces se forment.',
       },
     },
+    pairing: {
+      show: 'Révéler le plan',
+      hide: 'Masquer le plan',
+      headline: {
+        win: '✓ Le premier joueur peut forcer la victoire',
+        winBlack: '✓ Le second joueur peut forcer la victoire',
+        draw: '✓ Le second joueur tient au moins la nulle',
+      },
+      anchor: {
+        oddThreat: 'La menace impaire en {sq} te donne le zugzwang — la victoire en découle.',
+        immediate: 'Tu peux aligner quatre dès maintenant dans la colonne {col}.',
+        aftereven: 'Les cases paires en {sq} sont à toi — tu y alignes quatre et tu gagnes.',
+        combination: 'La double menace en {a}/{b} force une menace impaire quelle que soit leur réponse.',
+      },
+      rule: {
+        claimeven: 'Claimeven — prends la case paire au-dessus de la leur',
+        baseinverse: 'Baseinverse — deux cases jouables, ils ne peuvent pas avoir les deux',
+        vertical: 'Vertical — réponds au-dessus pour refuser la colonne',
+        aftereven: 'Aftereven — les cases paires neutralisent les menaces au-dessus',
+        lowinverse: 'Lowinverse — deux cases impaires, tu en obtiens une',
+        highinverse: 'Highinverse — contrôle trois de haut sur deux colonnes',
+        baseclaim: 'Baseclaim — une revendication plus une inverse sur la rangée de base',
+        before: 'Before — réponds au-dessus pour gagner avant eux',
+      },
+      covers: 'Ces règles répondent à chacun des {n} alignements possibles de l’adversaire.',
+    },
   },
   steady: {
     title: 'Diagramme de régime permanent',

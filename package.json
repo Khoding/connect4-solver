@@ -13,6 +13,8 @@
     "test:learn": "node scripts/validate-learn.mjs",
     "test:learn:oracle": "node scripts/validate-learn-oracle.mjs",
     "test:victor": "node scripts/victor-validate.mjs",
+    "test:victor:white": "node scripts/victor-white-validate.mjs",
+    "test:victor:black": "node scripts/victor-black-validate.mjs",
     "lint": "run-s lint:*",
     "lint:oxlint": "oxlint . --fix --ignore-path .oxlintignore",
     "lint:eslint": "eslint . --fix --cache",

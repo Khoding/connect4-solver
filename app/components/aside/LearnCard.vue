@@ -70,16 +70,60 @@
           {{ game.learnRevealLevel < 1 ? $t('learn.show_board') : $t('learn.reveal_move') }}
         </button>
       </template>
+
+      <!-- Tier C: the rule-based pairing that proves the win/draw. -->
+      <div v-if="game.pairing" class="pairing">
+        <button type="button" class="escalate pairing-toggle" @click="game.togglePairing()">
+          {{ game.showPairing ? $t('learn.pairing.hide') : $t('learn.pairing.show') }}
+        </button>
+
+        <template v-if="game.showPairing">
+          <p class="pairing-headline" :class="`pairing-${game.pairing.kind}`">
+            {{ $t(`learn.pairing.headline.${headlineKey}`) }}
+          </p>
+          <p v-if="anchorText" class="anchor">{{ anchorText }}</p>
+          <ul class="rule-list">
+            <li v-for="(count, type) in game.pairing.counts" :key="type">
+              <span class="diamond" aria-hidden="true">◆</span>
+              {{ $t(`learn.pairing.rule.${type}`) }}
+              <span v-if="count > 1" class="times">×{{ count }}</span>
+            </li>
+          </ul>
+          <p class="dim">{{ $t('learn.pairing.covers', {n: game.pairing.threatsCovered}) }}</p>
+        </template>
+      </div>
     </div>
   </section>
 </template>
 
 <script setup>
 import {computed} from 'vue';
+import {useI18n} from 'vue-i18n';
 import {useGameStore} from '@/stores/game';
 
 const game = useGameStore();
+const {t} = useI18n();
 const hint = computed(() => game.learnHint);
+
+// The win headline depends on which player it belongs to (first vs second).
+const headlineKey = computed(() => {
+  const p = game.pairing;
+  if (!p) return 'draw';
+  if (p.kind === 'win') return p.winner === 2 ? 'winBlack' : 'win';
+  return 'draw';
+});
+
+// One-line description of what forces the win (the focal point of a win pairing).
+const anchorText = computed(() => {
+  const a = game.pairing?.anchor;
+  if (!a) return null;
+  if (a.kind === 'oddThreat') return t('learn.pairing.anchor.oddThreat', {sq: a.name});
+  if (a.kind === 'immediate') return t('learn.pairing.anchor.immediate', {col: a.col});
+  if (a.kind === 'aftereven') return t('learn.pairing.anchor.aftereven', {sq: (a.names || []).join(', ')});
+  if (a.kind === 'threatCombination')
+    return t('learn.pairing.anchor.combination', {a: a.crossing.name, b: a.other.name});
+  return null;
+});
 </script>
 
 <style scoped>
@@ -175,6 +219,62 @@ const hint = computed(() => game.learnHint);
   margin-block-start: 0.5rem;
   font-weight: 700;
   font-size: 0.95rem;
+}
+
+.pairing {
+  margin-block-start: 0.85rem;
+  padding-block-start: 0.75rem;
+  border-block-start: 1px solid var(--color-border);
+}
+
+.pairing-toggle {
+  margin-block-start: 0;
+}
+
+.pairing-headline {
+  margin: 0;
+  margin-block-start: 0.6rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.pairing-win {
+  color: oklch(0.85 0.16 90);
+}
+
+.pairing-draw {
+  color: oklch(0.8 0.13 195);
+}
+
+.anchor {
+  margin: 0;
+  margin-block-start: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.rule-list {
+  margin: 0;
+  margin-block-start: 0.5rem;
+  padding-inline-start: 0;
+  list-style: none;
+
+  & li {
+    display: flex;
+    align-items: center;
+    padding-block: 2px;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+  }
+
+  & .diamond {
+    color: oklch(0.8 0.12 300);
+    font-size: 0.7rem;
+  }
+
+  & .times {
+    color: var(--color-text-dim);
+    font-family: var(--font-mono);
+  }
 }
 
 .escalate {

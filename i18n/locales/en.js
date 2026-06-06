@@ -74,6 +74,32 @@ export default {
         hint: 'No immediate threat yet — this is the strongest building move. Watch the marked squares for where threats are forming.',
       },
     },
+    pairing: {
+      show: 'Reveal the plan',
+      hide: 'Hide the plan',
+      headline: {
+        win: '✓ First player can force the win',
+        winBlack: '✓ Second player can force the win',
+        draw: '✓ Second player can hold at least a draw',
+      },
+      anchor: {
+        oddThreat: 'The odd threat at {sq} hands you the zugzwang — the win flows from it.',
+        immediate: 'You can complete four right now in column {col}.',
+        aftereven: 'The even squares at {sq} are yours — you complete four there and win.',
+        combination: 'The double threat at {a}/{b} forces an odd threat whichever way they reply.',
+      },
+      rule: {
+        claimeven: 'Claimeven — claim the even square above theirs',
+        baseinverse: 'Baseinverse — two playable squares, they can’t get both',
+        vertical: 'Vertical — answer on top to deny the column',
+        aftereven: 'Aftereven — even squares kill the threats above',
+        lowinverse: 'Lowinverse — two odd squares, you get one',
+        highinverse: 'Highinverse — control three-high in two columns',
+        baseclaim: 'Baseclaim — a claim plus an inverse on the base row',
+        before: 'Before — answer above to win before they connect',
+      },
+      covers: 'These rules answer every one of the opponent’s {n} potential fours.',
+    },
   },
   steady: {
     title: 'Steady-state diagram',

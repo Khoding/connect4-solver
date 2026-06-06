@@ -22,6 +22,7 @@ import {ref, computed, watch} from 'vue';
 import {defineStore} from 'pinia';
 import {useNuxtApp} from '#app';
 import {classifyHint} from '@/learn/classifier';
+import {buildPairing} from '@/learn/pairing';
 
 /* ── WASM solver ───────────────────────────────────────── */
 
@@ -131,6 +132,7 @@ export const useGameStore = defineStore('game', () => {
   // turn: 0 = concept text only, 1 = + board glyphs, 2 = + the exact move.
   const mode = ref('solver'); // 'solver' | 'learn'
   const learnRevealLevel = ref(0);
+  const showPairing = ref(false); // Learn mode: reveal the rule-based win/draw plan (Tier C)
   const hideLearn = ref(false); // hide the Learn-mode card entirely (true "no help")
   const hideSteadyState = ref(false); // remove the Steady-State Diagram from every mode
   // Where the SSD appears while in Learn mode: 'off' | 'small' | 'big' | 'both'.
@@ -553,6 +555,19 @@ export const useGameStore = defineStore('game', () => {
     return learnSteadyPlacement.value === 'big' || learnSteadyPlacement.value === 'both';
   });
 
+  /**
+   * The rule-based pairing proof for the current position (Tier C, Phase 3): the
+   * consistent set of Allis rules that forces the win (for whichever player the
+   * solver says is winning) or the second player's draw. Null when no rule-based
+   * proof applies, the game is decided, or we are not in Learn mode. Sound — every
+   * prover is validated to zero false proofs against the solver.
+   */
+  const pairing = computed(() => {
+    if (mode.value !== 'learn' || winLine.value || gameOver.value) return null;
+    if (!solverScores.value) return null;
+    return buildPairing(boardArr.value, solverScores.value, internalCurrentPlayer.value);
+  });
+
   /* ── Display color mapping ──────────────────────────── */
 
   /** Map internal player (1=first mover, 2=second) to a display color hex string */
@@ -950,12 +965,18 @@ export const useGameStore = defineStore('game', () => {
     mode.value = val === 'learn' ? 'learn' : 'solver';
     learnRevealLevel.value = 0;
     if (mode.value === 'learn') showGhostMoves.value = false;
+    else showPairing.value = false; // the pairing plan is a Learn-mode overlay
     saveState();
   }
 
   /** Escalate the current turn's hint: concept → glyphs → exact move. */
   function revealMoreHint() {
     if (learnRevealLevel.value < 2) learnRevealLevel.value++;
+  }
+
+  /** Reveal/hide the rule-based pairing plan on the board (Tier C). */
+  function togglePairing() {
+    showPairing.value = !showPairing.value;
   }
 
   // Each new position starts the learner back at the conceptual hint.
@@ -1165,6 +1186,7 @@ export const useGameStore = defineStore('game', () => {
     lockPredictions,
     mode,
     learnRevealLevel,
+    showPairing,
     hideLearn,
     hideSteadyState,
     learnSteadyPlacement,
@@ -1216,6 +1238,7 @@ export const useGameStore = defineStore('game', () => {
     steadyOverlay,
     steadyCardVisible,
     steadyBigVisible,
+    pairing,
     // Helpers
     displayColorOf,
     // Actions
@@ -1251,6 +1274,7 @@ export const useGameStore = defineStore('game', () => {
     setLearnSteadyPlacement,
     setMode,
     revealMoreHint,
+    togglePairing,
     swapColors,
     moveAsideItem,
     resetAsideOrder,

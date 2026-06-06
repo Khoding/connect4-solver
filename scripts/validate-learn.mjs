@@ -34,6 +34,7 @@ import {
 } from '../app/learn/claimeven.js';
 import {playableSquares, baseinverseForks} from '../app/learn/baseinverse.js';
 import {afterevenGroups, threatsSolvedByAftereven} from '../app/learn/aftereven.js';
+import {consistent} from '../app/learn/victor.js';
 
 const sameGroup = (a, b) =>
   a.map(([r, c]) => `${r},${c}`).sort().join(';') === b.map(([r, c]) => `${r},${c}`).sort().join(';');
@@ -382,6 +383,24 @@ for (let r = 0; r < ROWS; r++) check('claimeven: isEvenRow matches rowParity', i
     check('aftereven 6.5: does NOT solve c3-f3 (no g-column square)', !solved.some(g => sameGroup(g, [[2, 2], [2, 3], [2, 4], [2, 5]])));
     check('aftereven 6.5: does NOT solve an f-only vertical', !solved.some(g => sameGroup(g, [[2, 5], [3, 5], [4, 5], [5, 5]])));
   }
+}
+
+// ── VICTOR consistency engine (Allis §7.4) ────────────────────
+{
+  // A Claimeven and a Lowinverse can share no square. Diagram 7.2: a Claimeven
+  // BELOW the inverse has disjoint squares yet flips the Zugzwang — must be
+  // rejected. Diagram 7.1: a Claimeven ABOVE the inverse must stay legal.
+  const claimevenAt = (lr, c) => ({type: 'claimeven', uses: new Set([`${lr}-${c}`, `${lr + 1}-${c}`]), cols: new Set([c]), claimevenUppers: [{row: lr + 1, col: c}], inverseCols: null});
+  const lowinverse = {type: 'lowinverse', uses: new Set(['1-0', '2-0', '1-1', '2-1']), cols: new Set([0, 1]), claimevenUppers: [], inverseCols: {0: 1, 1: 1}};
+
+  check('consistency: claimeven sharing the inverse low square is rejected', consistent(claimevenAt(0, 0), lowinverse) === false);
+  check('consistency: claimeven BELOW the inverse (7.2) is rejected', consistent({type: 'claimeven', uses: new Set(['0-0', '1-0']), cols: new Set([0]), claimevenUppers: [{row: 1, col: 0}], inverseCols: null}, lowinverse) === false);
+  check('consistency: claimeven ABOVE the inverse (7.1) is allowed', consistent(claimevenAt(4, 0), lowinverse) === true);
+  check('consistency: claimeven in an unrelated column is allowed', consistent(claimevenAt(0, 5), lowinverse) === true);
+  // Two baseinverses sharing a directly-playable square conflict (disjoint rule).
+  const bi = (k1, k2) => ({type: 'baseinverse', uses: new Set([k1, k2]), cols: new Set([Number(k1.split('-')[1]), Number(k2.split('-')[1])]), claimevenUppers: [], inverseCols: null});
+  check('consistency: baseinverses sharing a square conflict', consistent(bi('0-0', '0-1'), bi('0-1', '0-2')) === false);
+  check('consistency: disjoint baseinverses combine', consistent(bi('0-0', '0-1'), bi('0-2', '0-3')) === true);
 }
 
 // ── Report ────────────────────────────────────────────────────

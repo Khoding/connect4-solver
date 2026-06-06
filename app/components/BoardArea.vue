@@ -70,6 +70,7 @@
               'threat-danger': threatLineAt(game.ROWS - vr, c - 1) === 'danger',
               'threat-opportunity': threatLineAt(game.ROWS - vr, c - 1) === 'opportunity',
               'threat-controlled': threatLineAt(game.ROWS - vr, c - 1) === 'controlled',
+              'threat-pairing': threatLineAt(game.ROWS - vr, c - 1) === 'pairing',
             }"
             :aria-label="getCellAriaLabel(game.ROWS - vr, c - 1)"
             tabindex="-1"
@@ -327,7 +328,47 @@ function getGhost(row, col) {
 // Learn-mode board markers (Hint 2): char + kind per recommended/threat cell.
 const GLYPH_CHARS = {win: '✦', block: '✦', play: '◎', opportunity: '○', danger: '✕', controlled: '◌'};
 
+// The rule-based pairing overlay (Tier C): reserved squares as diamonds, the
+// odd threat / threat-combination squares as gold stars, an immediate win as a
+// star on its landing square. When revealed it replaces the threat overlay.
+const pairingGlyphMap = computed(() => {
+  const map = {};
+  const p = game.pairing;
+  if (!p) return map;
+  for (const cell of p.cells) map[`${cell.row}-${cell.col}`] = {kind: 'pairing', char: '◆'};
+  const a = p.anchor;
+  if (a?.kind === 'oddThreat') {
+    map[`${a.row}-${a.col}`] = {kind: 'oddthreat', char: '★'};
+  } else if (a?.kind === 'threatCombination') {
+    map[`${a.crossing.row}-${a.crossing.col}`] = {kind: 'oddthreat', char: '★'};
+    map[`${a.other.row}-${a.other.col}`] = {kind: 'oddthreat', char: '★'};
+  } else if (a?.kind === 'aftereven') {
+    // The even squares Black is guaranteed and completes its four on.
+    for (const [r, c] of a.cells) if (game.boardArr[r][c] === 0) map[`${r}-${c}`] = {kind: 'oddthreat', char: '★'};
+  } else if (a?.kind === 'immediate') {
+    const col = a.col - 1;
+    for (let y = 0; y < game.ROWS; y++) {
+      if (game.boardArr[y][col] === 0) {
+        map[`${y}-${col}`] = {kind: 'win', char: '✦'};
+        break;
+      }
+    }
+  }
+  return map;
+});
+
+const pairingLineMap = computed(() => {
+  const map = {};
+  const p = game.pairing;
+  if (!p) return map;
+  for (const g of p.groups) for (const [r, c] of g.cells) map[`${r}-${c}`] = 'pairing';
+  if ((p.anchor?.kind === 'oddThreat' || p.anchor?.kind === 'aftereven') && p.anchor.cells)
+    for (const [r, c] of p.anchor.cells) map[`${r}-${c}`] = 'pairing';
+  return map;
+});
+
 const learnGlyphMap = computed(() => {
+  if (game.showPairing && game.pairing) return pairingGlyphMap.value; // pairing overrides
   const map = {};
   if (!game.learnActive || (game.learnRevealLevel < 1 && !game.steadyBigVisible)) return map;
   const hint = game.learnHint;
@@ -346,6 +387,7 @@ function learnGlyphAt(row, col) {
 // can see the line behind a "block" or "opportunity". Danger takes precedence
 // when a square belongs to both sides' lines.
 const threatLineMap = computed(() => {
+  if (game.showPairing && game.pairing) return pairingLineMap.value; // pairing overrides
   const map = {};
   if (!game.learnActive || (game.learnRevealLevel < 1 && !game.steadyBigVisible)) return map;
   const lines = game.learnHint?.lines;
@@ -848,6 +890,15 @@ const statusAriaLabel = computed(() => {
   border-color: oklch(0.8 0.13 195 / 0.8);
 }
 
+/* A rule group of the pairing plan: a quiet violet ring binding the squares a
+   single rule reserves. */
+.cell.threat-pairing::before {
+  border-color: oklch(0.78 0.13 300 / 0.85);
+  box-shadow:
+    0 0 7px oklch(0.78 0.13 300 / 0.4),
+    inset 0 0 5px oklch(0.78 0.13 300 / 0.3);
+}
+
 .learn-glyph {
   display: grid;
   position: absolute;
@@ -889,6 +940,18 @@ const statusAriaLabel = computed(() => {
   /* An opponent threat you control via claimeven — calm, not alarming. */
   &.glyph-controlled {
     color: oklch(0.8 0.13 195 / 0.85);
+  }
+
+  /* A square the pairing plan reserves. */
+  &.glyph-pairing {
+    color: oklch(0.8 0.12 300 / 0.9);
+    font-size: clamp(0.7rem, calc(var(--cell-size) * 0.38), 1.2rem);
+  }
+
+  /* The odd threat (or threat-combination square) that forces the win. */
+  &.glyph-oddthreat {
+    color: oklch(0.85 0.16 90);
+    text-shadow: 0 0 8px oklch(0.85 0.16 90 / 0.65);
   }
 }
 

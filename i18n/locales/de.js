@@ -74,6 +74,32 @@ export default {
         hint: 'Noch keine unmittelbare Drohung — dies ist der stärkste Aufbauzug. Achte auf die markierten Felder, wo Drohungen entstehen.',
       },
     },
+    pairing: {
+      show: 'Den Plan zeigen',
+      hide: 'Den Plan verbergen',
+      headline: {
+        win: '✓ Der erste Spieler kann den Sieg erzwingen',
+        winBlack: '✓ Der zweite Spieler kann den Sieg erzwingen',
+        draw: '✓ Der zweite Spieler hält mindestens das Remis',
+      },
+      anchor: {
+        oddThreat: 'Die ungerade Drohung auf {sq} gibt dir den Zugzwang — daraus folgt der Sieg.',
+        immediate: 'Du kannst sofort in Spalte {col} vier in eine Reihe bringen.',
+        aftereven: 'Die geraden Felder auf {sq} gehören dir — dort vervollständigst du die Vier und gewinnst.',
+        combination: 'Die Doppeldrohung auf {a}/{b} erzwingt eine ungerade Drohung, egal wie sie antworten.',
+      },
+      rule: {
+        claimeven: 'Claimeven — nimm das gerade Feld über ihrem',
+        baseinverse: 'Baseinverse — zwei spielbare Felder, sie bekommen nicht beide',
+        vertical: 'Vertical — antworte darüber, um die Spalte zu verweigern',
+        aftereven: 'Aftereven — gerade Felder ersticken die Drohungen darüber',
+        lowinverse: 'Lowinverse — zwei ungerade Felder, du bekommst eines',
+        highinverse: 'Highinverse — kontrolliere drei hoch in zwei Spalten',
+        baseclaim: 'Baseclaim — ein Claim plus eine Inverse auf der Grundreihe',
+        before: 'Before — antworte darüber, um vor ihnen zu gewinnen',
+      },
+      covers: 'Diese Regeln beantworten jede der {n} möglichen Viererreihen des Gegners.',
+    },
   },
   steady: {
     title: 'Steady-State-Diagramm',

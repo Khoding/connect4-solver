@@ -55,18 +55,23 @@ Per-rule `solves` / `uses` (controller = even player / player 2 for the rules we
 4. **If covered → emit the pairing**; else → "no rule-based proof" (which, when
    the solver says the controller *does* hold, means we're missing rules/consistency).
 
-## Consistency (the real work)
+## Consistency (the real work — now implemented)
 
-Allis defines pairwise consistency between every rule type. The dominant cases
-for our three rules:
-- Two claimevens are consistent unless they share a square.
-- A claimeven and a baseinverse conflict if they use the same square.
-- Aftereven is built from claimevens; it inherits their squares for conflict
-  purposes.
-The remaining rules (vertical, lowinverse, highinverse, baseclaim, before,
-specialbefore) exist **only** to solve threats the basic rules can't, and bring
-their own consistency rows. We add them *as the PoC shows coverage gaps demand*,
-not speculatively.
+Allis defines pairwise consistency between every rule type (§7.4, a 9×9 table
+with four constraint codes). VICTOR now implements that table verbatim — see
+`consistent()` in `app/learn/victor.js` and the transcription in
+`docs/allis-rules-reference.md`. The four codes:
+1. squares disjoint;
+2. no Claimeven of the other rule below the inverse (we also require disjoint —
+   any non-disjoint case is a claimeven-below anyway);
+3. column-wise disjoint or equal (lets two Afterevens/Befores share a Claimeven);
+4. squares disjoint AND the inverses' column-sets disjoint or equal.
+
+**Why not plain disjoint-squares (the Phase-1 model):** Allis diagram 7.2 shows a
+Claimeven and a Lowinverse with *fully disjoint squares* that cannot be combined
+(the claimeven sits below the inverse and flips the Zugzwang parity). A
+disjoint-only test is therefore unsound; the oracle caught exactly this as false
+proofs the moment Lowinverse coexisted with Claimeven. The §7.4 table is the fix.
 
 ## Validation (free, via the solver)
 
@@ -93,8 +98,61 @@ not speculatively.
 
 - **Phase 0 (now): PoC** — coverage + soundness spike on solver-labelled
   positions with the current 3 rules. Quantify the gap. Decide go/no-go.
-- **Phase 1:** consistency for claimeven/baseinverse/aftereven + greedy/backtrack
-  cover search; soundness green against the solver.
-- **Phase 2:** add the missing rules until coverage of solver-drawn positions is
-  high.
-- **Phase 3:** render the pairing as the Learn-mode diagram.
+- **Phase 1 (done):** disjoint-squares cover search; soundness green against the
+  solver. (Later shown to be a *latent* unsoundness — see Phase 2.)
+- **Phase 2 (done):** all eight productive rules
+  (claimeven/baseinverse/vertical/aftereven/lowinverse/highinverse/baseclaim/
+  before) with the real Allis §7.4 consistency table. Specialbefore is omitted —
+  its solve-set text is ambiguous and a literal reading produced false proofs in
+  combination (Allis rates its impact "probably not significant"). Soundness:
+  **0 false proofs** over ~16k solver-labelled positions across seeds; coverage
+  of player-2-holds positions ≈ 5% (up from ~2%). The ceiling is structural —
+  the even controller can't claim a lone odd square, and Connect-4 is a
+  first-player win, so clean player-2 draw-pairings are inherently rare.
+- **Player-1 win prover (done):** `solveWhiteWin` (Allis §8.2) — reuses the whole
+  §7.4 engine. White wins if it has an immediate winning move (White to move) or a
+  standing **odd threat** (→ Zugzwang control) plus a consistent refutation of all
+  of Black's threats on the rest of the board (controller = 1, odd-threat column
+  reserved). `npm run test:victor:white`. **0 false proofs** over ~16k positions
+  (seeds); coverage of solver White-wins ≈ **49%** — but ~96% of that is trivial
+  immediate wins; the genuine odd-threat proofs are ~2% (the same hard full-cover
+  problem as the draw case). Gotcha fixed: an immediate winning square only wins
+  if it is **White's** turn (compute the mover from the disc count).
+- **Threat combinations (§8.4, full claims encoded):** `findThreatCombinations`
+  + the threat-combination branch of `solveWhiteWin` (reserve both columns; refute
+  Black via Allis's per-type claims). All claims are now implemented — the verbatim
+  text is in `docs/allis-rules-reference.md`. The "Black cannot get X" claims (1–4
+  for type 1, 1–2 for type 2) kill threats; the claims that hand White a square
+  (the lowest-squares Baseinverse, the answered pairing in the other column) relax
+  the column reservation instead. **0 false proofs** across seeds (Allis does not
+  prove these — the solver is the oracle), but they close a full cover for only
+  ~3 in 40 000 random positions: combinations occur too early, with too many Black
+  threats across the free columns. The payoff is the teaching diagram (the forced
+  double threat is worth *showing*), not coverage.
+- **Player-2 (Black) win prover (done):** `solveBlackWin` — Allis §9.2's own
+  "minor modification". Run the drawing cover (controller = 2); if the chosen set
+  contains an **Aftereven**, Black does not merely hold, it **wins** (the aftereven
+  group is a Black four whose gaps are even squares Black is guaranteed). The
+  natural mirror of `solveWhiteWin` (which keys off an *odd* threat). Self-
+  protecting: an unrefuted White odd threat is unsolvable, so the cover cannot
+  close and no win is claimed. `npm run test:victor:black` — **0 false proofs**,
+  coverage of Black wins ≈ 43–46% (mostly trivial immediate wins, the rest genuine
+  aftereven wins), symmetric with the White prover. This delivers the same
+  win-pairing data for whichever player the solver says is winning.
+- **Phase 3 (done):** render the pairing as the Learn-mode diagram.
+  `app/learn/pairing.js` (`buildPairing`) runs the right prover for the position's
+  solver verdict — `solveWhiteWin` if the first player wins, `solveBlackWin` if the
+  second player wins, else `solveVictor` if player 2 only holds — and only when a
+  proof is found. It returns a `winner` (1/2) so the card can title the win
+  correctly. The store exposes a `pairing` getter and a `showPairing` toggle;
+  `BoardArea` overlays reserved squares as violet diamonds with per-rule rings and
+  marks the focal squares with a gold star — the odd threat / combination squares
+  for a White win, the aftereven's even squares for a Black win (the immediate-win
+  square gets ✦); `LearnCard` shows a "Reveal the plan" button, a headline (first-
+  player win / second-player win / at-least-a-draw), the anchor line, the rule
+  breakdown, and how many opponent fours it answers. Verified live (Playwright):
+  immediate, odd-threat, draw, and the **second-player aftereven win** (moves
+  `62651533322`, solver "P2 wins in 21") all render with zero console errors. Note:
+  the draw proof is a *floor* ("at least a draw"), so that headline is worded that
+  way — it fires soundly even when player 2 is actually winning but no aftereven
+  closed the cover.

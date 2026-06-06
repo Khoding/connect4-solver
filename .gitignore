@@ -45,3 +45,7 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Scratch / throwaway (thesis extraction, ad-hoc probes)
+.tmp-*/
+.tmp-*
