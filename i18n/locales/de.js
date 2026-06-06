@@ -1,4 +1,16 @@
 export default {
+  seo: {
+    home: {
+      title: 'Vier-gewinnt-Solver — Perfektes Spiel & Zuganalyse',
+      description:
+        'Spielen Sie Vier gewinnt gegen einen perfekten mathematischen Solver. Analysieren Sie jeden Zug, finden Sie die optimale Strategie und sehen Sie sich Spielzusammenfassungen an. Läuft vollständig im Browser dank WebAssembly.',
+    },
+    settings: {
+      title: 'Einstellungen — Vier-gewinnt-Solver',
+      description:
+        'Passen Sie den Vier-gewinnt-Solver an: Farben wählen, Bewertungsleiste, Hinweise und Panels umschalten und das Layout nach Wunsch anordnen.',
+    },
+  },
   header: {
     title: 'Vier gewinnt',
     subtitle: 'Solver',

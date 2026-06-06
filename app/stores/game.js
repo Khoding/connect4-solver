@@ -20,8 +20,12 @@
 
 import {ref, computed, watch} from 'vue';
 import {defineStore} from 'pinia';
-import i18n from '@/i18n';
+import {useNuxtApp} from '#app';
 import {classifyHint} from '@/learn/classifier';
+
+/* ── WASM solver ───────────────────────────────────────── */
+
+import * as wasmSolver from '@/solver/index.js';
 
 const ROWS = 6;
 const COLS = 7;
@@ -68,10 +72,6 @@ function checkForWin(board) {
   return null;
 }
 
-/* ── WASM solver ───────────────────────────────────────── */
-
-import * as wasmSolver from '@/solver/index.js';
-
 function interpretScores(scores) {
   let bestCols = [];
   let bestScore = -Infinity;
@@ -93,6 +93,10 @@ function interpretScores(scores) {
 /* ── Store ──────────────────────────────────────────────── */
 
 export const useGameStore = defineStore('game', () => {
+  // vue-i18n global composer (from @nuxtjs/i18n). Reactive to locale changes,
+  // so labels below recompute when the user switches language.
+  const {$i18n} = useNuxtApp();
+
   const DEFAULT_ASIDE_ORDER = [
     'learn',
     'steady-state',
@@ -136,7 +140,7 @@ export const useGameStore = defineStore('game', () => {
   const autoP1 = ref(false);
   const autoP2 = ref(false);
   const replayActive = ref(false);
-  const loading = ref(true);
+  const loading = ref(false);
   const moveHistory = ref([]); // array of column numbers (1-7)
   const moveScores = ref([]); // solver score for each move at the time it was played (parallel to moveHistory)
   const moveOptimality = ref([]); // true if optimal, false if suboptimal, null if unknown (parallel to moveHistory)
@@ -181,7 +185,7 @@ export const useGameStore = defineStore('game', () => {
 
   /** Display label for whose turn it is */
   const currentPlayerLabel = computed(() =>
-    isUserTurn.value ? i18n.global.t('moves.player_1') : i18n.global.t('moves.player_2'),
+    isUserTurn.value ? $i18n.t('moves.player_1') : $i18n.t('moves.player_2'),
   );
 
   const isReviewingHistory = computed(() => viewCursor.value < moveHistory.value.length);
@@ -237,6 +241,7 @@ export const useGameStore = defineStore('game', () => {
   watch(
     [repstr, winLine, loading],
     async ([pos, win, isLoading]) => {
+      if (!import.meta.client) return;
       suggestion.value = null;
       solverScores.value = null;
       solverError.value = null;
@@ -265,6 +270,7 @@ export const useGameStore = defineStore('game', () => {
   /* ── Ghost Path Calculator ───────────────────────────── */
 
   async function calculateGhostPath() {
+    if (!import.meta.client) return;
     if (
       !showGhostMoves.value ||
       (isReviewingHistory.value && gameOver.value) ||
@@ -367,6 +373,7 @@ export const useGameStore = defineStore('game', () => {
   let analysisRunId = 0;
 
   async function fillHistoricalScores() {
+    if (!import.meta.client) return;
     const s = solverStatus.value;
     if (!s?.moduleReady) return;
 
@@ -450,11 +457,11 @@ export const useGameStore = defineStore('game', () => {
 
   const solverStatusText = computed(() => {
     const s = solverStatus.value;
-    if (!s?.moduleReady) return i18n.global.t('solver.status.loading_wasm');
-    if (s.bookLoading) return i18n.global.t('solver.status.loading_book');
-    if (s.bookError) return i18n.global.t('solver.status.book_error', {error: s.bookError});
-    if (s.bookLoaded) return i18n.global.t('solver.status.ready_book');
-    return i18n.global.t('solver.status.ready_no_book');
+    if (!s?.moduleReady) return $i18n.t('solver.status.loading_wasm');
+    if (s.bookLoading) return $i18n.t('solver.status.loading_book');
+    if (s.bookError) return $i18n.t('solver.status.book_error', {error: s.bookError});
+    if (s.bookLoaded) return $i18n.t('solver.status.ready_book');
+    return $i18n.t('solver.status.ready_no_book');
   });
 
   /* ── Full-game outcome (independent of the review cursor) ── */
@@ -959,6 +966,32 @@ export const useGameStore = defineStore('game', () => {
   /* ── Persistence ────────────────────────────────────── */
 
   function saveState() {
+    if (import.meta.client) {
+      try {
+        const docEl = document.documentElement;
+        const toggleClass = (cls, cond) => {
+          if (cond) docEl.classList.add(cls);
+          else docEl.classList.remove(cls);
+        };
+        toggleClass('hide-header-preset', hideHeader.value);
+        toggleClass('hide-footer-preset', hideFooter.value);
+        toggleClass('hide-move-sequence-preset', hideMoveSequence.value);
+        toggleClass('hide-navigation-preset', hideNavigation.value);
+        toggleClass('hide-replay-preset', hideReplay.value);
+        toggleClass('hide-export-import-preset', hideExportImport.value);
+        toggleClass('hide-colors-preset', hideColors.value);
+        toggleClass('hide-solver-status-preset', hideSolverStatus.value);
+        toggleClass('hide-autoplay-preset', hideAutoplay.value);
+        toggleClass('hide-eval-bar-preset', hideEvalBar.value);
+        toggleClass('hide-score-bar-preset', hideScoreBar.value);
+        toggleClass('hide-column-help-preset', hideColumnHelp.value);
+        toggleClass('hide-lang-selector-preset', hideLangSelector.value);
+        toggleClass('hide-learn-preset', hideLearn.value);
+        toggleClass('hide-steady-state-preset', hideSteadyState.value);
+      } catch {
+        /* fail silently */
+      }
+    }
     try {
       localStorage.setItem(
         'c4_state',
@@ -1061,8 +1094,7 @@ export const useGameStore = defineStore('game', () => {
       if (typeof saved.showGhostMoves === 'boolean') showGhostMoves.value = saved.showGhostMoves;
       if (saved.mode === 'learn') mode.value = 'learn';
       if (typeof saved.hideLearn === 'boolean') hideLearn.value = saved.hideLearn;
-      if (typeof saved.hideSteadyState === 'boolean')
-        hideSteadyState.value = saved.hideSteadyState;
+      if (typeof saved.hideSteadyState === 'boolean') hideSteadyState.value = saved.hideSteadyState;
       if (['off', 'small', 'big', 'both'].includes(saved.learnSteadyPlacement))
         learnSteadyPlacement.value = saved.learnSteadyPlacement;
       if (Array.isArray(saved.asideOrder)) {
@@ -1099,6 +1131,7 @@ export const useGameStore = defineStore('game', () => {
 
     syncUrl();
     loading.value = false;
+    saveState();
 
     // Start loading WASM solver + opening book in background
     wasmSolver.warmup().then(() => {

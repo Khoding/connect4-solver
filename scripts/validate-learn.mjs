@@ -23,8 +23,8 @@ import {
   rowParity,
   ROWS,
   COLS,
-} from '../src/learn/threats.js';
-import {classifyHint} from '../src/learn/classifier.js';
+} from '../app/learn/threats.js';
+import {classifyHint} from '../app/learn/classifier.js';
 
 let passed = 0;
 let failed = 0;

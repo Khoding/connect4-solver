@@ -19,8 +19,8 @@
 -->
 
 <template>
-  <RouterView />
-  <footer class="site-footer" v-if="!game.hideFooter">
+  <NuxtPage />
+  <footer v-if="!game.hideFooter" class="site-footer">
     <div>
       {{ $t('footer.solver_by') }}
       <a href="https://github.com/PascalPons/connect4" target="_blank" rel="noopener">Pascal Pons</a
@@ -39,17 +39,17 @@
       >
     </div>
   </footer>
-  <div class="lang-selector-wrapper" v-if="!game.hideLangSelector">
+  <div v-if="!game.hideLangSelector" class="lang-selector-wrapper">
     <div class="lang-selector">
-      <button
-        v-for="l in ['en', 'fr', 'de']"
+      <NuxtLink
+        v-for="l in locales"
         :key="l"
+        :to="switchLocalePath(l)"
         :class="{active: locale === l}"
-        @click="changeLocale(l)"
         :aria-label="`Switch language to ${l.toUpperCase()}`"
       >
         {{ l.toUpperCase() }}
-      </button>
+      </NuxtLink>
     </div>
   </div>
 </template>
@@ -61,15 +61,19 @@ import {useGameStore} from '@/stores/game';
 
 const game = useGameStore();
 const {locale} = useI18n();
+const switchLocalePath = useSwitchLocalePath();
+const locales = ['en', 'fr', 'de'];
 
-function changeLocale(l) {
-  locale.value = l;
-  try {
-    localStorage.setItem('c4_locale', l);
-  } catch {
-    /* localStorage unavailable */
-  }
-}
+// Per-locale <html lang>, canonical URL, and hreflang alternates on every page.
+const i18nHead = useLocaleHead();
+useHead(() => ({
+  htmlAttrs: {
+    lang: i18nHead.value.htmlAttrs?.lang,
+    dir: i18nHead.value.htmlAttrs?.dir,
+  },
+  link: i18nHead.value.link,
+  meta: i18nHead.value.meta,
+}));
 
 /*
  * Resolve --cell-size in JS rather than relying on a live `vmin` unit.
@@ -127,7 +131,7 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.lang-selector button {
+.lang-selector a {
   padding: 4px 8px;
   border: none;
   border-radius: calc(var(--radius-sm) - 2px);
@@ -135,17 +139,18 @@ onUnmounted(() => {
   color: var(--color-text-dim);
   font-weight: 600;
   font-size: 0.75rem;
+  text-decoration: none;
   cursor: pointer;
   transition:
     background-color 0.15s,
     color 0.15s;
 }
 
-.lang-selector button:hover {
+.lang-selector a:hover {
   color: var(--color-text);
 }
 
-.lang-selector button.active {
+.lang-selector a.active {
   background-color: var(--color-surface-alt);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   color: var(--color-accent);

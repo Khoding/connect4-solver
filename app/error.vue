@@ -32,21 +32,36 @@
     </p>
 
     <p class="link-home-wrapper">
-      <RouterLink to="/" class="link-home">{{ $t('not_found.back_to_home') }}</RouterLink>
+      <NuxtLink :to="localePath('/')" class="link-home" @click.prevent="goHome">{{
+        $t('not_found.back_to_home')
+      }}</NuxtLink>
     </p>
   </section>
 </template>
 
 <script setup>
 import {onMounted, onUnmounted, ref} from 'vue';
-import {useRouter} from 'vue-router';
 
-const router = useRouter();
+// Nuxt passes the error object to this page. We don't surface its details, but
+// declaring the prop avoids an "extraneous attribute" hydration warning.
+defineProps({
+  error: {
+    type: Object,
+    default: null,
+  },
+});
+
+const localePath = useLocalePath();
 
 const timeLeft = ref(5);
 const redirecting = ref(true);
 
 let timer;
+
+// clearError() tears down the error state and navigates home in one step.
+function goHome() {
+  clearError({redirect: localePath('/')});
+}
 
 onMounted(() => {
   timer = setInterval(() => {
@@ -55,7 +70,7 @@ onMounted(() => {
     if (timeLeft.value === 0) {
       clearInterval(timer);
       redirecting.value = false;
-      router.push('/');
+      goHome();
     }
   }, 1000);
 });

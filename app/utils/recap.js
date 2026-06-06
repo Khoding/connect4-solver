@@ -18,7 +18,13 @@
   along with Connect4 Game Solver. If not, see <http://www.gnu.org/licenses/>.
 */
 
-import i18n from '@/i18n';
+// The active vue-i18n composer, injected once on the client by the recap-i18n
+// plugin. This module is framework-agnostic and runs outside the component
+// tree (export handlers, computeds), so it can't call useNuxtApp itself.
+let _i18n = null;
+export function setRecapI18n(instance) {
+  _i18n = instance;
+}
 
 /*
   Game recap: builds a shareable summary of a finished game from raw store
@@ -33,7 +39,7 @@ import i18n from '@/i18n';
 
 /** A translator bound to a specific locale (falls back to the global one). */
 function translator(locale) {
-  return (key, named) => i18n.global.t(key, named ?? {}, {locale});
+  return (key, named) => _i18n.t(key, named ?? {}, {locale});
 }
 
 const COLS = 7;
@@ -109,7 +115,7 @@ export function buildRecap({
   color1,
   color2,
   date = new Date(),
-  locale = i18n.global.locale.value,
+  locale = _i18n ? _i18n.locale.value : 'en',
 }) {
   const t = translator(locale);
   const plies = moves.map((col, i) => {

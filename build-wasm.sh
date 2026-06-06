@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CPP_DIR="$SCRIPT_DIR/src/solver/cpp"
+CPP_DIR="$SCRIPT_DIR/app/solver/cpp"
 OUT_DIR="$SCRIPT_DIR/public/wasm"
 
 mkdir -p "$OUT_DIR"

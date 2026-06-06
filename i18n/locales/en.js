@@ -1,4 +1,16 @@
 export default {
+  seo: {
+    home: {
+      title: 'Connect 4 Solver — Perfect Play & Move Analysis',
+      description:
+        'Play Connect 4 against a perfect mathematical solver. Analyze every move, find the optimal strategy, and review game recaps. Runs entirely in your browser via WebAssembly.',
+    },
+    settings: {
+      title: 'Settings — Connect 4 Solver',
+      description:
+        'Customize the Connect 4 Solver: choose colors, toggle the evaluation bar, hints and panels, and arrange the board layout to your liking.',
+    },
+  },
   header: {
     title: 'Connect 4',
     subtitle: 'Solver',

@@ -54,7 +54,7 @@ a {
 
 /* ── Shared card / utility ──────────────────────────────── */
 
-#app {
+#__nuxt {
   margin-inline: auto;
   padding: clamp(0.5rem, min(2vw, 2vh), 2.5rem);
 }
@@ -91,4 +91,71 @@ a {
 .dim {
   color: var(--color-text-dim);
   font-size: 0.85rem;
+}
+
+/* ── Layout presets (anti-flash) ── */
+.hide-header-preset .header {
+  display: none !important;
+}
+
+.hide-footer-preset .site-footer {
+  display: none !important;
+}
+
+.hide-lang-selector-preset .lang-selector-wrapper {
+  display: none !important;
+}
+
+.hide-move-sequence-preset [aria-labelledby="move-seq-heading"] {
+  display: none !important;
+}
+
+.hide-colors-preset [aria-labelledby="colors-heading"] {
+  display: none !important;
+}
+
+.hide-solver-status-preset [aria-labelledby="solver-heading"] {
+  display: none !important;
+}
+
+.hide-learn-preset [aria-labelledby="learn-heading"] {
+  display: none !important;
+}
+
+.hide-steady-state-preset [aria-labelledby="steady-heading"] {
+  display: none !important;
+}
+
+.hide-navigation-preset .board-nav {
+  display: none !important;
+}
+
+.hide-autoplay-preset .auto-p1-btn,
+.hide-autoplay-preset .auto-both-btn,
+.hide-autoplay-preset .auto-p2-btn {
+  display: none !important;
+}
+
+.hide-eval-bar-preset .eval-score,
+.hide-eval-bar-preset .eval-meter {
+  display: none !important;
+}
+
+.hide-score-bar-preset .score-cell {
+  display: none !important;
+}
+
+.hide-export-import-preset .export-recap-card {
+  display: none !important;
+}
+
+.hide-column-help-preset .col-header.suggested {
+  background-color: transparent !important;
+  color: var(--color-text-dim) !important;
+  animation: none !important;
+}
+
+.hide-column-help-preset .col-header {
+  background-color: oklch(from var(--player-color) l c h / 0.2) !important;
+  color: oklch(from var(--player-color) max(0.7, l) c h) !important;
 }

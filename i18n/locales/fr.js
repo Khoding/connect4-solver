@@ -1,4 +1,16 @@
 export default {
+  seo: {
+    home: {
+      title: 'Résolveur de Puissance 4 — Jeu parfait et analyse des coups',
+      description:
+        'Jouez au Puissance 4 contre un résolveur mathématique parfait. Analysez chaque coup, trouvez la stratégie optimale et consultez les récapitulatifs de partie. Fonctionne entièrement dans votre navigateur grâce à WebAssembly.',
+    },
+    settings: {
+      title: 'Paramètres — Résolveur de Puissance 4',
+      description:
+        'Personnalisez le résolveur de Puissance 4 : choisissez les couleurs, activez la barre d’évaluation, les indices et les panneaux, et organisez la disposition à votre goût.',
+    },
+  },
   header: {
     title: 'Connect 4',
     subtitle: 'Résolveur',

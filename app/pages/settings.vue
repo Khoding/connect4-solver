@@ -134,11 +134,11 @@
               :key="item"
               class="reorder-item"
               draggable="true"
+              :class="{'is-dragging': draggingIndex === index}"
               @dragstart="onDragStart(index, $event)"
               @dragover.prevent="onDragOver(index, $event)"
-              @drop="onDrop(index, $event)"
+              @drop="onDrop(index)"
               @dragend="onDragEnd"
-              :class="{'is-dragging': draggingIndex === index}"
             >
               <div class="drag-handle" aria-hidden="true">
                 <svg
@@ -165,9 +165,9 @@
                 <button
                   class="arrow-btn"
                   :disabled="index === 0"
-                  @click="game.moveAsideItem(index, -1)"
                   :title="$t('settings.aside_order.move_up')"
                   :aria-label="$t('settings.aside_order.move_up')"
+                  @click="game.moveAsideItem(index, -1)"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -186,9 +186,9 @@
                 <button
                   class="arrow-btn"
                   :disabled="index === game.asideOrder.length - 1"
-                  @click="game.moveAsideItem(index, 1)"
                   :title="$t('settings.aside_order.move_down')"
                   :aria-label="$t('settings.aside_order.move_down')"
+                  @click="game.moveAsideItem(index, 1)"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -249,15 +249,16 @@ import BaseButton from '@/components/BaseButton.vue';
 import MiniAppPreview from '@/components/MiniAppPreview.vue';
 
 const game = useGameStore();
-const {locale, t} = useI18n();
+const {locale, t, setLocale} = useI18n();
 
+useSeoMeta({
+  title: () => t('seo.settings.title'),
+  description: () => t('seo.settings.description'),
+});
+
+// @nuxtjs/i18n: navigate to the locale's route and persist the choice (cookie).
 function changeLocale(l) {
-  locale.value = l;
-  try {
-    localStorage.setItem('c4_locale', l);
-  } catch {
-    /* localStorage unavailable */
-  }
+  setLocale(l);
 }
 
 onMounted(() => {
@@ -276,7 +277,7 @@ function onDragOver(index, event) {
   event.dataTransfer.dropEffect = 'move';
 }
 
-function onDrop(index, event) {
+function onDrop(index) {
   if (draggingIndex.value === null) return;
   const fromIndex = draggingIndex.value;
   if (fromIndex !== index) {

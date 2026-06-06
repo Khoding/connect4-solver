@@ -19,7 +19,7 @@
 -->
 
 <template>
-  <section class="info-card" :aria-label="$t('recap.aria')">
+  <section class="info-card export-recap-card" :aria-label="$t('recap.aria')">
     <div class="card-tabs" role="tablist" :aria-label="$t('recap.tablist_aria')">
       <button
         role="tab"
@@ -42,10 +42,10 @@
     </div>
 
     <div
+      v-if="cardTab === 'export'"
       id="export-panel"
       role="tabpanel"
       :aria-label="$t('recap.export_panel_aria')"
-      v-if="cardTab === 'export'"
     >
       <p class="dim recap-summary">
         <template v-if="game.gameOver">
@@ -75,7 +75,7 @@
       </div>
     </div>
 
-    <div id="import-panel" role="tabpanel" :aria-label="$t('recap.import_panel_aria')" v-else>
+    <div v-else id="import-panel" role="tabpanel" :aria-label="$t('recap.import_panel_aria')">
       <p class="dim recap-summary">
         {{ $t('recap.import_instructions') }}
       </p>
@@ -156,18 +156,18 @@
         <div class="recap-preview" :class="{'is-text': mode === 'text'}">
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div
+            v-if="mode === 'image'"
             id="image-recap-panel"
             role="tabpanel"
             :aria-label="$t('recap.image_panel_aria')"
-            v-if="mode === 'image'"
             class="recap-svg"
             v-html="cardSvg"
           />
           <pre
+            v-else
             id="text-recap-panel"
             role="tabpanel"
             :aria-label="$t('recap.text_panel_aria')"
-            v-else
             class="recap-text"
             >{{ text }}</pre
           >

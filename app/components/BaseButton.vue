@@ -18,17 +18,26 @@
 -->
 
 <template>
-  <component
-    :is="to ? 'RouterLink' : 'button'"
+  <NuxtLinkLocale
+    v-if="to"
     :to="to"
-    :type="to ? undefined : 'button'"
     class="base-button-wrapper"
     :class="[variantClass]"
     :disabled="disabled"
   >
     <slot name="icon" />
     <span v-if="$slots.default" class="base-button-label"><slot /></span>
-  </component>
+  </NuxtLinkLocale>
+  <button
+    v-else
+    type="button"
+    class="base-button-wrapper"
+    :class="[variantClass]"
+    :disabled="disabled"
+  >
+    <slot name="icon" />
+    <span v-if="$slots.default" class="base-button-label"><slot /></span>
+  </button>
 </template>
 
 <script setup>

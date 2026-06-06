@@ -36,12 +36,42 @@
 
 <script setup>
 import {onMounted, onUnmounted} from 'vue';
+import {useI18n} from 'vue-i18n';
 import {useGameStore} from '@/stores/game';
 import BoardArea from '@/components/BoardArea.vue';
 import InfoPanel from '@/components/InfoPanel.vue';
 import LoadingOverlay from '@/components/LoadingOverlay.vue';
 
 const game = useGameStore();
+const {t} = useI18n();
+
+// Localized title/description/Open Graph tags (reactive to locale switches).
+useSeoMeta({
+  title: () => t('seo.home.title'),
+  description: () => t('seo.home.description'),
+  ogTitle: () => t('seo.home.title'),
+  ogDescription: () => t('seo.home.description'),
+  ogType: 'website',
+  twitterCard: 'summary',
+});
+
+// Structured data so search engines understand this is a free web game/app.
+useHead({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        name: 'Connect 4 Solver',
+        applicationCategory: 'GameApplication',
+        operatingSystem: 'Web browser',
+        url: 'https://www.connect4-solver.com',
+        offers: {'@type': 'Offer', price: '0', priceCurrency: 'USD'},
+      }),
+    },
+  ],
+});
 
 onMounted(() => {
   game.init();
