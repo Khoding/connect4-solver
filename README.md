@@ -1,5 +1,7 @@
 # Connect 4 Solver
 
+[![Live Site](https://img.shields.io/badge/Live-connect4--solver.com-blue?style=for-the-badge)](https://www.connect4-solver.com)
+
 A premium, high-performance **Connect 4 Solver** web application compiled as a static site (SSG) using **Nuxt 4** and **Vue 3**. It runs a perfect mathematical solver engine written in C++ locally in the browser via **WebAssembly (WASM)**.
 
 ## 🚀 Key Features
