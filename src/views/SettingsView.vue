@@ -92,6 +92,30 @@
           </fieldset>
         </section>
 
+        <section
+          class="info-card steady-placement-card"
+          :class="{'is-disabled': game.hideSteadyState}"
+          aria-labelledby="steady-placement-heading"
+        >
+          <h2 id="steady-placement-heading" class="card-heading">
+            {{ $t('settings.steady.title') }}
+          </h2>
+          <p class="placement-desc">{{ $t('settings.steady.desc') }}</p>
+          <div class="quick-btns" role="group" :aria-label="$t('settings.steady.title')">
+            <BaseButton
+              v-for="opt in ['off', 'small', 'big', 'both']"
+              :key="opt"
+              class="action-btn"
+              :variant="game.learnSteadyPlacement === opt ? 'accent' : 'default'"
+              :aria-pressed="game.learnSteadyPlacement === opt"
+              :disabled="game.hideSteadyState"
+              @click="game.setLearnSteadyPlacement(opt)"
+            >
+              {{ $t(`settings.steady.${opt}`) }}
+            </BaseButton>
+          </div>
+        </section>
+
         <section class="info-card aside-order-card" aria-labelledby="aside-order-heading">
           <div class="card-header-row">
             <h2 id="aside-order-heading" class="card-heading">
@@ -280,6 +304,13 @@ const settingsList = [
       'Removes the Learn-mode card and its hints. Hide it while in Learn mode for a true no-help board.',
   },
   {
+    key: 'hideSteadyState',
+    setter: 'setHideSteadyState',
+    label: 'Hide Steady-State Diagram',
+    description:
+      'Removes the Steady-State Diagram from every mode. When off, it always shows in Solver mode.',
+  },
+  {
     key: 'hideHeader',
     setter: 'setHideHeader',
     label: 'Hide website header',
@@ -442,6 +473,20 @@ function applyRecommended() {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+.placement-desc {
+  margin-block: 0.5rem 0.9rem;
+  color: var(--color-text-dim);
+  font-size: 0.85rem;
+}
+
+.steady-placement-card.is-disabled {
+  opacity: 0.5;
+
+  & .quick-btns {
+    pointer-events: none;
+  }
 }
 
 .action-btn {

@@ -128,6 +128,10 @@ export const useGameStore = defineStore('game', () => {
   const mode = ref('solver'); // 'solver' | 'learn'
   const learnRevealLevel = ref(0);
   const hideLearn = ref(false); // hide the Learn-mode card entirely (true "no help")
+  const hideSteadyState = ref(false); // remove the Steady-State Diagram from every mode
+  // Where the SSD appears while in Learn mode: 'off' | 'small' | 'big' | 'both'.
+  // Solver mode always shows the small card (unless hidden entirely above).
+  const learnSteadyPlacement = ref('off');
 
   const autoP1 = ref(false);
   const autoP2 = ref(false);
@@ -526,6 +530,22 @@ export const useGameStore = defineStore('game', () => {
     return classifyHint(boardArr.value, solverScores.value, internalCurrentPlayer.value);
   });
 
+  /**
+   * Is the small aside SSD card currently visible? Always in solver mode; in
+   * Learn mode only when the user opted into a placement that includes it.
+   */
+  const steadyCardVisible = computed(() => {
+    if (hideSteadyState.value) return false;
+    if (mode.value !== 'learn') return true; // solver mode: always shown
+    return learnSteadyPlacement.value === 'small' || learnSteadyPlacement.value === 'both';
+  });
+
+  /** Is the big-board SSD glyph overlay enabled? Learn-mode opt-in only. */
+  const steadyBigVisible = computed(() => {
+    if (hideSteadyState.value || mode.value !== 'learn') return false;
+    return learnSteadyPlacement.value === 'big' || learnSteadyPlacement.value === 'both';
+  });
+
   /* ── Display color mapping ──────────────────────────── */
 
   /** Map internal player (1=first mover, 2=second) to a display color hex string */
@@ -777,6 +797,17 @@ export const useGameStore = defineStore('game', () => {
     saveState();
   }
 
+  function setHideSteadyState(val) {
+    hideSteadyState.value = val;
+    saveState();
+  }
+
+  function setLearnSteadyPlacement(val) {
+    const allowed = ['off', 'small', 'big', 'both'];
+    learnSteadyPlacement.value = allowed.includes(val) ? val : 'off';
+    saveState();
+  }
+
   function moveAsideItem(index, direction) {
     const newIndex = index + direction;
     if (newIndex < 0 || newIndex >= asideOrder.value.length) return;
@@ -812,6 +843,7 @@ export const useGameStore = defineStore('game', () => {
     hideScoreBar.value = false;
     hideColumnHelp.value = false;
     hideLearn.value = false;
+    hideSteadyState.value = false;
     lockPredictions.value = false;
 
     asideOrder.value = [...DEFAULT_ASIDE_ORDER];
@@ -955,6 +987,8 @@ export const useGameStore = defineStore('game', () => {
           asideOrder: asideOrder.value,
           mode: mode.value,
           hideLearn: hideLearn.value,
+          hideSteadyState: hideSteadyState.value,
+          learnSteadyPlacement: learnSteadyPlacement.value,
         }),
       );
     } catch {
@@ -1027,6 +1061,10 @@ export const useGameStore = defineStore('game', () => {
       if (typeof saved.showGhostMoves === 'boolean') showGhostMoves.value = saved.showGhostMoves;
       if (saved.mode === 'learn') mode.value = 'learn';
       if (typeof saved.hideLearn === 'boolean') hideLearn.value = saved.hideLearn;
+      if (typeof saved.hideSteadyState === 'boolean')
+        hideSteadyState.value = saved.hideSteadyState;
+      if (['off', 'small', 'big', 'both'].includes(saved.learnSteadyPlacement))
+        learnSteadyPlacement.value = saved.learnSteadyPlacement;
       if (Array.isArray(saved.asideOrder)) {
         const isValid =
           saved.asideOrder.every(item => DEFAULT_ASIDE_ORDER.includes(item)) &&
@@ -1093,6 +1131,8 @@ export const useGameStore = defineStore('game', () => {
     mode,
     learnRevealLevel,
     hideLearn,
+    hideSteadyState,
+    learnSteadyPlacement,
     autoP1,
     autoP2,
     asideOrder,
@@ -1139,6 +1179,8 @@ export const useGameStore = defineStore('game', () => {
     cheatVisible,
     learnHint,
     steadyOverlay,
+    steadyCardVisible,
+    steadyBigVisible,
     // Helpers
     displayColorOf,
     // Actions
@@ -1170,6 +1212,8 @@ export const useGameStore = defineStore('game', () => {
     setHideLangSelector,
     setLockPredictions,
     setHideLearn,
+    setHideSteadyState,
+    setLearnSteadyPlacement,
     setMode,
     revealMoreHint,
     swapColors,

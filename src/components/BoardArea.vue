@@ -328,7 +328,7 @@ const GLYPH_CHARS = {win: '✦', block: '✦', play: '◎', opportunity: '○', 
 
 const learnGlyphMap = computed(() => {
   const map = {};
-  if (!game.learnActive || game.learnRevealLevel < 1) return map;
+  if (!game.learnActive || (game.learnRevealLevel < 1 && !game.steadyBigVisible)) return map;
   const hint = game.learnHint;
   if (!hint) return map;
   for (const cell of hint.cells) {
@@ -346,7 +346,7 @@ function learnGlyphAt(row, col) {
 // when a square belongs to both sides' lines.
 const threatLineMap = computed(() => {
   const map = {};
-  if (!game.learnActive || game.learnRevealLevel < 1) return map;
+  if (!game.learnActive || (game.learnRevealLevel < 1 && !game.steadyBigVisible)) return map;
   const lines = game.learnHint?.lines;
   if (!lines) return map;
   for (const line of lines) {

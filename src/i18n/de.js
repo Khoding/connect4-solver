@@ -203,6 +203,14 @@ export default {
     language: {
       title: 'Sprache',
     },
+    steady: {
+      title: 'Steady-State-Diagramm im Lernmodus',
+      desc: 'Im Solver-Modus wird das kleine Diagramm immer angezeigt. Im Lernmodus wählst du, wo es erscheint (falls überhaupt): die kleine Seitenkarte, die Markierungen auf dem Hauptbrett oder beides. „Aus“ behält die schrittweisen Tipps.',
+      off: 'Aus',
+      small: 'Kleine Karte',
+      big: 'Großes Brett',
+      both: 'Beides',
+    },
     aside: {
       learn: 'Lernmodus (Tipps & Lehre)',
       'steady-state': 'Steady-State-Diagramm',
@@ -216,6 +224,10 @@ export default {
       hideLearn: {
         label: 'Lernmodus-Karte ausblenden',
         desc: 'Entfernt die Lernmodus-Karte und ihre Tipps. Blende sie im Lernmodus aus für ein Brett ganz ohne Hilfe.',
+      },
+      hideSteadyState: {
+        label: 'Steady-State-Diagramm ausblenden',
+        desc: 'Entfernt das Steady-State-Diagramm aus allen Modi. Ausgeschaltet wird es im Solver-Modus immer angezeigt.',
       },
       hideHeader: {
         label: 'Website-Header ausblenden',

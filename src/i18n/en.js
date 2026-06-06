@@ -202,6 +202,14 @@ export default {
     language: {
       title: 'Language',
     },
+    steady: {
+      title: 'Steady-State Diagram in Learn mode',
+      desc: 'Solver mode always shows the small diagram. In Learn mode, choose where (if anywhere) it appears: the small aside card, the glyphs on the main board, or both. "Off" keeps the progressive hints.',
+      off: 'Off',
+      small: 'Small card',
+      big: 'Big board',
+      both: 'Both',
+    },
     aside: {
       learn: 'Learn Mode (hints & teaching)',
       'steady-state': 'Steady-state Diagram',
@@ -215,6 +223,10 @@ export default {
       hideLearn: {
         label: 'Hide Learn mode card',
         desc: 'Removes the Learn-mode card and its hints. Hide it while in Learn mode for a true no-help board.',
+      },
+      hideSteadyState: {
+        label: 'Hide Steady-State Diagram',
+        desc: 'Removes the Steady-State Diagram from every mode. When off, it always shows in Solver mode.',
       },
       hideHeader: {
         label: 'Hide website header',

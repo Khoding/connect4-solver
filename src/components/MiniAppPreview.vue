@@ -152,7 +152,11 @@
           </div>
 
           <!-- Steady-state diagram card -->
-          <div v-if="item === 'steady-state'" class="mini-card">
+          <div
+            v-if="item === 'steady-state'"
+            class="mini-card"
+            :class="{'is-disabled': !game.steadyCardVisible}"
+          >
             <span class="mini-card-title">{{ $t('steady.title') }}</span>
             <div class="mini-ss-grid">
               <div v-for="n in 21" :key="n" class="mini-ss-cell" :class="ssCellKind(n)" />

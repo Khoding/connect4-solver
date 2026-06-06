@@ -204,6 +204,14 @@ export default {
     language: {
       title: 'Langue',
     },
+    steady: {
+      title: 'Diagramme de régime permanent en mode apprentissage',
+      desc: 'Le mode résolveur affiche toujours le petit diagramme. En mode apprentissage, choisis où il apparaît (ou non) : la petite carte latérale, les marqueurs sur le plateau principal, ou les deux. « Désactivé » conserve les conseils progressifs.',
+      off: 'Désactivé',
+      small: 'Petite carte',
+      big: 'Grand plateau',
+      both: 'Les deux',
+    },
     aside: {
       learn: 'Mode apprentissage (conseils & pédagogie)',
       'steady-state': 'Diagramme de régime permanent',
@@ -217,6 +225,10 @@ export default {
       hideLearn: {
         label: 'Masquer la carte Mode apprentissage',
         desc: 'Retire la carte Mode apprentissage et ses conseils. Masque-la en mode apprentissage pour un plateau vraiment sans aide.',
+      },
+      hideSteadyState: {
+        label: 'Masquer le diagramme de régime permanent',
+        desc: 'Retire le diagramme de régime permanent de tous les modes. Désactivé, il s’affiche toujours en mode résolveur.',
       },
       hideHeader: {
         label: 'Masquer l’en-tête du site',
