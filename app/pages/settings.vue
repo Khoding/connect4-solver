@@ -254,6 +254,10 @@ const {locale, t, setLocale} = useI18n();
 useSeoMeta({
   title: () => t('seo.settings.title'),
   description: () => t('seo.settings.description'),
+  ogTitle: () => t('seo.settings.title'),
+  ogDescription: () => t('seo.settings.description'),
+  ogType: 'website',
+  twitterCard: 'summary',
 });
 
 // @nuxtjs/i18n: navigate to the locale's route and persist the choice (cookie).

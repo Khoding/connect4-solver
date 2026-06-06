@@ -65,7 +65,9 @@ export default defineNuxtConfig({
                 if (state.hideColumnHelp) docEl.classList.add('hide-column-help-preset');
                 if (state.hideLangSelector) docEl.classList.add('hide-lang-selector-preset');
                 if (state.hideLearn) docEl.classList.add('hide-learn-preset');
-                if (state.hideSteadyState) docEl.classList.add('hide-steady-state-preset');
+                var hideSteadyCard = state.hideSteadyState || (state.mode === 'learn' && state.learnSteadyPlacement !== 'small' && state.learnSteadyPlacement !== 'both');
+                if (hideSteadyCard) docEl.classList.add('hide-steady-card-preset');
+                if (state.mode === 'learn') docEl.classList.add('learn-mode-preset');
               }
             } catch (e) {}
           })();`,

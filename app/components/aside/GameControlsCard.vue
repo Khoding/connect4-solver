@@ -91,7 +91,7 @@
     </div>
 
     <!-- Replay controls -->
-    <div v-if="!game.hideReplay" class="controls">
+    <div v-show="!game.hideReplay" class="controls replay-controls">
       <BaseButton
         :title="$t('controls.replay_title')"
         :aria-label="$t('controls.replay_aria')"

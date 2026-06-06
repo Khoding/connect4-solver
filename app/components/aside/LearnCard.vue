@@ -40,7 +40,7 @@
       </button>
     </div>
 
-    <div v-if="game.learnActive" class="hint" aria-live="polite">
+    <div v-show="game.learnActive" class="hint" aria-live="polite">
       <p v-if="game.gameOver" class="dim">{{ $t('learn.game_over') }}</p>
       <p v-else-if="!hint" class="dim">{{ $t('learn.thinking') }}</p>
 

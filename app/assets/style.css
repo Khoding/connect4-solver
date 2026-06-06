@@ -122,11 +122,15 @@ a {
   display: none !important;
 }
 
-.hide-steady-state-preset [aria-labelledby="steady-heading"] {
+.hide-steady-card-preset [aria-labelledby="steady-heading"] {
   display: none !important;
 }
 
 .hide-navigation-preset .board-nav {
+  display: none !important;
+}
+
+.hide-replay-preset .replay-controls {
   display: none !important;
 }
 
@@ -158,4 +162,34 @@ a {
 .hide-column-help-preset .col-header {
   background-color: oklch(from var(--player-color) l c h / 0.2) !important;
   color: oklch(from var(--player-color) max(0.7, l) c h) !important;
+}
+
+/* ── Learn mode preset overrides (anti-flash) ── */
+.learn-mode-preset .score-cell {
+  display: none !important;
+}
+
+.learn-mode-preset .col-header.suggested {
+  background-color: transparent !important;
+  color: var(--color-text-dim) !important;
+  animation: none !important;
+}
+
+.learn-mode-preset .col-header {
+  background-color: oklch(from var(--player-color) l c h / 0.2) !important;
+  color: oklch(from var(--player-color) max(0.7, l) c h) !important;
+}
+
+.learn-mode-preset .mode-switch button:first-child {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text-dim) !important;
+}
+
+.learn-mode-preset .mode-switch button:last-child {
+  background-color: var(--color-accent, oklch(0.65 0.18 255)) !important;
+  color: oklch(0.98 0 0) !important;
+}
+
+.learn-mode-preset .hint {
+  display: block !important;
 }

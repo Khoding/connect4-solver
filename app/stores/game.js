@@ -987,7 +987,9 @@ export const useGameStore = defineStore('game', () => {
         toggleClass('hide-column-help-preset', hideColumnHelp.value);
         toggleClass('hide-lang-selector-preset', hideLangSelector.value);
         toggleClass('hide-learn-preset', hideLearn.value);
-        toggleClass('hide-steady-state-preset', hideSteadyState.value);
+        const hideSteadyCard = hideSteadyState.value || (mode.value === 'learn' && learnSteadyPlacement.value !== 'small' && learnSteadyPlacement.value !== 'both');
+        toggleClass('hide-steady-card-preset', hideSteadyCard);
+        toggleClass('learn-mode-preset', mode.value === 'learn');
       } catch {
         /* fail silently */
       }
