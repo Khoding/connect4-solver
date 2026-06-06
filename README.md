@@ -39,10 +39,29 @@ npm install
 ```
 
 ### Compile WebAssembly (WASM)
-If you modify the C++ solver code under `app/`, compile the updated WASM bundle:
-```bash
-./build-wasm.sh
+If you modify the C++ solver code under `app/solver/cpp/`, recompile the WASM
+bundle. This needs the Emscripten SDK active in your shell (`emcc` on PATH):
+
+```powershell
+# Windows (PowerShell): activate emsdk for this session
+& C:\path\to\emsdk\emsdk_env.ps1
 ```
+```bash
+# macOS / Linux: source the env script in this shell
+source /path/to/emsdk/emsdk_env.sh
+```
+
+Then run the cross-platform build (uses `build-wasm.ps1` on Windows,
+`build-wasm.sh` elsewhere):
+```bash
+npm run build:wasm
+```
+
+This emits **two** artifacts from the same C++ into `public/wasm/`:
+*   `c4solver.js` — the browser build (UMD global, loaded via `<script>`).
+*   `c4solver.node.mjs` — a node ES-module build used by the Learn-mode oracle
+    (below). A separate artifact is required because the package is
+    `"type": "module"`, so the browser's UMD `.js` cannot be imported under Node.
 
 ### Hot-Reload for Development
 Start the local development server at `http://localhost:3000`:
@@ -62,10 +81,23 @@ npm run preview
 ```
 
 ### Testing
-Verify the solver's classification invariants and learn-mode logic:
+Verify the solver's classification invariants and learn-mode logic. This is
+pure board geometry — no solver, no compiler needed, and it runs instantly:
 ```bash
 npm run test:learn
 ```
+
+For the deeper **oracle** check, the Learn-mode classifier is cross-validated
+against the *real* solver over hundreds of random positions (every `win`/`block`
+it names must match the solver's verdict, and its best move must be
+solver-optimal). This requires the node WASM build from above
+(`npm run build:wasm`):
+```bash
+npm run test:learn:oracle
+```
+A green run is the readiness gate for extending the classifier with new
+strategic rules (Allis threat theory). Tune with `C4_ORACLE_N` (positions),
+`C4_ORACLE_MAXPLIES`, and `C4_ORACLE_SEED`.
 
 ### Linting & Formatting
 Ensure code styling and ES rules are clean:
