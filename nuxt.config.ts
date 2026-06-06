@@ -25,6 +25,7 @@ export default defineNuxtConfig({
     '@vite-pwa/nuxt',
     '@nuxtjs/sitemap',
     '@nuxtjs/robots',
+    'nuxt-og-image',
   ],
 
   css: ['~/assets/style.css'],

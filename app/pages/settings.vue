@@ -260,6 +260,11 @@ useSeoMeta({
   twitterCard: 'summary',
 });
 
+defineOgImage('Connect4OgImage', {
+  title: t('seo.settings.title'),
+  description: t('seo.settings.description'),
+});
+
 // @nuxtjs/i18n: navigate to the locale's route and persist the choice (cookie).
 function changeLocale(l) {
   setLocale(l);

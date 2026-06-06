@@ -55,6 +55,11 @@ useSeoMeta({
   twitterCard: 'summary',
 });
 
+defineOgImage('Connect4OgImage', {
+  title: t('seo.home.title'),
+  description: t('seo.home.description'),
+});
+
 // Structured data so search engines understand this is a free web game/app.
 useHead({
   script: [

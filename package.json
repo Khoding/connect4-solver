@@ -16,6 +16,7 @@
     "format": "prettier --write --experimental-cli app/ i18n/"
   },
   "dependencies": {
+    "@takumi-rs/core": "^1.7.0",
     "pinia": "^3.0.4",
     "vue": "^3.5.35",
     "vue-i18n": "^11.4.4"
@@ -37,6 +38,7 @@
     "lightningcss": "^1.32.0",
     "npm-run-all2": "^9.0.1",
     "nuxt": "^4.4.7",
+    "nuxt-og-image": "^6.5.2",
     "oxlint": "~1.68.0",
     "prettier": "^3.8.3",
     "prettier-plugin-css-order": "^2.2.0",
