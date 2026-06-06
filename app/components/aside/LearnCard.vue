@@ -117,7 +117,7 @@ const hint = computed(() => game.learnHint);
 
     &.active {
       background-color: var(--color-accent, oklch(0.65 0.18 255));
-      color: oklch(0.98 0 0);
+      color: var(--color-bg);
     }
   }
 }

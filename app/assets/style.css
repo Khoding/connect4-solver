@@ -187,7 +187,7 @@ a {
 
 .learn-mode-preset .mode-switch button:last-child {
   background-color: var(--color-accent, oklch(0.65 0.18 255)) !important;
-  color: oklch(0.98 0 0) !important;
+  color: var(--color-bg) !important;
 }
 
 .learn-mode-preset .hint {
