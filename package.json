@@ -12,6 +12,7 @@
     "build:wasm": "node scripts/build-wasm.mjs",
     "test:learn": "node scripts/validate-learn.mjs",
     "test:learn:oracle": "node scripts/validate-learn-oracle.mjs",
+    "test:victor": "node scripts/victor-validate.mjs",
     "lint": "run-s lint:*",
     "lint:oxlint": "oxlint . --fix --ignore-path .oxlintignore",
     "lint:eslint": "eslint . --fix --cache",
