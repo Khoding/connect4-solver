@@ -17,6 +17,7 @@ export default {
     tagline: 'Wählen Sie Ihre Farbe und folgen Sie den Empfehlungen des Solvers.',
   },
   footer: {
+    learn_guide: '📖 Wie man gewinnt — der komplette Leitfaden',
     solver_by: 'Solver-Code von',
     inspired_by: 'Inspiriert von',
     github_repo: 'GitHub-Repository',
@@ -44,10 +45,8 @@ export default {
     thinking: 'Stellung wird gelesen…',
     game_over: 'Spiel vorbei — setze das Brett zurück, um weiter zu üben.',
     hint_intro: 'Die beste Idee hier:',
-    glyph_note: 'Die Markierungen auf dem Brett zeigen die passenden Felder. Immer noch unklar?',
-    exact_move: 'Bester Zug: Spalte {col}.',
     show_board: 'Zeig es mir auf dem Brett',
-    reveal_move: 'Sag mir einfach den Zug',
+    hide_board: 'Hinweise ausblenden',
     concept: {
       win: {
         label: 'ein Gewinnzug',

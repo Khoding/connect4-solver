@@ -29,11 +29,15 @@
       <ColorPresetsCard v-if="item === 'colors'" />
       <SolverStatusCard v-if="item === 'solver-status'" />
     </template>
+    <div class="panel-footer">
+      <BaseButton to="/guide" variant="accent">{{ $t('footer.learn_guide') }}</BaseButton>
+    </div>
   </aside>
 </template>
 
 <script setup>
 import {useGameStore} from '@/stores/game';
+import BaseButton from './BaseButton.vue';
 import LearnCard from './aside/LearnCard.vue';
 import SteadyStateCard from './aside/SteadyStateCard.vue';
 import MoveSequenceCard from './aside/MoveSequenceCard.vue';
@@ -67,6 +71,15 @@ const game = useGameStore();
 @media (min-width: 721px) and (max-width: 1100px) {
   .info-panel {
     min-inline-size: 260px;
+  }
+}
+
+.panel-footer {
+  margin-block-start: auto;
+
+  & :deep(.base-button-wrapper) {
+    inline-size: 100%;
+    justify-content: center;
   }
 }
 </style>

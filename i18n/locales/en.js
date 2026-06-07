@@ -17,6 +17,7 @@ export default {
     tagline: "Pick your color, then follow the solver's suggestions.",
   },
   footer: {
+    learn_guide: '📖 How to win — the complete guide',
     solver_by: 'Solver code by',
     inspired_by: 'Inspired by',
     github_repo: 'GitHub Repository',
@@ -44,10 +45,8 @@ export default {
     thinking: 'Reading the position…',
     game_over: 'Game over — reset the board to keep practising.',
     hint_intro: 'Best idea here:',
-    glyph_note: 'The markers on the board point to the squares that fit. Still stuck?',
-    exact_move: 'Best move: column {col}.',
     show_board: 'Show me on the board',
-    reveal_move: 'Just tell me the move',
+    hide_board: 'Hide board hints',
     concept: {
       win: {
         label: 'a winning move',
@@ -99,6 +98,13 @@ export default {
         before: 'Before — answer above to win before they connect',
       },
       covers: 'These rules answer every one of the opponent’s {n} potential fours.',
+    },
+  },
+  guide: {
+    seo: {
+      title: 'How to Win at Connect 4 — The Complete Guide',
+      description:
+        'From the bare rules to a solved game: odd and even squares, threats, Allis’s pairing rules, and how to force a win. Every diagram is a real position with a solver-validated plan.',
     },
   },
   steady: {

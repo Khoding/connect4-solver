@@ -44,7 +44,11 @@ import {baseclaimApps} from './baseclaim.js';
 const sq = (r, c) => `${r}-${c}`;
 const rowOf = key => Number(key.slice(0, key.indexOf('-')));
 const colOf = key => Number(key.slice(key.indexOf('-') + 1));
-const groupKey = cells => cells.map(([r, c]) => `${r},${c}`).sort().join(';');
+const groupKey = cells =>
+  cells
+    .map(([r, c]) => `${r},${c}`)
+    .sort()
+    .join(';');
 
 /** Opponent threats: every group the controller has no disc in (still winnable by the opponent). */
 export function enumerateThreats(board, controller = 2) {
@@ -119,7 +123,12 @@ export function enumerateRuleApps(board, threats, controller = 2) {
       const [r1, c1] = playable[i];
       const [r2, c2] = playable[j];
       const solves = solvesContainingAll(sq(r1, c1), sq(r2, c2));
-      if (solves.size) apps.push(makeApp('baseinverse', [sq(r1, c1), sq(r2, c2)], solves, {detail: {squares: [playable[i], playable[j]]}}));
+      if (solves.size)
+        apps.push(
+          makeApp('baseinverse', [sq(r1, c1), sq(r2, c2)], solves, {
+            detail: {squares: [playable[i], playable[j]]},
+          }),
+        );
     }
   }
 
@@ -129,7 +138,10 @@ export function enumerateRuleApps(board, threats, controller = 2) {
     const [ur, uc] = v.upper;
     if (board[lr][lc] !== 0 || board[ur][uc] !== 0) continue;
     const solves = solvesContainingAll(sq(lr, lc), sq(ur, uc));
-    if (solves.size) apps.push(makeApp('vertical', [sq(lr, lc), sq(ur, uc)], solves, {detail: {a: [lr, lc], b: [ur, uc]}}));
+    if (solves.size)
+      apps.push(
+        makeApp('vertical', [sq(lr, lc), sq(ur, uc)], solves, {detail: {a: [lr, lc], b: [ur, uc]}}),
+      );
   }
 
   // ── Lowinverse: two Verticals in different columns; solves groups with both upper odd squares.
@@ -156,12 +168,22 @@ export function enumerateRuleApps(board, threats, controller = 2) {
     const solves = new Set();
     // (1) both upper, (2) both middle, (3) mid+up of one column.
     for (const t of threats) {
-      if ((t.keys.has(k(up1)) && t.keys.has(k(up2))) || (t.keys.has(k(mid1)) && t.keys.has(k(mid2)))) solves.add(t.id);
-      else if ((t.keys.has(k(mid1)) && t.keys.has(k(up1))) || (t.keys.has(k(mid2)) && t.keys.has(k(up2)))) solves.add(t.id);
+      if (
+        (t.keys.has(k(up1)) && t.keys.has(k(up2))) ||
+        (t.keys.has(k(mid1)) && t.keys.has(k(mid2)))
+      )
+        solves.add(t.id);
+      else if (
+        (t.keys.has(k(mid1)) && t.keys.has(k(up1))) ||
+        (t.keys.has(k(mid2)) && t.keys.has(k(up2)))
+      )
+        solves.add(t.id);
     }
     // (4)/(5) lower-of-one-column (if directly playable) + upper-of-the-other.
-    if (isPlayable(lo1[0], lo1[1])) for (const t of threats) if (t.keys.has(k(lo1)) && t.keys.has(k(up2))) solves.add(t.id);
-    if (isPlayable(lo2[0], lo2[1])) for (const t of threats) if (t.keys.has(k(lo2)) && t.keys.has(k(up1))) solves.add(t.id);
+    if (isPlayable(lo1[0], lo1[1]))
+      for (const t of threats) if (t.keys.has(k(lo1)) && t.keys.has(k(up2))) solves.add(t.id);
+    if (isPlayable(lo2[0], lo2[1]))
+      for (const t of threats) if (t.keys.has(k(lo2)) && t.keys.has(k(up1))) solves.add(t.id);
     if (solves.size)
       apps.push(
         makeApp('highinverse', [k(lo1), k(mid1), k(up1), k(lo2), k(mid2), k(up2)], solves, {
@@ -185,7 +207,8 @@ export function enumerateRuleApps(board, threats, controller = 2) {
     for (const t of threats) if (evenKeys.some(key => t.keys.has(key))) solves.add(t.id);
     const sol1 = new Set(threatsSolvedByAftereven(board, ag, controller).map(groupKey));
     for (const t of threats) if (sol1.has(t.key)) solves.add(t.id);
-    if (solves.size) apps.push(makeApp('aftereven', uses, solves, {claimevenUppers, detail: {group: ag.cells}}));
+    if (solves.size)
+      apps.push(makeApp('aftereven', uses, solves, {claimevenUppers, detail: {group: ag.cells}}));
   }
 
   // ── Baseclaim: {p1,z} and {p2,p3}; z even, directly above playable p2.
@@ -198,10 +221,15 @@ export function enumerateRuleApps(board, threats, controller = 2) {
     }
     if (solves.size)
       apps.push(
-        makeApp('baseclaim', [sq(p1[0], p1[1]), sq(p2[0], p2[1]), sq(p3[0], p3[1]), sq(z[0], z[1])], solves, {
-          claimevenUppers: [{row: z[0], col: z[1]}],
-          detail: bc,
-        }),
+        makeApp(
+          'baseclaim',
+          [sq(p1[0], p1[1]), sq(p2[0], p2[1]), sq(p3[0], p3[1]), sq(z[0], z[1])],
+          solves,
+          {
+            claimevenUppers: [{row: z[0], col: z[1]}],
+            detail: bc,
+          },
+        ),
       );
   }
 
@@ -222,10 +250,12 @@ export function enumerateRuleApps(board, threats, controller = 2) {
       if (rowParity(r) === 'odd') {
         for (const t of threats) if (t.keys.has(sq(r + 1, c))) solves.add(t.id);
       } else {
-        for (const t of threats) if (t.keys.has(sq(r, c)) && t.keys.has(sq(r + 1, c))) solves.add(t.id);
+        for (const t of threats)
+          if (t.keys.has(sq(r, c)) && t.keys.has(sq(r + 1, c))) solves.add(t.id);
       }
     }
-    if (solves.size) apps.push(makeApp('before', uses, solves, {claimevenUppers, detail: {group: bg.cells}}));
+    if (solves.size)
+      apps.push(makeApp('before', uses, solves, {claimevenUppers, detail: {group: bg.cells}}));
   }
 
   // NOTE: Specialbefore (Allis §6.9) is deliberately NOT enumerated. Its formal
@@ -242,7 +272,17 @@ export function enumerateRuleApps(board, threats, controller = 2) {
 // ── Consistency (Allis §7.4) ────────────────────────────────────────────────
 
 // Pairwise constraint codes. Lower-triangular table, symmetric on lookup.
-const ORDER = ['claimeven', 'baseinverse', 'vertical', 'aftereven', 'lowinverse', 'highinverse', 'baseclaim', 'before', 'specialbefore'];
+const ORDER = [
+  'claimeven',
+  'baseinverse',
+  'vertical',
+  'aftereven',
+  'lowinverse',
+  'highinverse',
+  'baseclaim',
+  'before',
+  'specialbefore',
+];
 // prettier-ignore
 const TABLE = [
   ['1'],
@@ -427,8 +467,23 @@ export function solveBlackWin(board, opts = {}) {
     for (let c = 0; c < COLS; c++) {
       const r = landingRow(board, c);
       if (r === -1) continue;
-      if (GROUPS.some(g => g.some(([gr, gc]) => gr === r && gc === c) && g.filter(([gr, gc]) => board[gr][gc] === 2).length === 3 && g.every(([gr, gc]) => board[gr][gc] !== 1))) {
-        return {solved: true, kind: 'immediate', winningCol: c, afterevenGroup: null, solution: [], threatCount: 0, nodes: 0};
+      if (
+        GROUPS.some(
+          g =>
+            g.some(([gr, gc]) => gr === r && gc === c) &&
+            g.filter(([gr, gc]) => board[gr][gc] === 2).length === 3 &&
+            g.every(([gr, gc]) => board[gr][gc] !== 1),
+        )
+      ) {
+        return {
+          solved: true,
+          kind: 'immediate',
+          winningCol: c,
+          afterevenGroup: null,
+          solution: [],
+          threatCount: 0,
+          nodes: 0,
+        };
       }
     }
   }
@@ -438,9 +493,26 @@ export function solveBlackWin(board, opts = {}) {
   const res = runCover(threats, apps, cap);
   if (res.solved) {
     const ae = res.solution.find(a => a.type === 'aftereven');
-    if (ae) return {solved: true, kind: 'aftereven', afterevenGroup: ae.detail?.group ?? null, winningCol: null, solution: res.solution, threatCount: threats.length, nodes: res.nodes};
+    if (ae)
+      return {
+        solved: true,
+        kind: 'aftereven',
+        afterevenGroup: ae.detail?.group ?? null,
+        winningCol: null,
+        solution: res.solution,
+        threatCount: threats.length,
+        nodes: res.nodes,
+      };
   }
-  return {solved: false, kind: null, afterevenGroup: null, winningCol: null, solution: null, threatCount: threats.length, nodes: res.nodes};
+  return {
+    solved: false,
+    kind: null,
+    afterevenGroup: null,
+    winningCol: null,
+    solution: null,
+    threatCount: threats.length,
+    nodes: res.nodes,
+  };
 }
 
 // ── Player-1 (White) win prover (Allis §8.2) ─────────────────────────────────
@@ -469,7 +541,8 @@ export function findOddThreats(board) {
     }
     if (black === 0 && white === 3 && empties === 1) {
       const [er, ec] = empty;
-      if (rowParity(er) === 'odd' && landingRow(board, ec) !== er) out.push({cells, row: er, col: ec});
+      if (rowParity(er) === 'odd' && landingRow(board, ec) !== er)
+        out.push({cells, row: er, col: ec});
     }
   }
   return out;
@@ -512,7 +585,14 @@ export function findThreatCombinations(board) {
       const other = og.empties.find(s => !eq(s, crossing)); // the other odd square
       if (E[1] !== other[1] || Math.abs(E[0] - other[0]) !== 1) continue; // E adjacent to O, same column
       if (landingRow(board, crossing[1]) === crossing[0]) continue; // crossing not directly playable
-      combos.push({crossing, other, even: E, type: E[0] - other[0] === 1 ? 'evenAboveOdd' : 'oddAboveEven', crossCol: crossing[1], otherCol: other[1]});
+      combos.push({
+        crossing,
+        other,
+        even: E,
+        type: E[0] - other[0] === 1 ? 'evenAboveOdd' : 'oddAboveEven',
+        crossCol: crossing[1],
+        otherCol: other[1],
+      });
     }
   }
   return combos;
@@ -539,8 +619,23 @@ export function solveWhiteWin(board, opts = {}) {
     for (let c = 0; c < COLS; c++) {
       const r = landingRow(board, c);
       if (r === -1) continue;
-      if (GROUPS.some(g => g.some(([gr, gc]) => gr === r && gc === c) && g.filter(([gr, gc]) => board[gr][gc] === 1).length === 3 && g.every(([gr, gc]) => board[gr][gc] !== 2))) {
-        return {solved: true, kind: 'immediate', winningCol: c, oddThreat: null, solution: [], threatCount: 0, nodes: 0};
+      if (
+        GROUPS.some(
+          g =>
+            g.some(([gr, gc]) => gr === r && gc === c) &&
+            g.filter(([gr, gc]) => board[gr][gc] === 1).length === 3 &&
+            g.every(([gr, gc]) => board[gr][gc] !== 2),
+        )
+      ) {
+        return {
+          solved: true,
+          kind: 'immediate',
+          winningCol: c,
+          oddThreat: null,
+          solution: [],
+          threatCount: 0,
+          nodes: 0,
+        };
       }
     }
   }
@@ -550,12 +645,26 @@ export function solveWhiteWin(board, opts = {}) {
   for (const T of oddThreats) {
     // Black's threats, minus those the odd threat kills (a square in T's column
     // at or above the threat row — Black can never get there).
-    const remaining = enumerateThreats(board, 1).filter(t => !t.cells.some(([r, c]) => c === T.col && r >= T.row));
+    const remaining = enumerateThreats(board, 1).filter(
+      t => !t.cells.some(([r, c]) => c === T.col && r >= T.row),
+    );
     // Rules may not use the odd-threat column; White owns it via the threat.
-    const apps = enumerateRuleApps(board, remaining, 1).filter(a => a.solves.size > 0 && ![...a.uses].some(key => colOf(key) === T.col));
+    const apps = enumerateRuleApps(board, remaining, 1).filter(
+      a => a.solves.size > 0 && ![...a.uses].some(key => colOf(key) === T.col),
+    );
     const res = runCover(remaining, apps, cap);
     totalNodes += res.nodes;
-    if (res.solved) return {solved: true, kind: 'oddThreat', oddThreat: T, combination: null, winningCol: null, solution: res.solution, threatCount: remaining.length, nodes: totalNodes};
+    if (res.solved)
+      return {
+        solved: true,
+        kind: 'oddThreat',
+        oddThreat: T,
+        combination: null,
+        winningCol: null,
+        solution: res.solution,
+        threatCount: remaining.length,
+        nodes: totalNodes,
+      };
   }
 
   // Threat combinations: force an odd threat across two columns (§8.4). All of
@@ -608,15 +717,48 @@ export function solveWhiteWin(board, opts = {}) {
       const usesXC = [...a.uses].some(k => colOf(k) === xc);
       const usesOC = [...a.uses].some(k => colOf(k) === oc);
       if (!usesXC && !usesOC) return true;
-      if (biAllowed && a.type === 'baseinverse' && a.uses.size === 2 && a.uses.has(sq(lowestX, xc)) && a.uses.has(sq(lowestO, oc))) return true;
-      if (a.type === 'vertical' && !usesXC && [...a.uses].every(k => colOf(k) === oc && rowOf(k) <= oRow)) return true;
+      if (
+        biAllowed &&
+        a.type === 'baseinverse' &&
+        a.uses.size === 2 &&
+        a.uses.has(sq(lowestX, xc)) &&
+        a.uses.has(sq(lowestO, oc))
+      )
+        return true;
+      if (
+        a.type === 'vertical' &&
+        !usesXC &&
+        [...a.uses].every(k => colOf(k) === oc && rowOf(k) <= oRow)
+      )
+        return true;
       return false;
     };
-    const apps = enumerateRuleApps(board, remaining, 1).filter(a => a.solves.size > 0 && allowedApp(a));
+    const apps = enumerateRuleApps(board, remaining, 1).filter(
+      a => a.solves.size > 0 && allowedApp(a),
+    );
     const res = runCover(remaining, apps, cap);
     totalNodes += res.nodes;
-    if (res.solved) return {solved: true, kind: 'threatCombination', oddThreat: null, combination: tc, winningCol: null, solution: res.solution, threatCount: remaining.length, nodes: totalNodes};
+    if (res.solved)
+      return {
+        solved: true,
+        kind: 'threatCombination',
+        oddThreat: null,
+        combination: tc,
+        winningCol: null,
+        solution: res.solution,
+        threatCount: remaining.length,
+        nodes: totalNodes,
+      };
   }
 
-  return {solved: false, kind: null, oddThreat: null, combination: null, winningCol: null, solution: null, threatCount: 0, nodes: totalNodes};
+  return {
+    solved: false,
+    kind: null,
+    oddThreat: null,
+    combination: null,
+    winningCol: null,
+    solution: null,
+    threatCount: 0,
+    nodes: totalNodes,
+  };
 }

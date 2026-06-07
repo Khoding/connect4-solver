@@ -53,21 +53,8 @@
         </p>
         <p class="dim explain">{{ $t(`learn.concept.${hint.concept}.hint`) }}</p>
 
-        <p v-if="game.learnRevealLevel >= 1 && game.learnRevealLevel < 2" class="dim glyph-note">
-          {{ $t('learn.glyph_note') }}
-        </p>
-
-        <p v-if="game.learnRevealLevel >= 2" class="reveal">
-          {{ $t('learn.exact_move', {col: hint.bestCol}) }}
-        </p>
-
-        <button
-          v-if="game.learnRevealLevel < 2"
-          type="button"
-          class="escalate"
-          @click="game.revealMoreHint()"
-        >
-          {{ game.learnRevealLevel < 1 ? $t('learn.show_board') : $t('learn.reveal_move') }}
+        <button type="button" class="escalate" @click="game.revealMoreHint()">
+          {{ game.learnRevealLevel >= 1 ? $t('learn.hide_board') : $t('learn.show_board') }}
         </button>
       </template>
 
@@ -84,7 +71,9 @@
           <p v-if="anchorText" class="anchor">{{ anchorText }}</p>
           <ul class="rule-list">
             <li v-for="(count, type) in game.pairing.counts" :key="type">
-              <span class="diamond" aria-hidden="true">◆</span>
+              <span class="diamond" :style="{color: ruleStyle(type).color}" aria-hidden="true">{{
+                ruleStyle(type).char
+              }}</span>
               {{ $t(`learn.pairing.rule.${type}`) }}
               <span v-if="count > 1" class="times">×{{ count }}</span>
             </li>
@@ -100,6 +89,7 @@
 import {computed} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {useGameStore} from '@/stores/game';
+import {ruleStyle} from '@/learn/pairing';
 
 const game = useGameStore();
 const {t} = useI18n();
@@ -119,7 +109,8 @@ const anchorText = computed(() => {
   if (!a) return null;
   if (a.kind === 'oddThreat') return t('learn.pairing.anchor.oddThreat', {sq: a.name});
   if (a.kind === 'immediate') return t('learn.pairing.anchor.immediate', {col: a.col});
-  if (a.kind === 'aftereven') return t('learn.pairing.anchor.aftereven', {sq: (a.names || []).join(', ')});
+  if (a.kind === 'aftereven')
+    return t('learn.pairing.anchor.aftereven', {sq: (a.names || []).join(', ')});
   if (a.kind === 'threatCombination')
     return t('learn.pairing.anchor.combination', {a: a.crossing.name, b: a.other.name});
   return null;
@@ -210,16 +201,6 @@ const anchorText = computed(() => {
   margin-block-start: 0.35rem;
 }
 
-.glyph-note {
-  margin-block-start: 0.5rem;
-  font-style: italic;
-}
-
-.reveal {
-  margin-block-start: 0.5rem;
-  font-weight: 700;
-  font-size: 0.95rem;
-}
 
 .pairing {
   margin-block-start: 0.85rem;

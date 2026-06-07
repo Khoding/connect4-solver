@@ -17,6 +17,7 @@ export default {
     tagline: 'Choisissez votre couleur, puis suivez les suggestions du résolveur.',
   },
   footer: {
+    learn_guide: '📖 Comment gagner — le guide complet',
     solver_by: 'Code du résolveur par',
     inspired_by: 'Inspiré par',
     github_repo: 'Dépôt GitHub',
@@ -44,11 +45,8 @@ export default {
     thinking: 'Lecture de la position…',
     game_over: 'Partie terminée — réinitialise le plateau pour continuer à t’entraîner.',
     hint_intro: 'La meilleure idée ici :',
-    glyph_note:
-      'Les marqueurs sur le plateau indiquent les cases qui conviennent. Toujours bloqué ?',
-    exact_move: 'Meilleur coup : colonne {col}.',
     show_board: 'Montre-moi sur le plateau',
-    reveal_move: 'Dis-moi juste le coup',
+    hide_board: 'Masquer les indices',
     concept: {
       win: {
         label: 'un coup gagnant',

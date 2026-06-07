@@ -60,7 +60,7 @@
             :key="`${vr}-${c}`"
             class="cell"
             role="gridcell"
-            :style="cellStyle(game.ROWS - vr, c - 1)"
+            :style="[cellStyle(game.ROWS - vr, c - 1), pairingRingStyle(game.ROWS - vr, c - 1)]"
             :class="{
               winning: isWinningCell(game.ROWS - vr, c - 1),
               'last-move': isLastMove(game.ROWS - vr, c - 1),
@@ -83,6 +83,11 @@
               v-if="learnGlyphAt(game.ROWS - vr, c - 1)"
               class="learn-glyph"
               :class="`glyph-${learnGlyphAt(game.ROWS - vr, c - 1).kind}`"
+              :style="
+                learnGlyphAt(game.ROWS - vr, c - 1).color
+                  ? {color: learnGlyphAt(game.ROWS - vr, c - 1).color}
+                  : null
+              "
               aria-hidden="true"
             >
               {{ learnGlyphAt(game.ROWS - vr, c - 1).char }}
@@ -256,6 +261,70 @@
           {{ $t('controls.forward') }}
         </BaseButton>
       </div>
+
+      <div class="board-nav board-actions">
+        <BaseButton
+          v-if="!game.resetPending"
+          variant="reset"
+          :title="$t('controls.reset_title')"
+          :aria-label="$t('controls.reset_aria')"
+          :disabled="game.totalMoves === 0"
+          @click="game.resetBoard()"
+        >
+          <template #icon>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
+          </template>
+          {{ $t('controls.reset') }}
+        </BaseButton>
+        <template v-else>
+          <BaseButton
+            variant="confirm"
+            :aria-label="$t('controls.confirm_reset_aria')"
+            @click="game.resetBoard()"
+          >
+            {{ $t('controls.confirm_reset') }}
+          </BaseButton>
+          <BaseButton :aria-label="$t('controls.cancel_reset_aria')" @click="game.cancelReset()">
+            {{ $t('controls.cancel') }}
+          </BaseButton>
+        </template>
+        <BaseButton
+          to="/settings"
+          :title="$t('controls.settings_title')"
+          :aria-label="$t('controls.settings_aria')"
+        >
+          <template #icon>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+              />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </template>
+          {{ $t('controls.settings') }}
+        </BaseButton>
+      </div>
     </div>
   </section>
 </template>
@@ -264,6 +333,7 @@
 import {computed} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {useGameStore} from '@/stores/game';
+import {ruleStyle} from '@/learn/pairing';
 import BaseButton from '@/components/BaseButton.vue';
 
 const game = useGameStore();
@@ -326,7 +396,14 @@ function getGhost(row, col) {
 }
 
 // Learn-mode board markers (Hint 2): char + kind per recommended/threat cell.
-const GLYPH_CHARS = {win: '✦', block: '✦', play: '◎', opportunity: '○', danger: '✕', controlled: '◌'};
+const GLYPH_CHARS = {
+  win: '✦',
+  block: '✦',
+  play: '◎',
+  opportunity: '○',
+  danger: '✕',
+  controlled: '◌',
+};
 
 // The rule-based pairing overlay (Tier C): reserved squares as diamonds, the
 // odd threat / threat-combination squares as gold stars, an immediate win as a
@@ -335,7 +412,10 @@ const pairingGlyphMap = computed(() => {
   const map = {};
   const p = game.pairing;
   if (!p) return map;
-  for (const cell of p.cells) map[`${cell.row}-${cell.col}`] = {kind: 'pairing', char: '◆'};
+  for (const cell of p.cells) {
+    const s = ruleStyle(cell.type);
+    map[`${cell.row}-${cell.col}`] = {kind: 'pairing', char: s.char, color: s.color};
+  }
   const a = p.anchor;
   if (a?.kind === 'oddThreat') {
     map[`${a.row}-${a.col}`] = {kind: 'oddthreat', char: '★'};
@@ -344,7 +424,8 @@ const pairingGlyphMap = computed(() => {
     map[`${a.other.row}-${a.other.col}`] = {kind: 'oddthreat', char: '★'};
   } else if (a?.kind === 'aftereven') {
     // The even squares Black is guaranteed and completes its four on.
-    for (const [r, c] of a.cells) if (game.boardArr[r][c] === 0) map[`${r}-${c}`] = {kind: 'oddthreat', char: '★'};
+    for (const [r, c] of a.cells)
+      if (game.boardArr[r][c] === 0) map[`${r}-${c}`] = {kind: 'oddthreat', char: '★'};
   } else if (a?.kind === 'immediate') {
     const col = a.col - 1;
     for (let y = 0; y < game.ROWS; y++) {
@@ -366,6 +447,23 @@ const pairingLineMap = computed(() => {
     for (const [r, c] of p.anchor.cells) map[`${r}-${c}`] = 'pairing';
   return map;
 });
+
+// Ring colour per reserved square, matching its rule's glyph colour (so a rule's
+// squares read as one coloured group). Anchor-only cells keep the default ring.
+const pairingRingMap = computed(() => {
+  const map = {};
+  const p = game.pairing;
+  if (!p) return map;
+  for (const cell of p.cells) map[`${cell.row}-${cell.col}`] = ruleStyle(cell.type).color;
+  return map;
+});
+
+/** Inline `--pairing-ring` for a cell so its ::before ring takes the rule colour. */
+function pairingRingStyle(row, col) {
+  if (!(game.showPairing && game.pairing)) return null;
+  const color = pairingRingMap.value[`${row}-${col}`];
+  return color ? {'--pairing-ring': color} : null;
+}
 
 const learnGlyphMap = computed(() => {
   if (game.showPairing && game.pairing) return pairingGlyphMap.value; // pairing overrides
@@ -578,6 +676,16 @@ const statusAriaLabel = computed(() => {
   & :deep(.base-button-wrapper) {
     justify-content: center;
     inline-size: 100%;
+  }
+}
+
+.board-actions {
+  display: flex;
+  flex-wrap: wrap;
+
+  & :deep(.base-button-wrapper) {
+    flex: 1;
+    inline-size: auto;
   }
 }
 
@@ -890,13 +998,16 @@ const statusAriaLabel = computed(() => {
   border-color: oklch(0.8 0.13 195 / 0.8);
 }
 
-/* A rule group of the pairing plan: a quiet violet ring binding the squares a
-   single rule reserves. */
+/* A rule group of the pairing plan: a ring binding the squares a single rule
+   reserves, tinted with that rule's colour (--pairing-ring, set per cell) so
+   each sub-rule reads as its own group. Falls back to the generic violet. */
 .cell.threat-pairing::before {
-  border-color: oklch(0.78 0.13 300 / 0.85);
+  --ring: var(--pairing-ring, oklch(0.78 0.13 300));
+
+  border-color: var(--ring);
   box-shadow:
-    0 0 7px oklch(0.78 0.13 300 / 0.4),
-    inset 0 0 5px oklch(0.78 0.13 300 / 0.3);
+    0 0 7px oklch(from var(--ring) l c h / 0.4),
+    inset 0 0 5px oklch(from var(--ring) l c h / 0.3);
 }
 
 .learn-glyph {

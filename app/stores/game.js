@@ -969,9 +969,9 @@ export const useGameStore = defineStore('game', () => {
     saveState();
   }
 
-  /** Escalate the current turn's hint: concept → glyphs → exact move. */
+  /** Toggle the board overlay on/off for the current turn's hint. */
   function revealMoreHint() {
-    if (learnRevealLevel.value < 2) learnRevealLevel.value++;
+    learnRevealLevel.value = learnRevealLevel.value >= 1 ? 0 : 1;
   }
 
   /** Reveal/hide the rule-based pairing plan on the board (Tier C). */

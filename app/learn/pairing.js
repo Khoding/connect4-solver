@@ -42,6 +42,30 @@ export function squareName(r, c) {
   return `${String.fromCharCode(97 + c)}${r + 1}`;
 }
 
+/**
+ * A distinct glyph + colour per rule type, so a pairing plan reads as legibly on
+ * the board as in the card legend — you can tell at a glance which squares a
+ * Claimeven owns versus an Aftereven, Baseinverse, etc. Some shapes are
+ * mnemonic: ▽ Lowinverse points down, △ Highinverse points up, ▲ Aftereven is
+ * the solid even-square triangle. Single source of truth for BoardArea, the
+ * LearnCard legend, and the guide's mini-board.
+ */
+export const RULE_STYLE = {
+  claimeven: {char: '◆', color: 'oklch(0.80 0.14 300)'},
+  baseinverse: {char: '■', color: 'oklch(0.82 0.13 255)'},
+  vertical: {char: '▮', color: 'oklch(0.84 0.12 200)'},
+  aftereven: {char: '▲', color: 'oklch(0.84 0.15 150)'},
+  lowinverse: {char: '▽', color: 'oklch(0.86 0.14 60)'},
+  highinverse: {char: '△', color: 'oklch(0.80 0.15 30)'},
+  baseclaim: {char: '◈', color: 'oklch(0.82 0.16 350)'},
+  before: {char: '●', color: 'oklch(0.84 0.14 110)'},
+};
+
+/** Glyph + colour for a rule type, falling back to the generic violet diamond. */
+export function ruleStyle(type) {
+  return RULE_STYLE[type] ?? {char: '◆', color: 'oklch(0.80 0.12 300)'};
+}
+
 function bestPlayable(scores) {
   let best = -Infinity;
   for (let i = 0; i < COLS; i++) if (scores[i] !== -1000 && scores[i] > best) best = scores[i];
@@ -72,22 +96,33 @@ export function buildPairing(board, scores, player) {
   const blackWins = player === 1 ? best < 0 : best > 0;
   const p2Holds = player === 2 ? best >= 0 : best <= 0;
 
+  const outcome = whiteWins ? 'whiteWin' : blackWins ? 'blackWin' : p2Holds ? 'draw' : null;
+  return outcome ? buildPairingForOutcome(board, outcome) : null;
+}
+
+/**
+ * Build a pairing for a *known* outcome, skipping the solver verdict. Used by the
+ * static teaching gallery, where each example's result is curated, so there is no
+ * need to load the WASM solver just to choose which prover to run.
+ * @param outcome 'whiteWin' | 'blackWin' | 'draw'
+ */
+export function buildPairingForOutcome(board, outcome) {
   let kind = null;
   let winner = null;
   let res = null;
-  if (whiteWins) {
+  if (outcome === 'whiteWin') {
     res = solveWhiteWin(board);
     if (res.solved) {
       kind = 'win';
       winner = 1;
     }
-  } else if (blackWins) {
+  } else if (outcome === 'blackWin') {
     res = solveBlackWin(board);
     if (res.solved) {
       kind = 'win';
       winner = 2;
     }
-  } else if (p2Holds) {
+  } else if (outcome === 'draw') {
     res = solveVictor(board, 2);
     if (res.solved) kind = 'draw';
   }
@@ -120,7 +155,13 @@ export function buildPairing(board, scores, player) {
       anchor = {kind: 'immediate', col: res.winningCol + 1};
     } else if (res.kind === 'oddThreat' && res.oddThreat) {
       const {row, col, cells: gcells} = res.oddThreat;
-      anchor = {kind: 'oddThreat', row, col, name: squareName(row, col), cells: gcells.map(s => [...s])};
+      anchor = {
+        kind: 'oddThreat',
+        row,
+        col,
+        name: squareName(row, col),
+        cells: gcells.map(s => [...s]),
+      };
     } else if (res.kind === 'aftereven' && res.afterevenGroup) {
       const gcells = res.afterevenGroup.map(s => [...s]);
       anchor = {kind: 'aftereven', cells: gcells, names: gcells.map(([r, c]) => squareName(r, c))};
@@ -129,11 +170,24 @@ export function buildPairing(board, scores, player) {
       anchor = {
         kind: 'threatCombination',
         type: cb.type,
-        crossing: {row: cb.crossing[0], col: cb.crossing[1], name: squareName(cb.crossing[0], cb.crossing[1])},
+        crossing: {
+          row: cb.crossing[0],
+          col: cb.crossing[1],
+          name: squareName(cb.crossing[0], cb.crossing[1]),
+        },
         other: {row: cb.other[0], col: cb.other[1], name: squareName(cb.other[0], cb.other[1])},
       };
     }
   }
 
-  return {kind, winner, winKind: kind === 'win' ? res.kind : null, groups, cells, counts, anchor, threatsCovered: res.threatCount ?? 0};
+  return {
+    kind,
+    winner,
+    winKind: kind === 'win' ? res.kind : null,
+    groups,
+    cells,
+    counts,
+    anchor,
+    threatsCovered: res.threatCount ?? 0,
+  };
 }
