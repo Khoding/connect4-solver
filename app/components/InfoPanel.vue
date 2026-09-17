@@ -30,7 +30,8 @@
       <SolverStatusCard v-if="item === 'solver-status'" />
     </template>
     <div class="panel-footer">
-      <BaseButton to="/guide" variant="accent">{{ $t('footer.learn_guide') }}</BaseButton>
+      <BaseButton to="/practice" variant="accent">{{ $t('footer.practice') }}</BaseButton>
+      <BaseButton to="/guide">{{ $t('footer.learn_guide') }}</BaseButton>
     </div>
   </aside>
 </template>
@@ -75,7 +76,10 @@ const game = useGameStore();
 }
 
 .panel-footer {
+  display: flex;
+  flex-direction: column;
   margin-block-start: auto;
+  gap: 0.5rem;
 
   & :deep(.base-button-wrapper) {
     inline-size: 100%;

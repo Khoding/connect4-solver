@@ -506,7 +506,7 @@ function applyRecommended() {
   justify-content: center;
   min-inline-size: min(180px, 100%);
   padding: 10px 16px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-interactive);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
   color: var(--color-text);
@@ -609,7 +609,7 @@ function applyRecommended() {
   right: 0;
   bottom: 0;
   left: 0;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-interactive);
   border-radius: 20px;
   background-color: var(--color-empty);
   cursor: pointer;
@@ -670,7 +670,7 @@ input:focus-visible + .toggle-slider {
   align-items: center;
   padding: 10px 20px;
   gap: 0.5rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-interactive);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
   color: var(--color-text);
@@ -801,7 +801,7 @@ input:focus-visible + .toggle-slider {
   align-items: center;
   justify-content: center;
   padding: 6px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-interactive);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
   color: var(--color-text-dim);

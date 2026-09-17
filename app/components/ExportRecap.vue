@@ -375,7 +375,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   box-sizing: border-box;
   inline-size: 100%;
   padding: 8px 10px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-interactive);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
   color: var(--color-text);
@@ -439,7 +439,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 
 .resign-undo {
   padding: 2px 8px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-interactive);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
   color: var(--color-text-dim);
@@ -463,7 +463,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   & button {
     flex: 1;
     padding: 8px 12px;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-border-interactive);
     border-radius: var(--radius-sm);
     background-color: var(--color-surface);
     color: var(--color-text);
@@ -536,7 +536,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   justify-content: center;
   inline-size: 32px;
   block-size: 32px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-interactive);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
   color: var(--color-text-dim);
@@ -678,7 +678,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 
   & button {
     padding: 8px 14px;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-border-interactive);
     border-radius: var(--radius-sm);
     background-color: var(--color-surface);
     color: var(--color-text);

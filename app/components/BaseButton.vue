@@ -70,7 +70,7 @@ const variantClass = computed(() => {
   justify-content: center;
   padding: 8px 12px;
   gap: 0.4rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-interactive);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
   color: var(--color-text);

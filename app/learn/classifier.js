@@ -78,6 +78,48 @@ function newThreats(before, after) {
 }
 
 /**
+ * Name a single candidate move in Tier-A vocabulary, independent of whether the
+ * solver likes it. classifyHint uses it for the recommended column; the drill
+ * grader (app/learn/drills.js) uses it for the column the learner actually
+ * clicked, so both sides of "you played X, Y was better" speak the same language.
+ *
+ * The tests run in priority order and the first match wins, so a move that both
+ * blocks a four and builds a threat is named a block — the reason that decides
+ * whether the move is forced outranks the reason that makes it nice.
+ *
+ * @param {number[][]} board - ROWS x COLS, 0 empty / 1 first mover / 2 second
+ * @param {number} col - 0-indexed column
+ * @param {number} player - internal player making the move (1 or 2)
+ * @returns {{concept: string, parity: 'odd'|'even'|null}}
+ */
+export function nameMove(board, col, player) {
+  const opponent = player === 1 ? 2 : 1;
+
+  if (wouldWin(board, col, player)) return {concept: 'win', parity: null};
+  if (wouldWin(board, col, opponent)) return {concept: 'block', parity: null};
+
+  // Does playing this column create a threat the mover did not already hold?
+  const before = findThreats(board, player);
+  const next = dropInto(board, col, player);
+  const created = next ? newThreats(before, findThreats(next, player)) : [];
+  if (created.length) {
+    // Prefer to name the parity that actually helps this mover.
+    const favour = favouredParity(player);
+    const pick = created.find(t => t.parity === favour) ?? created[0];
+    return {
+      concept: pick.parity === 'odd' ? 'odd_threat' : 'even_threat',
+      parity: pick.parity,
+    };
+  }
+
+  // No new threat, but the second player is claiming an even square right above
+  // the opponent's — the claimeven, their core defensive move.
+  if (isClaimevenMove(board, col, player)) return {concept: 'claimeven', parity: null};
+
+  return {concept: 'develop', parity: null};
+}
+
+/**
  * Classify the best move into Tier-A vocabulary and build the board overlay.
  *
  * @param {number[][]} board - ROWS x COLS, 0 empty / 1 first mover / 2 second
@@ -100,32 +142,7 @@ export function classifyHint(board, scores, player) {
   const bestIdx = bestCol - 1;
 
   // ── Name the recommended move ──────────────────────────────
-  let concept;
-  let parity = null;
-
-  if (wouldWin(board, bestIdx, player)) {
-    concept = 'win';
-  } else if (wouldWin(board, bestIdx, opponent)) {
-    concept = 'block';
-  } else {
-    // Does playing the recommended column create a new threat for the mover?
-    const before = findThreats(board, player);
-    const next = dropInto(board, bestIdx, player);
-    const created = next ? newThreats(before, findThreats(next, player)) : [];
-    if (created.length) {
-      // Prefer to name the parity that actually helps this mover.
-      const favour = favouredParity(player);
-      const pick = created.find(t => t.parity === favour) ?? created[0];
-      parity = pick.parity;
-      concept = pick.parity === 'odd' ? 'odd_threat' : 'even_threat';
-    } else if (isClaimevenMove(board, bestIdx, player)) {
-      // No new threat, but the second player is claiming an even square right
-      // above the opponent's — the claimeven, their core defensive move.
-      concept = 'claimeven';
-    } else {
-      concept = 'develop';
-    }
-  }
+  const {concept, parity} = nameMove(board, bestIdx, player);
 
   // ── Board overlay (Hint 2) ─────────────────────────────────
   const cells = [];

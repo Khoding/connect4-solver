@@ -129,7 +129,7 @@ const anchorText = computed(() => {
   display: flex;
   margin-block-start: 0.75rem;
   overflow: hidden;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-interactive);
   border-radius: var(--radius-sm);
 
   & button {
@@ -151,7 +151,7 @@ const anchorText = computed(() => {
     }
 
     &.active {
-      background-color: var(--color-accent, oklch(0.65 0.18 255));
+      background-color: var(--color-accent, oklch(0.8 0.05 250));
       color: var(--color-bg);
     }
   }
@@ -261,7 +261,7 @@ const anchorText = computed(() => {
 .escalate {
   margin-block-start: 0.75rem;
   padding: 8px 14px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-interactive);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface-alt);
   color: var(--color-text);

@@ -11,6 +11,7 @@
     "postinstall": "nuxt prepare",
     "build:wasm": "node scripts/build-wasm.mjs",
     "test:learn": "node scripts/validate-learn.mjs",
+    "test:drills": "node scripts/validate-drills.mjs",
     "test:learn:oracle": "node scripts/validate-learn-oracle.mjs",
     "test:victor": "node scripts/victor-validate.mjs",
     "test:victor:white": "node scripts/victor-white-validate.mjs",

@@ -764,7 +764,7 @@ function ssCellKind(n) {
   background-color: transparent;
 
   &.active {
-    background-color: var(--color-accent, oklch(0.65 0.18 255));
+    background-color: var(--color-accent, oklch(0.8 0.05 250));
   }
 }
 
